@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Botón para ir a la actividad de productos -->
+    <Button
+        android:id="@+id/buttonGoToProduct"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ver Productos"
+        android:layout_centerInParent="true" />
+
+    <!-- Imagen que se mostrará en la pantalla -->
+    <ImageView
+        android:id="@+id/imageViewProduct"
+        android:layout_width="245dp"
+        android:layout_height="202dp"
+        android:layout_below="@id/buttonGoToProduct"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="-273dp"
+        android:layout_marginEnd="9dp"
+        android:src="@drawable/dinero" />
+
+
+    <!-- Nueva imagen como botón para navegar a la segunda vista -->
+    <ImageView
+        android:id="@+id/imageViewGoToProduct"
+        android:layout_width="146dp"
+        android:layout_height="130dp"
+        android:layout_below="@id/imageViewProduct"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="77dp"
+        android:layout_marginTop="128dp"
+        android:src="@drawable/mas" />
+</RelativeLayout>
+
