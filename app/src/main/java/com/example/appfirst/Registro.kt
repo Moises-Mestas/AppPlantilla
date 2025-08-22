@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun RegistroScreen() {
-    // Estados para cada campo del formulario
+    // Estados solo para manejar la UI (sin guardar datos)
     val nombreState = remember { mutableStateOf("") }
     val apellidoState = remember { mutableStateOf("") }
     val emailState = remember { mutableStateOf("") }
@@ -43,7 +43,6 @@ fun RegistroScreen() {
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
-        // Campos sin keyboardOptions (versión simple)
         OutlinedTextField(
             value = nombreState.value,
             onValueChange = { nombreState.value = it },
@@ -80,6 +79,7 @@ fun RegistroScreen() {
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // Campo Edad
         OutlinedTextField(
             value = edadState.value,
             onValueChange = { edadState.value = it },
@@ -100,18 +100,17 @@ fun RegistroScreen() {
 
         Button(
             onClick = {
-                println("Nombre: ${nombreState.value}")
-                println("Apellido: ${apellidoState.value}")
-                println("Email: ${emailState.value}")
-                println("Password: ${passwordState.value}")
-                println("Edad: ${edadState.value}")
-                println("Teléfono: ${telefonoState.value}")
+
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 24.dp)
         ) {
-            Text(text = "Registrarse", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = "Registrarse",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
