@@ -1,4 +1,4 @@
-package com.example.tiendaapp
+package com.example.appfirst
 
 import org.junit.Test
 
