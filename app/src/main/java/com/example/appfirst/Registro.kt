@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun RegistroScreen() {
-    // Estados solo para manejar la UI (sin guardar datos)
     val nombreState = remember { mutableStateOf("") }
     val apellidoState = remember { mutableStateOf("") }
     val emailState = remember { mutableStateOf("") }
@@ -79,7 +78,6 @@ fun RegistroScreen() {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Campo Edad
         OutlinedTextField(
             value = edadState.value,
             onValueChange = { edadState.value = it },
