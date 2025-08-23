@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.appfirst.InicioScreen
 import com.example.appfirst.LoginScreen
+import com.example.appfirst.PrincipalScreen
 import com.example.appfirst.RegistroScreen
 
 
@@ -21,10 +22,15 @@ fun NavigationWrapper (){
             )
         }
         composable<Inicio> {
-            InicioScreen()
+            InicioScreen(
+                navigateToPrincipal = { navController.navigate(Principal)}
+            )
         }
         composable<Registro> {
             RegistroScreen()
+        }
+        composable<Principal>{
+            PrincipalScreen()
         }
     }
 }

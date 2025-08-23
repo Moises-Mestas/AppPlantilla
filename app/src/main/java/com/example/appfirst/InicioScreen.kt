@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun InicioScreen() {
+fun InicioScreen( navigateToPrincipal: ()-> Unit) {
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
 
@@ -58,6 +58,7 @@ fun InicioScreen() {
 
         Button(
             onClick = {
+                navigateToPrincipal()
                 println("Email: ${emailState.value}")
                 println("Password: ${passwordState.value}")
             },

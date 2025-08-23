@@ -11,3 +11,6 @@ object Inicio
 
 @Serializable
 object Registro
+
+@Serializable
+object Principal
