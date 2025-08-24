@@ -23,7 +23,8 @@ fun CuentasScreen() {
     val topSpace = 50.dp          // <- controla: espacio arriba del título general
     val titleBottom = 8.dp        // <- controla: distancia entre "Cuentas" y el primer cuadro
     val cardsGap = 15.dp           // <- controla: separación entre Tarjeta / Efectivo / Yape
-    val dividerPad = 12.dp        // <- controla: padding vertical de cada línea negra
+    val dividerPad = 8.dp        // <- controla: padding vertical de cada línea negra
+    val imageGap = 0.dp           // <- controla: espacio entre las imágenes y la línea negra (ajustado a 0 para pegarlas)
 
 
     Column(
@@ -46,9 +47,9 @@ fun CuentasScreen() {
             CuentaItem(
                 titulo = "TARJETA:",
                 detalles = listOf(
-                    "1. Nombre tarjeta 1: $/ 20.40",
-                    "2. Nombre tarjeta 2: $/ 150.60",
-                    "3. Nombre tarjeta 3: $/ 2000.90"
+                    "1. Tarjeta 1: $/ 20.40",
+                    "2. Tarjeta 2: $/ 150.60",
+                    "3. Tarjeta 3: $/ 2000.90"
                 )
             )
 
@@ -67,21 +68,26 @@ fun CuentasScreen() {
             )
         }
 
-        // Dos imágenes antes de la primera línea
+        // Espacio para agregar las imágenes antes de la primera línea negra
         Row(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(bottom = imageGap),  // <- controla el espacio entre las imágenes y la línea negra
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Image(
                 painter = painterResource(id = R.drawable.historial),
                 contentDescription = "Imagen 1",
-                modifier = Modifier.size(70.dp)
+                modifier = Modifier
+                    .size(70.dp)
+                    .offset(y = -5.dp) // <- Controla la posición vertical de la imagen (ajústalo como desees)
             )
             Image(
                 painter = painterResource(id = R.drawable.mas),
                 contentDescription = "Imagen 2",
-                modifier = Modifier.size(55.dp)
+                modifier = Modifier
+                    .size(55.dp)
+                    .offset(y = 5.dp) // <- Controla la posición vertical de la segunda imagen
             )
         }
 
@@ -141,6 +147,7 @@ fun CuentasScreen() {
     }
 }
 
+
 @Composable
 fun CuentaItem(
     titulo: String,
@@ -189,7 +196,7 @@ fun CuentaItem(
                         Text(
                             text = texto,
                             color = Color.Black,
-                            fontSize = 17.sp,
+                            fontSize = 20.sp,
                             modifier = Modifier.weight(1f)
                         )
                         Text(
