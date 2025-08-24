@@ -15,12 +15,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 
 // Azul cobalto
 val cobaltBlue = Color(0xFF0047AB)
 
 @Composable
-fun CuentasScreen() {
+fun CuentasScreen(navController: NavController) {  // Recibimos navController como parámetro
     val showModal = remember { mutableStateOf(false) }  // Controla si se muestra la ventana emergente
     val showModal2 = remember { mutableStateOf(false) } // Controla si se muestra la segunda ventana emergente
     val showImages = remember { mutableStateOf(true) }  // Controla si las imágenes de "historial" y "mas" se deben mostrar
@@ -132,13 +133,16 @@ fun CuentasScreen() {
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-                // Ventana emergente 1
+                // Ventana emergente 1 con fondo gris
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color.White, shape = RoundedCornerShape(8.dp))
+                        .background(Color(0xFFE0E0E0), shape = RoundedCornerShape(8.dp)) // Fondo gris claro
                         .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
                         .padding(16.dp)
+                        .clickable {
+                            navController.navigate("gasto") // Redirige a GastoScreen al hacer click
+                        }
                 ) {
                     Text(
                         text = "GASTO",
@@ -169,13 +173,16 @@ fun CuentasScreen() {
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-                // Ventana emergente 2
+                // Ventana emergente 2 con fondo gris
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color.White, shape = RoundedCornerShape(8.dp))
+                        .background(Color(0xFFE0E0E0), shape = RoundedCornerShape(8.dp)) // Fondo gris claro
                         .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
                         .padding(16.dp)
+                        .clickable {
+                            navController.navigate("ingreso") // Redirige a IngresoScreen al hacer click
+                        }
                 ) {
                     Text(
                         text = "INGRESO",

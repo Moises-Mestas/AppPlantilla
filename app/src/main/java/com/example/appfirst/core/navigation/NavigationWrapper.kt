@@ -6,6 +6,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.appfirst.CuentasScreen
+import com.example.appfirst.GastoScreen
+import com.example.appfirst.IngresoScreen
 import com.example.appfirst.InicioScreen
 import com.example.appfirst.LoginScreen
 import com.example.appfirst.MonederoScreen
@@ -32,7 +34,13 @@ fun NavigationWrapper() {
             MonederoScreen(navController)
         }
         composable("cuentas") {
-            CuentasScreen()
+            CuentasScreen(navController)
+        }
+        composable("gasto") {
+            GastoScreen()
+        }
+        composable("ingreso") {
+            IngresoScreen()
         }
     }
 }
