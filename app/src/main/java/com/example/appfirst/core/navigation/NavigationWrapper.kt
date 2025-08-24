@@ -5,26 +5,34 @@ import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.appfirst.CuentasScreen
 import com.example.appfirst.InicioScreen
 import com.example.appfirst.LoginScreen
+import com.example.appfirst.MonederoScreen
 import com.example.appfirst.RegistroScreen
 
 
 @Composable
-fun NavigationWrapper (){
+fun NavigationWrapper() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = Login ){
-        composable<Login> {
+    NavHost(navController = navController, startDestination = "login") {
+        composable("login") {
             LoginScreen(
-                navigateToHome = { navController.navigate(Inicio) },
-                navigateToRegister = { navController.navigate(Registro) }
+                navigateToHome = { navController.navigate("inicio") },
+                navigateToRegister = { navController.navigate("registro") }
             )
         }
-        composable<Inicio> {
-            InicioScreen()
+        composable("inicio") {
+            InicioScreen(navController)
         }
-        composable<Registro> {
+        composable("registro") {
             RegistroScreen()
+        }
+        composable("monedero") {
+            MonederoScreen(navController)
+        }
+        composable("cuentas") {
+            CuentasScreen()
         }
     }
 }
