@@ -37,10 +37,10 @@ fun NavigationWrapper() {
             CuentasScreen(navController)
         }
         composable("gasto") {
-            GastoScreen()
+            GastoScreen(navController)
         }
         composable("ingreso") {
-            IngresoScreen()
+            IngresoScreen(navController)
         }
     }
 }
