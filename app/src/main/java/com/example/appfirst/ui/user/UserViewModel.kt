@@ -4,9 +4,11 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.appfirst.data.local.AppDatabase
+import com.example.appfirst.data.local.entity.User
 import com.example.appfirst.data.repo.UserRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import com.example.appfirst.data.local.dao.UserDao
 
 // Estado del formulario de usuario
 data class UserFormState(
@@ -122,17 +124,15 @@ class UserViewModel(app: Application) : AndroidViewModel(app) {
         return errs.isEmpty()
     }
 
-    // Guardar usuario (crear o actualizar)
     fun save() = viewModelScope.launch {
         if (!validate()) return@launch
 
         val f = _form.value
-        val age = f.age.toInt() // Ya validado que es número
+        val age = f.age.toInt()
 
         try {
             val id = editingId
             if (id == null) {
-                // CREAR nuevo usuario
                 val newId = repo.registerUser(
                     name = f.name,
                     lastname = f.lastname,
@@ -143,7 +143,6 @@ class UserViewModel(app: Application) : AndroidViewModel(app) {
                 )
                 _navigateToSuccess.value = newId
             } else {
-                // ACTUALIZAR usuario existente
                 repo.updateUser(
                     id = id,
                     name = f.name,
@@ -155,21 +154,17 @@ class UserViewModel(app: Application) : AndroidViewModel(app) {
                 _navigateToSuccess.value = id
             }
 
-            // Limpiar formulario después de guardar
             startCreate()
 
         } catch (e: Exception) {
-            // Manejar errores del repository (email duplicado, etc.)
-            _form.value = f.copy(errors = mapOf("email" to e.message ?: "Error desconocido"))
+            _form.value = f.copy(errors = mapOf("email" to (e.message ?: "Error desconocido")))
         }
     }
 
-    // Eliminar usuario
     fun delete(id: Long) = viewModelScope.launch {
         repo.deleteUser(id)
     }
 
-    // Login de usuario
     fun login(email: String, password: String, onSuccess: (User) -> Unit, onError: (String) -> Unit) = viewModelScope.launch {
         try {
             val user = repo.login(email, password)
@@ -179,7 +174,6 @@ class UserViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    // Resetear estado de navegación
     fun resetNavigation() {
         _navigateToSuccess.value = null
     }
