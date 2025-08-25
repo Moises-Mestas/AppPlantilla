@@ -1,4 +1,4 @@
-package com.example.appfirst
+package com.example.appfirst.ui.screens.home
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable

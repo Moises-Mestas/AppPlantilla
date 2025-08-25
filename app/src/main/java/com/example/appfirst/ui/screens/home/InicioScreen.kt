@@ -1,4 +1,4 @@
-package com.example.appfirst
+package com.example.appfirst.ui.screens.home
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,13 +20,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun RegistroScreen() {
-    val nombreState = remember { mutableStateOf("") }
-    val apellidoState = remember { mutableStateOf("") }
+fun InicioScreen( navigateToPrincipal: ()-> Unit) {
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
-    val edadState = remember { mutableStateOf("") }
-    val telefonoState = remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -36,29 +32,11 @@ fun RegistroScreen() {
         verticalArrangement = Arrangement.Top
     ) {
         Text(
-            text = "Crear Cuenta",
+            text = "Iniciar Sesión",
             fontWeight = FontWeight.Black,
             fontSize = 30.sp,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier.padding(bottom = 32.dp)
         )
-
-        OutlinedTextField(
-            value = nombreState.value,
-            onValueChange = { nombreState.value = it },
-            label = { Text("Nombre") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        OutlinedTextField(
-            value = apellidoState.value,
-            onValueChange = { apellidoState.value = it },
-            label = { Text("Apellido") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedTextField(
             value = emailState.value,
@@ -67,7 +45,7 @@ fun RegistroScreen() {
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = passwordState.value,
@@ -76,36 +54,20 @@ fun RegistroScreen() {
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        OutlinedTextField(
-            value = edadState.value,
-            onValueChange = { edadState.value = it },
-            label = { Text("Edad") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        OutlinedTextField(
-            value = telefonoState.value,
-            onValueChange = { telefonoState.value = it },
-            label = { Text("Teléfono") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
             onClick = {
-
+                navigateToPrincipal()
+                println("Email: ${emailState.value}")
+                println("Password: ${passwordState.value}")
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 24.dp)
+                .padding(top = 32.dp)
         ) {
             Text(
-                text = "Registrarse",
+                text = "Acceder",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
