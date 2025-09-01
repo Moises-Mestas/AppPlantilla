@@ -2,6 +2,7 @@ package com.example.appfirst.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.ForeignKey
 import androidx.room.TypeConverters
 import com.example.appfirst.data.local.converters.FileListConverter
 
@@ -16,6 +17,7 @@ import com.example.appfirst.data.local.converters.FileListConverter
         )
     ]
 )
+@TypeConverters(FileListConverter::class)
 data class Examen(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val titulo: String,
@@ -24,9 +26,8 @@ data class Examen(
     val asignatura: String,
     val categoria: String,
     val nota: String? = null,
-    @TypeConverters(FileListConverter::class)
     val archivos: List<String> = emptyList(),
-    val userId: Long, // ← FOREIGN KEY
+    val userId: Long,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )

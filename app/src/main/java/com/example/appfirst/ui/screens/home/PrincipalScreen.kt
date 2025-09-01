@@ -59,7 +59,7 @@ enum class NavDestination(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PrincipalScreen(modifier: Modifier = Modifier) {
+fun PrincipalScreen(modifier: Modifier = Modifier ,  navigateTotarea: ()-> Unit ) {
     var selectedItem by rememberSaveable { mutableIntStateOf(0) }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
@@ -67,6 +67,8 @@ fun PrincipalScreen(modifier: Modifier = Modifier) {
         modifier = modifier,
         topBar = {
             TopAppBar(
+
+
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.primary,
@@ -97,6 +99,9 @@ fun PrincipalScreen(modifier: Modifier = Modifier) {
             }
         }
     ) { innerPadding ->
+
+
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -157,7 +162,20 @@ fun PrincipalScreen(modifier: Modifier = Modifier) {
                     }
                 }
             }
-
+            Button(
+                onClick = {
+                    navigateTotarea()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 24.dp)
+            ) {
+                Text(
+                    text = "tarea",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
             Card(
                 modifier = Modifier
                     .fillMaxWidth()

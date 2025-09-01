@@ -19,6 +19,9 @@ import android.content.Context
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.example.appfirst.ui.screens.tareas.TareasScreen
+
+
 
 @Composable
 fun NavigationWrapper() {
@@ -35,7 +38,7 @@ fun NavigationWrapper() {
 
         startDestination = when {
             !isOnboardDone -> "onboarding"
-            isLoggedIn -> "principal" // ← Ir DIRECTAMENTE a principal si ya está logueado
+            isLoggedIn -> "principal"
             else -> "login"
         }
     }
@@ -78,7 +81,13 @@ fun NavigationWrapper() {
         }
 
         composable("principal") {
-            PrincipalScreen()
+            PrincipalScreen(
+                navigateTotarea = {navController.navigate("tarea")}
+            )
+        }
+
+        composable ("tarea" ){
+            TareasScreen()
         }
     }
 }

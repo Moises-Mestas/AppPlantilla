@@ -38,16 +38,22 @@ object UserPrefs {
         }
     }
 
+
     suspend fun isLoggedIn(context: Context): Boolean {
         return context.dataStore.data.map { prefs ->
             prefs[KEY_IS_LOGGED_IN] ?: false
         }.first()
     }
 
+
     suspend fun getLoggedUserEmail(context: Context): String {
-        return context.dataStore.data.map { prefs ->
-            prefs[KEY_USER_EMAIL] ?: ""
-        }.first()
+        return try {
+            context.dataStore.data.map { prefs ->
+                prefs[KEY_USER_EMAIL] ?: ""
+            }.first()
+        } catch (e: Exception) {
+            ""
+        }
     }
 
     fun onboardDoneFlow(context: Context): Flow<Boolean> =

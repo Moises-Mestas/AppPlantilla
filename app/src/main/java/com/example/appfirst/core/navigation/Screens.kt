@@ -14,3 +14,6 @@ object Registro
 
 @Serializable
 object Principal
+
+@Serializable
+object Tarea

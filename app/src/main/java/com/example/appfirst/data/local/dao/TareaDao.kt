@@ -5,7 +5,7 @@ import com.example.appfirst.data.local.entity.Tarea
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface tasksDao {
+interface TareaDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(tarea: Tarea): Long

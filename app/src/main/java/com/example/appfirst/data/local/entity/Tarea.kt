@@ -4,6 +4,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.example.appfirst.data.local.converters.FileListConverter
+import com.example.appfirst.data.local.entity.User
+import androidx.room.ForeignKey
+
 
 @Entity(
     tableName = "tareas",

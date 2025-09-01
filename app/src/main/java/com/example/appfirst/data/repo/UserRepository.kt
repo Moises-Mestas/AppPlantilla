@@ -32,7 +32,6 @@ class UserRepository(private val dao: UserDao) {
             throw IllegalArgumentException("La contraseña debe tener al menos 4 caracteres")
         }
 
-        // Verificar si el email ya existe
         if (dao.checkEmailExists(email) > 0) {
             throw IllegalArgumentException("El email ya está registrado")
         }
