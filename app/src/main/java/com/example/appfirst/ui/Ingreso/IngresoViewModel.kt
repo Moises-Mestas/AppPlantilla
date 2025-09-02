@@ -14,7 +14,7 @@ data class IngresoFormState(
     val monto: String = "",
     val descripcion: String = "",
     val fecha: String = "",
-    val depositadoEn: String = "",
+    val depositadoEn: com.example.appfirst.data.local.entity.MedioPago = com.example.appfirst.data.local.entity.MedioPago.TARJETA,
     val notas: String = "",
     val errors: Map<String, String> = emptyMap()
 )
@@ -61,10 +61,13 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
         if (queryText.isBlank()) {
             ingresosList
         } else {
+            val q = queryText.trim()
             ingresosList.filter { ingreso ->
-                ingreso.descripcion.contains(queryText, ignoreCase = true) ||
-                        ingreso.depositadoEn.contains(queryText, ignoreCase = true) ||
-                        ingreso.notas.contains(queryText, ignoreCase = true)
+                ingreso.descripcion.contains(q, ignoreCase = true) ||
+                        ingreso.notas.contains(q, ignoreCase = true) ||
+                        // Si creaste "label" o "display()", usa eso; si no, usa name:
+                        ingreso.depositadoEn.name.contains(q, ignoreCase = true)
+                // o: ingreso.depositadoEn.label.contains(q, ignoreCase = true)
             }
         }
     }
@@ -99,7 +102,7 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
         monto: String? = null,
         descripcion: String? = null,
         fecha: String? = null,
-        depositadoEn: String? = null,
+        depositadoEn: com.example.appfirst.data.local.entity.MedioPago? = null,
         notas: String? = null
     ) {
         _form.value = _form.value.copy(
@@ -118,15 +121,13 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
         val errs = mutableMapOf<String, String>()
 
         if (f.descripcion.isBlank()) errs["descripcion"] = "Descripción obligatoria"
-        if (f.depositadoEn.isBlank()) errs["depositadoEn"] = "Lugar de depósito obligatorio"
 
-        val monto = f.monto.toDoubleOrNull()
+        val monto = f.monto.replace(',', '.').toDoubleOrNull()
         if (monto == null || monto <= 0.0) {
             errs["monto"] = "Monto debe ser mayor a 0"
         }
 
-        // fecha se permite vacía; si está vacía, se completará en save()
-        // si viene algo y no es número -> error
+        // fecha: si viene algo y no es número -> error
         val fechaNum = f.fecha.takeIf { it.isNotBlank() }?.toLongOrNull()
         if (f.fecha.isNotBlank() && fechaNum == null) {
             errs["fecha"] = "Fecha inválida"
@@ -136,20 +137,19 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
         return errs.isEmpty()
     }
 
+
     // Guardar ingreso (crear o actualizar)
     fun save() = viewModelScope.launch {
         if (!validate()) return@launch
 
         val f = _form.value
-
         val userId = _userId.value ?: run {
             _message.value = "No se ha establecido el usuario. Vuelve a iniciar sesión."
             return@launch
         }
 
-        // Usa ahora si no se ingresó fecha
         val fecha = f.fecha.toLongOrNull() ?: System.currentTimeMillis()
-        val monto = f.monto.toDouble() // ya validado
+        val monto = f.monto.replace(',', '.').toDouble() // ya validado
 
         try {
             val id = editingId
@@ -158,11 +158,11 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
                     monto = monto,
                     descripcion = f.descripcion.trim(),
                     fecha = fecha,
-                    depositadoEn = f.depositadoEn.trim(),
+                    depositadoEn = f.depositadoEn,   // ✅ enum directo
                     notas = f.notas.trim(),
                     userId = userId
                 )
-                _navigateToSuccess.value = newId.toInt() // id Int
+                _navigateToSuccess.value = newId.toInt()
                 _message.value = "Ingreso creado exitosamente"
             } else {
                 repo.actualizarIngreso(
@@ -170,7 +170,7 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
                     monto = monto,
                     descripcion = f.descripcion.trim(),
                     fecha = fecha,
-                    depositadoEn = f.depositadoEn.trim(),
+                    depositadoEn = f.depositadoEn,   // ✅ enum directo
                     notas = f.notas.trim(),
                     userId = userId
                 )

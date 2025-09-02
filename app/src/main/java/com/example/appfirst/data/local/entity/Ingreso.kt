@@ -23,8 +23,8 @@ data class Ingreso(
     val monto: Double,  // Representa el monto con dos decimales
     val descripcion: String,
     val fecha: Long,  // Fecha almacenada como Long (milisegundos desde epoch)
-    val depositadoEn: String,
-    val notas: String,
+    @field:androidx.room.ColumnInfo(name = "depositado_en")
+    val depositadoEn: MedioPago,    val notas: String,
     val userId: Long, // ← FOREIGN KEY
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()

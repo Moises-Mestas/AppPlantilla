@@ -20,8 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.example.appfirst.ui.screens.tareas.TareasScreen
 import com.example.appfirst.ui.ingresos.IngresoScreen
-
-
+import com.example.appfirst.ui.ingresos.IngresoScreen2
 
 
 @Composable
@@ -91,9 +90,18 @@ fun NavigationWrapper() {
         composable("tarea") {
             TareasScreen()
         }
-        composable("ingreso") { // Pantalla de ingreso
-            IngresoScreen() // Asegúrate de usar IngresoScreen
+        composable("ingreso") {
+            IngresoScreen(
+                navigateToForm = { navController.navigate("ingreso2") },
+                navigateBack = { navController.popBackStack() }
+            )
         }
 
+        composable("ingreso2") {
+            IngresoScreen2(
+                navigateBack = { navController.popBackStack() } // al guardar o atrás
+            )
+
+        }
     }
 }

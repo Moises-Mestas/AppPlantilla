@@ -2,17 +2,20 @@ package com.example.appfirst.data.repo
 
 import com.example.appfirst.data.local.dao.IngresoDao
 import com.example.appfirst.data.local.entity.Ingreso
+import com.example.appfirst.data.local.entity.MedioPago
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 
 class IngresoRepository(private val dao: IngresoDao) {
 
-    fun getIngresosByUser(userId: Long): Flow<List<Ingreso>> = dao.getIngresosByUser(userId)
+    fun getIngresosByUser(userId: Long): Flow<List<Ingreso>> =
+        dao.getIngresosByUser(userId)
 
     fun getIngresosByDateRange(userId: Long, startDate: Long, endDate: Long): Flow<List<Ingreso>> =
         dao.getIngresosByDateRange(userId, startDate, endDate)
 
-    fun getIngresosByDeposito(userId: Long, depositadoEn: String): Flow<List<Ingreso>> =
+    // 👇 AHORA acepta MedioPago (no String)
+    fun getIngresosByDeposito(userId: Long, depositadoEn: MedioPago): Flow<List<Ingreso>> =
         dao.getIngresosByDeposito(userId, depositadoEn)
 
     fun getIngresosByMonto(userId: Long, monto: Double): Flow<List<Ingreso>> =
@@ -25,27 +28,23 @@ class IngresoRepository(private val dao: IngresoDao) {
         monto: Double,
         descripcion: String,
         fecha: Long,
-        depositadoEn: String,
+        depositadoEn: MedioPago,   // 👈 enum
         notas: String,
         userId: Long
     ): Long {
         if (descripcion.isBlank()) {
             throw IllegalArgumentException("La descripción es obligatoria")
         }
-
-        if (depositadoEn.isBlank()) {
-            throw IllegalArgumentException("El lugar de depósito es obligatorio")
-        }
+        // ❌ ya NO uses isBlank() sobre enum
 
         val ingreso = Ingreso(
             monto = monto,
             descripcion = descripcion.trim(),
             fecha = fecha,
-            depositadoEn = depositadoEn.trim(),
+            depositadoEn = depositadoEn,  // ✅ enum directo
             notas = notas.trim(),
             userId = userId
         )
-
         return dao.insert(ingreso)
     }
 
@@ -54,7 +53,7 @@ class IngresoRepository(private val dao: IngresoDao) {
         monto: Double,
         descripcion: String,
         fecha: Long,
-        depositadoEn: String,
+        depositadoEn: MedioPago,   // 👈 enum
         notas: String,
         userId: Long
     ) {
@@ -64,26 +63,21 @@ class IngresoRepository(private val dao: IngresoDao) {
         if (descripcion.isBlank()) {
             throw IllegalArgumentException("La descripción es obligatoria")
         }
-
-        if (depositadoEn.isBlank()) {
-            throw IllegalArgumentException("El lugar de depósito es obligatorio")
-        }
+        // ❌ nada de isBlank() aquí
 
         val ingresoActualizado = ingresoExistente.copy(
             monto = monto,
             descripcion = descripcion.trim(),
             fecha = fecha,
-            depositadoEn = depositadoEn.trim(),
+            depositadoEn = depositadoEn,  // ✅ enum
             notas = notas.trim()
         )
-
         dao.update(ingresoActualizado)
     }
 
     suspend fun eliminarIngreso(id: Int, userId: Long) {
         val ingreso = dao.getIngresoById(id, userId)
             ?: throw Exception("Ingreso no encontrado")
-
         dao.delete(ingreso)
     }
 
