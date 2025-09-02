@@ -42,6 +42,16 @@ android {
 }
 
 dependencies {
+    implementation(platform("androidx.compose:compose-bom:2024.08.00")) // o tu versión
+    implementation("androidx.compose.material:material-icons-core")
+    implementation("androidx.compose.material:material-icons-extended")
+
+
+
+
+
+
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
