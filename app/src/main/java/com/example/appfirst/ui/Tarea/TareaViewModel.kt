@@ -8,16 +8,18 @@ import com.example.appfirst.data.local.entity.Tarea
 import com.example.appfirst.data.repo.TareaRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.util.Date
 
 // Estado del formulario de tarea
 data class TareaFormState(
     val titulo: String = "",
     val fechaEntrega: String = "",
     val fechaRecordatorio: String = "",
-    val asignatura: String = "",
+    val asignaturaId: Long? = null,
     val nota: String = "",
+    val completada: Boolean = false,
+    val archivos: List<String> = emptyList(),
     val errors: Map<String, String> = emptyMap()
+
 )
 
 class TareaViewModel(app: Application) : AndroidViewModel(app) {
@@ -62,8 +64,7 @@ class TareaViewModel(app: Application) : AndroidViewModel(app) {
         } else {
             tareasList.filter { tarea ->
                 tarea.titulo.contains(queryText, ignoreCase = true) ||
-                        tarea.asignatura.contains(queryText, ignoreCase = true) ||
-                        tarea.nota?.contains(queryText, ignoreCase = true) ?: false
+                        (tarea.nota?.contains(queryText, ignoreCase = true) ?: false)
             }
         }
     }
@@ -86,8 +87,10 @@ class TareaViewModel(app: Application) : AndroidViewModel(app) {
             titulo = tarea.titulo,
             fechaEntrega = tarea.fechaEntrega.toString(),
             fechaRecordatorio = tarea.fechaRecordatorio.toString(),
-            asignatura = tarea.asignatura,
-            nota = tarea.nota ?: ""
+            asignaturaId = tarea.asignaturaId,
+            nota = tarea.nota ?: "",
+            completada = tarea.completada,
+            archivos = tarea.archivos
         )
     }
 
@@ -96,15 +99,19 @@ class TareaViewModel(app: Application) : AndroidViewModel(app) {
         titulo: String? = null,
         fechaEntrega: String? = null,
         fechaRecordatorio: String? = null,
-        asignatura: String? = null,
-        nota: String? = null
+        asignaturaId: Long? = null,
+        nota: String? = null,
+        completada: Boolean? = null,
+        archivos: List<String>? = null
     ) {
         _form.value = _form.value.copy(
             titulo = titulo ?: _form.value.titulo,
             fechaEntrega = fechaEntrega ?: _form.value.fechaEntrega,
             fechaRecordatorio = fechaRecordatorio ?: _form.value.fechaRecordatorio,
-            asignatura = asignatura ?: _form.value.asignatura,
-            nota = nota ?: _form.value.nota
+            asignaturaId = asignaturaId ?: _form.value.asignaturaId,
+            nota = nota ?: _form.value.nota,
+            completada = completada ?: _form.value.completada,
+            archivos = archivos ?: _form.value.archivos
         )
     }
 
@@ -114,7 +121,7 @@ class TareaViewModel(app: Application) : AndroidViewModel(app) {
         val errs = mutableMapOf<String, String>()
 
         if (f.titulo.isBlank()) errs["titulo"] = "Título obligatorio"
-        if (f.asignatura.isBlank()) errs["asignatura"] = "Asignatura obligatoria"
+        if (f.asignaturaId == null) errs["asignaturaId"] = "Debe seleccionar una asignatura"
 
         val fechaEntrega = f.fechaEntrega.toLongOrNull()
         if (fechaEntrega == null) {
@@ -126,7 +133,7 @@ class TareaViewModel(app: Application) : AndroidViewModel(app) {
         val fechaRecordatorio = f.fechaRecordatorio.toLongOrNull()
         if (fechaRecordatorio == null) {
             errs["fechaRecordatorio"] = "Fecha de recordatorio inválida"
-        } else if (fechaRecordatorio >= fechaEntrega ?: Long.MAX_VALUE) {
+        } else if (fechaEntrega != null && fechaRecordatorio >= fechaEntrega) {
             errs["fechaRecordatorio"] = "El recordatorio debe ser antes de la entrega"
         }
 
@@ -151,8 +158,10 @@ class TareaViewModel(app: Application) : AndroidViewModel(app) {
                     titulo = f.titulo,
                     fechaEntrega = fechaEntrega,
                     fechaRecordatorio = fechaRecordatorio,
-                    asignatura = f.asignatura,
+                    asignaturaId = f.asignaturaId!!,
                     nota = if (f.nota.isBlank()) null else f.nota,
+                    archivos = f.archivos,
+                    completada = f.completada,
                     userId = userId
                 )
                 _navigateToSuccess.value = newId
@@ -164,8 +173,10 @@ class TareaViewModel(app: Application) : AndroidViewModel(app) {
                     titulo = f.titulo,
                     fechaEntrega = fechaEntrega,
                     fechaRecordatorio = fechaRecordatorio,
-                    asignatura = f.asignatura,
+                    asignaturaId = f.asignaturaId!!,
                     nota = if (f.nota.isBlank()) null else f.nota,
+                    archivos = f.archivos,
+                    completada = f.completada,
                     userId = userId
                 )
                 _navigateToSuccess.value = id
@@ -233,7 +244,4 @@ class TareaViewModel(app: Application) : AndroidViewModel(app) {
     fun resetNavigation() {
         _navigateToSuccess.value = null
     }
-
-
-    
 }

@@ -12,6 +12,12 @@ import androidx.room.ForeignKey
     tableName = "tareas",
     foreignKeys = [
         ForeignKey(
+            entity = Asignatura::class,
+            parentColumns = ["id"],
+            childColumns = ["asignaturaId"],
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
             entity = User::class,
             parentColumns = ["id"],
             childColumns = ["userId"],
@@ -24,12 +30,12 @@ data class Tarea(
     val titulo: String,
     val fechaEntrega: Long,
     val fechaRecordatorio: Long,
-    val asignatura: String,
+    val asignaturaId: Long,
     val nota: String? = null,
     @TypeConverters(FileListConverter::class)
     val archivos: List<String> = emptyList(),
     val completada: Boolean = false,
-    val userId: Long, // ← FOREIGN KEY
+    val userId: Long,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )

@@ -16,4 +16,10 @@ object Registro
 object Principal
 
 @Serializable
-object Tarea
+object Agenda
+
+@Serializable
+object FormTarea
+
+@Serializable
+object Asignatura

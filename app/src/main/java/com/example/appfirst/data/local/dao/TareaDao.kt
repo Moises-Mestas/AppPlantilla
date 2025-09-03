@@ -22,11 +22,13 @@ interface TareaDao {
     @Query("SELECT * FROM tareas WHERE id = :id AND userId = :userId")
     suspend fun getTareaById(id: Long, userId: Long): Tarea?
 
+    // Cambiado: ahora filtra por asignaturaId en lugar de nombre
     @Query("SELECT * FROM tareas WHERE userId = :userId AND fechaEntrega BETWEEN :startDate AND :endDate ORDER BY fechaEntrega ASC")
     fun getTareasByDateRange(userId: Long, startDate: Long, endDate: Long): Flow<List<Tarea>>
 
-    @Query("SELECT * FROM tareas WHERE userId = :userId AND asignatura = :asignatura ORDER BY fechaEntrega ASC")
-    fun getTareasByAsignatura(userId: Long, asignatura: String): Flow<List<Tarea>>
+    // Cambiado: ahora filtra por asignaturaId en lugar de string
+    @Query("SELECT * FROM tareas WHERE userId = :userId AND asignaturaId = :asignaturaId ORDER BY fechaEntrega ASC")
+    fun getTareasByAsignatura(userId: Long, asignaturaId: Long): Flow<List<Tarea>>
 
     @Query("SELECT * FROM tareas WHERE userId = :userId AND completada = :completada ORDER BY fechaEntrega ASC")
     fun getTareasByEstado(userId: Long, completada: Boolean): Flow<List<Tarea>>
@@ -36,4 +38,17 @@ interface TareaDao {
 
     @Query("DELETE FROM tareas WHERE userId = :userId")
     suspend fun deleteAllByUser(userId: Long)
+
+    // NUEVAS CONSULTAS ÚTILES
+    @Query("SELECT * FROM tareas WHERE asignaturaId = :asignaturaId ORDER BY fechaEntrega ASC")
+    fun getTareasByAsignaturaId(asignaturaId: Long): Flow<List<Tarea>>
+
+    // Obtener tareas pendientes próximas
+    @Query("""
+        SELECT * FROM tareas 
+        WHERE userId = :userId AND completada = false AND fechaEntrega >= :startDate
+        ORDER BY fechaEntrega ASC 
+        LIMIT :limit
+    """)
+    fun getProximasTareasPendientes(userId: Long, startDate: Long, limit: Int = 10): Flow<List<Tarea>>
 }

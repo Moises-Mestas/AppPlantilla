@@ -17,9 +17,10 @@ import com.example.appfirst.ui.screens.onboarding.OnboardingScreen
 import com.example.appfirst.data.datastore.UserPrefs
 import android.content.Context
 import androidx.compose.ui.platform.LocalContext
+import com.example.appfirst.ui.screens.Agenda.*
+import com.example.appfirst.ui.screens.AsignaturaScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import com.example.appfirst.ui.screens.tareas.TareasScreen
 
 
 
@@ -87,7 +88,16 @@ fun NavigationWrapper() {
         }
 
         composable ("tarea" ){
-            TareasScreen()
+            AgendaScreen(
+                navigatetoAsignatura = {navController.navigate("Asignatura")},
+                navigateToFormTarea = {navController.navigate("FormTarea")}
+            )
+        }
+        composable ("FormTarea"){
+            FormTareaScreen()
+        }
+        composable ("Asignatura" ){
+            AsignaturaScreen()
         }
     }
 }

@@ -10,6 +10,12 @@ import com.example.appfirst.data.local.converters.FileListConverter
     tableName = "examenes",
     foreignKeys = [
         ForeignKey(
+            entity = Asignatura::class,
+            parentColumns = ["id"],
+            childColumns = ["asignaturaId"],
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
             entity = User::class,
             parentColumns = ["id"],
             childColumns = ["userId"],
@@ -23,7 +29,7 @@ data class Examen(
     val titulo: String,
     val fechaExamen: Long,
     val fechaRecordatorio: Long,
-    val asignatura: String,
+    val asignaturaId: Long,
     val categoria: String,
     val nota: String? = null,
     val archivos: List<String> = emptyList(),

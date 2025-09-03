@@ -13,11 +13,12 @@ import com.example.appfirst.data.local.converters.*
 @Database(
     entities = [
         User::class,
+        Asignatura::class,
         Recordatorio::class,
         Examen::class,
         Tarea::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 
@@ -31,6 +32,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun recordatorioDao(): RecordatorioDao
     abstract fun examenDao(): ExamenDao
     abstract fun tareaDao(): TareaDao
+    abstract fun asignaturaDao() : AsignaturaDao
 
     companion object {
         @Volatile

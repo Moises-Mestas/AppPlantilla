@@ -12,8 +12,9 @@ class TareaRepository(private val dao: TareaDao) {
     fun getTareasByDateRange(userId: Long, startDate: Long, endDate: Long): Flow<List<Tarea>> =
         dao.getTareasByDateRange(userId, startDate, endDate)
 
-    fun getTareasByAsignatura(userId: Long, asignatura: String): Flow<List<Tarea>> =
-        dao.getTareasByAsignatura(userId, asignatura)
+    // Cambiado: ahora recibe asignaturaId en lugar de nombre
+    fun getTareasByAsignatura(userId: Long, asignaturaId: Long): Flow<List<Tarea>> =
+        dao.getTareasByAsignatura(userId, asignaturaId)
 
     fun getTareasByEstado(userId: Long, completada: Boolean): Flow<List<Tarea>> =
         dao.getTareasByEstado(userId, completada)
@@ -25,17 +26,14 @@ class TareaRepository(private val dao: TareaDao) {
         titulo: String,
         fechaEntrega: Long,
         fechaRecordatorio: Long,
-        asignatura: String,
+        asignaturaId: Long, // Cambiado: ahora es ID
         nota: String? = null,
         archivos: List<String> = emptyList(),
+        completada: Boolean = false,
         userId: Long
     ): Long {
         if (titulo.isBlank()) {
             throw IllegalArgumentException("El título es obligatorio")
-        }
-
-        if (asignatura.isBlank()) {
-            throw IllegalArgumentException("La asignatura es obligatoria")
         }
 
         if (fechaEntrega <= System.currentTimeMillis()) {
@@ -46,10 +44,10 @@ class TareaRepository(private val dao: TareaDao) {
             titulo = titulo.trim(),
             fechaEntrega = fechaEntrega,
             fechaRecordatorio = fechaRecordatorio,
-            asignatura = asignatura.trim(),
+            asignaturaId = asignaturaId, // Cambiado: ahora es ID
             nota = nota?.trim(),
             archivos = archivos,
-            completada = false,
+            completada = completada,
             userId = userId
         )
 
@@ -61,9 +59,10 @@ class TareaRepository(private val dao: TareaDao) {
         titulo: String,
         fechaEntrega: Long,
         fechaRecordatorio: Long,
-        asignatura: String,
+        asignaturaId: Long, // Cambiado: ahora es ID
         nota: String? = null,
         archivos: List<String> = emptyList(),
+        completada: Boolean = false,
         userId: Long
     ) {
         val tareaExistente = dao.getTareaById(id, userId)
@@ -73,16 +72,13 @@ class TareaRepository(private val dao: TareaDao) {
             throw IllegalArgumentException("El título es obligatorio")
         }
 
-        if (asignatura.isBlank()) {
-            throw IllegalArgumentException("La asignatura es obligatoria")
-        }
-
         val tareaActualizada = tareaExistente.copy(
             titulo = titulo.trim(),
             fechaEntrega = fechaEntrega,
             fechaRecordatorio = fechaRecordatorio,
-            asignatura = asignatura.trim(),
+            asignaturaId = asignaturaId, // Cambiado: ahora es ID
             nota = nota?.trim(),
+            completada = completada,
             archivos = archivos
         )
 
@@ -138,4 +134,8 @@ class TareaRepository(private val dao: TareaDao) {
         val manana = hoy + (24 * 60 * 60 * 1000)
         return dao.getTareasByDateRange(userId, hoy, manana)
     }
+
+    // Nueva función para obtener tareas por ID de asignatura
+    fun getTareasByAsignaturaId(asignaturaId: Long): Flow<List<Tarea>> =
+        dao.getTareasByAsignaturaId(asignaturaId)
 }

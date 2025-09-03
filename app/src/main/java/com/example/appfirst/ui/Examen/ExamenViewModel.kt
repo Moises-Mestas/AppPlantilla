@@ -4,18 +4,18 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.appfirst.data.local.AppDatabase
+import com.example.appfirst.data.local.entity.Examen
 import com.example.appfirst.data.repo.ExamenRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.Date
-import com.example.appfirst.data.local.entity.Examen
 
 // Estado del formulario de examen
 data class ExamenFormState(
     val titulo: String = "",
     val fechaExamen: String = "",
     val fechaRecordatorio: String = "",
-    val asignatura: String = "",
+    val asignaturaId: Long? = null,
     val categoria: String = "escrito", // Categoría por defecto
     val nota: String = "",
     val errors: Map<String, String> = emptyMap()
@@ -66,8 +66,7 @@ class ExamenViewModel(app: Application) : AndroidViewModel(app) {
         } else {
             examenesList.filter { examen ->
                 examen.titulo.contains(queryText, ignoreCase = true) ||
-                        examen.asignatura.contains(queryText, ignoreCase = true) ||
-                        examen.nota?.contains(queryText, ignoreCase = true) ?: false
+                        (examen.nota?.contains(queryText, ignoreCase = true) ?: false)
             }
         }
     }
@@ -90,7 +89,7 @@ class ExamenViewModel(app: Application) : AndroidViewModel(app) {
             titulo = examen.titulo,
             fechaExamen = examen.fechaExamen.toString(),
             fechaRecordatorio = examen.fechaRecordatorio.toString(),
-            asignatura = examen.asignatura,
+            asignaturaId = examen.asignaturaId,
             categoria = examen.categoria,
             nota = examen.nota ?: ""
         )
@@ -101,7 +100,7 @@ class ExamenViewModel(app: Application) : AndroidViewModel(app) {
         titulo: String? = null,
         fechaExamen: String? = null,
         fechaRecordatorio: String? = null,
-        asignatura: String? = null,
+        asignaturaId: Long? = null,
         categoria: String? = null,
         nota: String? = null
     ) {
@@ -109,7 +108,7 @@ class ExamenViewModel(app: Application) : AndroidViewModel(app) {
             titulo = titulo ?: _form.value.titulo,
             fechaExamen = fechaExamen ?: _form.value.fechaExamen,
             fechaRecordatorio = fechaRecordatorio ?: _form.value.fechaRecordatorio,
-            asignatura = asignatura ?: _form.value.asignatura,
+            asignaturaId = asignaturaId ?: _form.value.asignaturaId,
             categoria = categoria ?: _form.value.categoria,
             nota = nota ?: _form.value.nota
         )
@@ -121,7 +120,7 @@ class ExamenViewModel(app: Application) : AndroidViewModel(app) {
         val errs = mutableMapOf<String, String>()
 
         if (f.titulo.isBlank()) errs["titulo"] = "Título obligatorio"
-        if (f.asignatura.isBlank()) errs["asignatura"] = "Asignatura obligatoria"
+        if (f.asignaturaId == null) errs["asignaturaId"] = "Debe seleccionar una asignatura"
 
         val fechaExamen = f.fechaExamen.toLongOrNull()
         if (fechaExamen == null) {
@@ -133,7 +132,7 @@ class ExamenViewModel(app: Application) : AndroidViewModel(app) {
         val fechaRecordatorio = f.fechaRecordatorio.toLongOrNull()
         if (fechaRecordatorio == null) {
             errs["fechaRecordatorio"] = "Fecha de recordatorio inválida"
-        } else if (fechaRecordatorio >= fechaExamen ?: Long.MAX_VALUE) {
+        } else if (fechaExamen != null && fechaRecordatorio >= fechaExamen) {
             errs["fechaRecordatorio"] = "El recordatorio debe ser antes del examen"
         }
 
@@ -162,7 +161,7 @@ class ExamenViewModel(app: Application) : AndroidViewModel(app) {
                     titulo = f.titulo,
                     fechaExamen = fechaExamen,
                     fechaRecordatorio = fechaRecordatorio,
-                    asignatura = f.asignatura,
+                    asignaturaId = f.asignaturaId!!,
                     categoria = f.categoria,
                     nota = if (f.nota.isBlank()) null else f.nota,
                     userId = userId
@@ -176,7 +175,7 @@ class ExamenViewModel(app: Application) : AndroidViewModel(app) {
                     titulo = f.titulo,
                     fechaExamen = fechaExamen,
                     fechaRecordatorio = fechaRecordatorio,
-                    asignatura = f.asignatura,
+                    asignaturaId = f.asignaturaId!!,
                     categoria = f.categoria,
                     nota = if (f.nota.isBlank()) null else f.nota,
                     userId = userId
@@ -221,10 +220,10 @@ class ExamenViewModel(app: Application) : AndroidViewModel(app) {
         return repo.getExamenesByCategoria(userId, categoria)
     }
 
-    // Obtener exámenes por asignatura
-    fun getExamenesPorAsignatura(asignatura: String): Flow<List<Examen>> {
+    // Obtener exámenes por asignatura (con ID)
+    fun getExamenesPorAsignatura(asignaturaId: Long): Flow<List<Examen>> {
         val userId = _userId.value ?: return emptyFlow()
-        return repo.getExamenesByAsignatura(userId, asignatura)
+        return repo.getExamenesByAsignatura(userId, asignaturaId)
     }
 
     // Obtener exámenes vencidos

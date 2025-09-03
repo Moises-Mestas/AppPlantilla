@@ -16,8 +16,9 @@ class ExamenRepository(private val dao: ExamenDao) {
     fun getExamenesByCategoria(userId: Long, categoria: String): Flow<List<Examen>> =
         dao.getExamenesByCategoria(userId, categoria)
 
-    fun getExamenesByAsignatura(userId: Long, asignatura: String): Flow<List<Examen>> =
-        dao.getExamenesByAsignatura(userId, asignatura)
+    // Cambiado: ahora recibe asignaturaId en lugar de nombre
+    fun getExamenesByAsignatura(userId: Long, asignaturaId: Long): Flow<List<Examen>> =
+        dao.getExamenesByAsignatura(userId, asignaturaId)
 
     suspend fun getExamenById(id: Long, userId: Long): Examen? =
         dao.getExamenById(id, userId)
@@ -26,7 +27,7 @@ class ExamenRepository(private val dao: ExamenDao) {
         titulo: String,
         fechaExamen: Long,
         fechaRecordatorio: Long,
-        asignatura: String,
+        asignaturaId: Long, // Cambiado: ahora es ID
         categoria: String,
         nota: String? = null,
         archivos: List<String> = emptyList(),
@@ -34,10 +35,6 @@ class ExamenRepository(private val dao: ExamenDao) {
     ): Long {
         if (titulo.isBlank()) {
             throw IllegalArgumentException("El título es obligatorio")
-        }
-
-        if (asignatura.isBlank()) {
-            throw IllegalArgumentException("La asignatura es obligatoria")
         }
 
         if (categoria.isBlank()) {
@@ -61,7 +58,7 @@ class ExamenRepository(private val dao: ExamenDao) {
             titulo = titulo.trim(),
             fechaExamen = fechaExamen,
             fechaRecordatorio = fechaRecordatorio,
-            asignatura = asignatura.trim(),
+            asignaturaId = asignaturaId, // Cambiado: ahora es ID
             categoria = categoria.lowercase(),
             nota = nota?.trim(),
             archivos = archivos,
@@ -76,7 +73,7 @@ class ExamenRepository(private val dao: ExamenDao) {
         titulo: String,
         fechaExamen: Long,
         fechaRecordatorio: Long,
-        asignatura: String,
+        asignaturaId: Long, // Cambiado: ahora es ID
         categoria: String,
         nota: String? = null,
         archivos: List<String> = emptyList(),
@@ -87,10 +84,6 @@ class ExamenRepository(private val dao: ExamenDao) {
 
         if (titulo.isBlank()) {
             throw IllegalArgumentException("El título es obligatorio")
-        }
-
-        if (asignatura.isBlank()) {
-            throw IllegalArgumentException("La asignatura es obligatoria")
         }
 
         if (categoria.isBlank()) {
@@ -110,7 +103,7 @@ class ExamenRepository(private val dao: ExamenDao) {
             titulo = titulo.trim(),
             fechaExamen = fechaExamen,
             fechaRecordatorio = fechaRecordatorio,
-            asignatura = asignatura.trim(),
+            asignaturaId = asignaturaId, // Cambiado: ahora es ID
             categoria = categoria.lowercase(),
             nota = nota?.trim(),
             archivos = archivos,
@@ -133,7 +126,7 @@ class ExamenRepository(private val dao: ExamenDao) {
 
     fun getExamenesProximos(userId: Long): Flow<List<Examen>> {
         val ahora = System.currentTimeMillis()
-        val en7Dias = ahora + (7 * 24 * 60 * 60 * 1000) // 7 días en milisegundos
+        val en7Dias = ahora + (7 * 24 * 60 * 60 * 1000)
         return dao.getExamenesByDateRange(userId, ahora, en7Dias)
     }
 
@@ -157,9 +150,7 @@ class ExamenRepository(private val dao: ExamenDao) {
     suspend fun buscarExamenes(userId: Long, query: String): List<Examen> {
         val examenes = dao.getExamenesByUser(userId).first()
         return examenes.filter {
-            it.titulo.contains(query, ignoreCase = true) ||
-                    it.asignatura.contains(query, ignoreCase = true) ||
-                    it.nota?.contains(query, ignoreCase = true) ?: false
+            it.titulo.contains(query, ignoreCase = true)
         }
     }
 
@@ -174,4 +165,8 @@ class ExamenRepository(private val dao: ExamenDao) {
             "vencidos" to examenes.count { it.fechaExamen < System.currentTimeMillis() }
         )
     }
+
+    // Nueva función para obtener exámenes por ID de asignatura
+    fun getExamenesByAsignaturaId(asignaturaId: Long): Flow<List<Examen>> =
+        dao.getExamenesByAsignaturaId(asignaturaId)
 }

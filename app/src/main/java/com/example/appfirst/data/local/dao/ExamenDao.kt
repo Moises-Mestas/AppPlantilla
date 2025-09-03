@@ -28,9 +28,23 @@ interface ExamenDao {
     @Query("SELECT * FROM examenes WHERE userId = :userId AND categoria = :categoria ORDER BY fechaExamen ASC")
     fun getExamenesByCategoria(userId: Long, categoria: String): Flow<List<Examen>>
 
-    @Query("SELECT * FROM examenes WHERE userId = :userId AND asignatura = :asignatura ORDER BY fechaExamen ASC")
-    fun getExamenesByAsignatura(userId: Long, asignatura: String): Flow<List<Examen>>
+    // Cambiado: ahora filtra por asignaturaId en lugar de string
+    @Query("SELECT * FROM examenes WHERE userId = :userId AND asignaturaId = :asignaturaId ORDER BY fechaExamen ASC")
+    fun getExamenesByAsignatura(userId: Long, asignaturaId: Long): Flow<List<Examen>>
 
     @Query("DELETE FROM examenes WHERE userId = :userId")
     suspend fun deleteAllByUser(userId: Long)
+
+    // NUEVAS CONSULTAS ÚTILES
+    @Query("SELECT * FROM examenes WHERE asignaturaId = :asignaturaId ORDER BY fechaExamen ASC")
+    fun getExamenesByAsignaturaId(asignaturaId: Long): Flow<List<Examen>>
+
+    // Obtener exámenes próximos
+    @Query("""
+        SELECT * FROM examenes 
+        WHERE userId = :userId AND fechaExamen >= :startDate
+        ORDER BY fechaExamen ASC 
+        LIMIT :limit
+    """)
+    fun getProximosExamenes(userId: Long, startDate: Long, limit: Int = 10): Flow<List<Examen>>
 }
