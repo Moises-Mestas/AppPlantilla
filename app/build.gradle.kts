@@ -54,6 +54,7 @@ dependencies {
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.ads.mobile.sdk)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -72,4 +73,7 @@ dependencies {
     // DataStore (onboarding)
     implementation(libs.androidx.datastore.preferences)
 
+    //librerias para el calendario
+    implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation(libs.androidx.runtime.livedata)
 }

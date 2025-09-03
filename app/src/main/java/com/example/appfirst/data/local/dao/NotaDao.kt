@@ -1,5 +1,6 @@
 package com.example.appfirst.data.local.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -11,17 +12,23 @@ import com.example.appfirst.data.local.entity.Nota
 @Dao
 interface NotaDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertNota(nota: Nota)
+    suspend fun insertNota(nota: Nota): Long
 
-    @Query("SELECT * FROM notas WHERE fecha = :fecha")
-    suspend fun getNotasPorFecha(fecha: String): List<Nota>
+    @Query("SELECT * FROM notas WHERE fecha = :fecha ORDER BY horaInicio ASC")
+    fun getNotasPorFecha(fecha: String): LiveData<List<Nota>>
 
     @Query("SELECT * FROM notas")
-    suspend fun getTodasLasNotas(): List<Nota>
+    fun getTodasLasNotas(): LiveData<List<Nota>>
 
     @Delete
     suspend fun deleteNota(nota: Nota)
 
     @Update
     suspend fun updateNota(nota: Nota)
+
+    @Query("SELECT * FROM notas WHERE fecha BETWEEN :startDate AND :endDate")
+    fun getNotasPorRangoFechas(startDate: String, endDate: String): LiveData<List<Nota>>
+
+    @Query("SELECT * FROM notas WHERE fecha = :fecha")
+    suspend fun getNotasPorFechaDirecto(fecha: String): List<Nota>
 }

@@ -53,7 +53,7 @@ enum class NavDestination(
     val route: String
 ) {
     DATE(Icons.Default.DateRange , "Calendario" , "Icono de calendario", "calendario"),
-    SONGS(Icons.Default.AccountBox, "Amigos", "Icono de amigos", "amigos"),
+    HORARIO(Icons.Default.AccountBox, "Horario", "Icono de horario", "horario-diario"),
     HOME(Icons.Default.Home, "Inicio", "Icono de inicio", "inicio"),
     FAVORITES(Icons.Default.Face, "Ahorros", "Icono de ahorros", "ahorros"),
     PROFILE(Icons.Default.Email, "chat", "Icono de chat", "chat")
@@ -95,7 +95,7 @@ fun PrincipalScreen(
                                 // destinos/rutas
                                 NavDestination.DATE -> navController.navigate("VistaCalendario")
                                 NavDestination.HOME -> navController.navigate("inicio")
-                                NavDestination.SONGS -> navController.navigate("amigos")
+                                NavDestination.HORARIO -> navController.navigate("horario-diario")
                                 NavDestination.FAVORITES -> navController.navigate("ahorros")
                                 NavDestination.PROFILE -> navController.navigate("chat")
                             }
