@@ -62,7 +62,9 @@ enum class NavDestination(
 fun PrincipalScreen(
     modifier: Modifier = Modifier,
     navigateTotarea: () -> Unit,
-    navigateToIngreso: () -> Unit // Agrega esta línea
+    navigateToIngreso: () -> Unit,
+    navigateToCuentas: () -> Unit // Agregamos la nueva función de navegación
+
 ){
     var selectedItem by rememberSaveable { mutableIntStateOf(0) }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
@@ -71,8 +73,6 @@ fun PrincipalScreen(
         modifier = modifier,
         topBar = {
             TopAppBar(
-
-
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.primary,
@@ -90,7 +90,11 @@ fun PrincipalScreen(
                 NavDestination.entries.forEachIndexed { index, destination ->
                     NavigationBarItem(
                         selected = selectedItem == index,
-                        onClick = { selectedItem = index },
+                        onClick = {
+                            selectedItem = index
+                            // Navegar a la vista de Cuentas si el icono de "Ahorros" es presionado
+                            if (index == 3) navigateToCuentas() // Índice de Ahorros
+                        },
                         icon = {
                             Icon(
                                 destination.icon,

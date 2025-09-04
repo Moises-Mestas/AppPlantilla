@@ -21,6 +21,7 @@ import kotlinx.coroutines.withContext
 import com.example.appfirst.ui.screens.tareas.TareasScreen
 import com.example.appfirst.ui.ingresos.IngresoScreen
 import com.example.appfirst.ui.ingresos.IngresoScreen2
+import com.example.appfirst.ui.screens.ingreso.CuentasScreen
 
 
 @Composable
@@ -83,7 +84,8 @@ fun NavigationWrapper() {
         composable("principal") {
             PrincipalScreen(
                 navigateTotarea = { navController.navigate("tarea") },
-                navigateToIngreso = { navController.navigate("ingreso") } // Agregar aquí la navegación
+                navigateToIngreso = { navController.navigate("ingreso") },
+                navigateToCuentas = { navController.navigate("cuentas") } // Navegar a cuentas
             )
         }
 
@@ -101,7 +103,11 @@ fun NavigationWrapper() {
             IngresoScreen2(
                 navigateBack = { navController.popBackStack() } // al guardar o atrás
             )
-
+        }
+        composable("cuentas") {
+            CuentasScreen(
+                navigateBack = { navController.popBackStack() } // Lógica para regresar atrás
+            )
         }
     }
 }
