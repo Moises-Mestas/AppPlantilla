@@ -36,6 +36,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.example.appfirst.ui.ingreso.rememberIngresoVM
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,6 +44,9 @@ import androidx.compose.runtime.setValue
 fun CuentasScreen(
     navigateBack: () -> Unit // Función para navegar atrás
 ) {
+    val viewModel = rememberIngresoVM() // Asegúrate de obtener el viewModel
+    val montoTotal by viewModel.montoTotal.collectAsState()  // Obtén el monto total
+
     var selectedItem by rememberSaveable { mutableIntStateOf(0) }
     var open by remember { mutableStateOf(false) }
 
@@ -105,7 +109,15 @@ fun CuentasScreen(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(16.dp)
             )
+            // Mostrar el monto total
 
+            Text(
+                text = "Monto Total: S/ ${"%.2f".format(montoTotal)}", // Muestra el monto total
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(16.dp).align(Alignment.CenterHorizontally)
+            )
             // Sección TARJETA (morada)
             Card(
                 modifier = Modifier

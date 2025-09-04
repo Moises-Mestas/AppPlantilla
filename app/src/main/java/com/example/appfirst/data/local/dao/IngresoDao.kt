@@ -34,4 +34,9 @@ interface IngresoDao {
 
     @Query("DELETE FROM ingresos WHERE userId = :userId")
     suspend fun deleteAllByUser(userId: Long)
+
+    @Query("SELECT SUM(monto) FROM ingresos WHERE userId = :userId")
+    suspend fun getAllIngresosSum(userId: Long): Double
+
 }
+

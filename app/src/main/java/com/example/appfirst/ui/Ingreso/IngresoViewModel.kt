@@ -3,6 +3,7 @@ package com.example.appfirst.ui.ingreso
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.appfirst.data.datastore.UserPrefs
 import com.example.appfirst.data.local.AppDatabase
 import com.example.appfirst.data.local.entity.Ingreso
 import com.example.appfirst.data.repo.IngresoRepository
@@ -20,6 +21,17 @@ data class IngresoFormState(
 )
 
 class IngresoViewModel(app: Application) : AndroidViewModel(app) {
+    // Agregar variable para total de ingresos
+    private val _montoTotal = MutableStateFlow(0.0)
+    val montoTotal: StateFlow<Double> = _montoTotal
+
+    // Guardar el monto total cuando se crea un ingreso
+    suspend fun updateMontoTotal() {
+        val userId = _userId.value ?: return // Asegúrate de que userId no sea nulo
+        val total = repo.getAllIngresosSum(userId) // Llama a la función con el userId
+        _montoTotal.value = total
+    }
+
     private val repo = IngresoRepository(AppDatabase.get(app).ingresoDao())
 
     // Para búsqueda y lista de ingresos
@@ -54,7 +66,9 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     // Cambiar query de búsqueda
-    fun setQuery(q: String) { _query.value = q }
+    fun setQuery(q: String) {
+        _query.value = q
+    }
 
     // Filtrar ingresos por query
     val filteredIngresos = combine(ingresos, query) { ingresosList, queryText ->
@@ -68,6 +82,28 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
                         // Si creaste "label" o "display()", usa eso; si no, usa name:
                         ingreso.depositadoEn.name.contains(q, ignoreCase = true)
                 // o: ingreso.depositadoEn.label.contains(q, ignoreCase = true)
+            }
+        }
+    }
+
+    // Cargar el userId al iniciar el ViewModel
+    init {
+        loadUserId()
+    }
+
+    private fun loadUserId() {
+        viewModelScope.launch {
+            try {
+                val userDao = AppDatabase.get(getApplication()).userDao()
+                val userEmail = UserPrefs.getLoggedUserEmail(getApplication())
+                val users = userDao.getAllUsers().first()
+                val userId = users.firstOrNull { it.email == userEmail }?.id
+                if (userId != null) {
+                    _userId.value = userId
+                    updateMontoTotal()
+                }
+            } catch (e: Exception) {
+                _message.value = "Error al cargar el usuario: ${e.message}"
             }
         }
     }
@@ -115,7 +151,6 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     // Validar formulario
-// Validación: NO fuerces fecha futura; solo valida campos requeridos
     private fun validate(): Boolean {
         val f = _form.value
         val errs = mutableMapOf<String, String>()
@@ -177,6 +212,9 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
                 _navigateToSuccess.value = id
                 _message.value = "Ingreso actualizado exitosamente"
             }
+
+            // Llamar a esta función después de guardar o actualizar
+            updateMontoTotal()  // Esto actualizará el monto total
 
             startCreate() // limpia formulario
 

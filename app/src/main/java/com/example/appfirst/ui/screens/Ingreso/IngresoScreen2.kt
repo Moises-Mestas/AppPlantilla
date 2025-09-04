@@ -41,6 +41,8 @@ import androidx.compose.ui.graphics.RectangleShape
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IngresoScreen2(
+    navigateToCuentas: () -> Unit, // Agregamos la nueva función de navegación
+
     navigateBack: () -> Unit
 ) {
     val viewModel = rememberIngresoVM()
@@ -76,7 +78,11 @@ fun IngresoScreen2(
                 NavDestination.entries.forEachIndexed { index, destination ->
                     NavigationBarItem(
                         selected = selectedItem == index,
-                        onClick = { selectedItem = index },
+                        onClick = {
+                            selectedItem = index
+                            // Navegar a la vista de Cuentas si el icono de "Ahorros" es presionado
+                            if (index == 3) navigateToCuentas() // Índice de Ahorros
+                        },
                         icon = { Icon(destination.icon, contentDescription = destination.contentDescription) },
                         label = { Text(destination.label) }
                     )

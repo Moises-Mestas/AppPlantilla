@@ -6,6 +6,8 @@ import com.example.appfirst.data.local.entity.MedioPago
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 
+
+
 class IngresoRepository(private val dao: IngresoDao) {
 
     fun getIngresosByUser(userId: Long): Flow<List<Ingreso>> =
@@ -23,6 +25,10 @@ class IngresoRepository(private val dao: IngresoDao) {
 
     suspend fun getIngresoById(id: Int, userId: Long): Ingreso? =
         dao.getIngresoById(id, userId)
+    suspend fun getAllIngresosSum(userId: Long): Double {
+        return dao.getAllIngresosSum(userId) // Pasa el userId al DAO
+    }
+
 
     suspend fun crearIngreso(
         monto: Double,
@@ -102,4 +108,5 @@ class IngresoRepository(private val dao: IngresoDao) {
         val manana = hoy + (24 * 60 * 60 * 1000)
         return dao.getIngresosByDateRange(userId, hoy, manana)
     }
+
 }
