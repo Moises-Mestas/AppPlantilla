@@ -10,8 +10,10 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -31,34 +33,66 @@ import java.text.SimpleDateFormat
 fun CalendarioScreen(
     onNavigateToInicio: () -> Unit,
     onNavigateToDetalles: (String) -> Unit,
-    onNavigateToNota: () -> Unit
+    onNavigateToNota: (String) -> Unit  // Cambiado para recibir fecha
 ) {
     var selectedDate by rememberSaveable { mutableStateOf("") }
     val calendar = remember { Calendar.getInstance() }
     var currentMonth by remember { mutableStateOf(calendar.get(Calendar.MONTH)) }
     var currentYear by remember { mutableStateOf(calendar.get(Calendar.YEAR)) }
 
-    // Obtener el contexto
-    val context = LocalContext.current
+    // Obtener fecha actual formateada
+    val fechaActual = remember {
+        val today = Calendar.getInstance()
+        formatearFechaParaBD(
+            today.get(Calendar.DAY_OF_MONTH),
+            today.get(Calendar.MONTH),
+            today.get(Calendar.YEAR)
+        )
+    }
+
+    // Inicializar con fecha actual si no hay selección
+    if (selectedDate.isEmpty()) {
+        selectedDate = fechaActual
+    }
 
     // Función para navegar a detalles con la fecha seleccionada
     fun navigateToDetails() {
-        if (selectedDate.isNotEmpty()) {
-            onNavigateToDetalles(selectedDate)
-        } else {
-            Toast.makeText(context, "Seleccione una fecha primero", Toast.LENGTH_SHORT).show()
-        }
+        onNavigateToDetalles(selectedDate)
+    }
+
+    // Función para añadir nota con fecha seleccionada
+    fun navigateToAddNota() {
+        onNavigateToNota(selectedDate)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Botón superior izquierdo
-        Button(
-            onClick = onNavigateToInicio,
+        // Header mejorado (similar a HorarioDiarioScreen)
+        Row(
             modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(16.dp)
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 48.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("← Inicio")
+            IconButton(
+                onClick = onNavigateToInicio,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Volver al inicio",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            Text(
+                text = "Calendario",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+
+            // Espacio para mantener la simetría
+            Spacer(modifier = Modifier.size(48.dp))
         }
 
         // Contenedor principal del calendario
@@ -66,9 +100,9 @@ fun CalendarioScreen(
             modifier = Modifier
                 .align(Alignment.Center)
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 60.dp)
+                .padding(horizontal = 16.dp, vertical = 80.dp)
         ) {
-            // Selector de mes y año
+            // Selector de mes y año mejorado
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -82,14 +116,15 @@ fun CalendarioScreen(
                         currentYear = calendar.get(Calendar.YEAR)
                     }
                 ) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Mes anterior")
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Mes anterior")
                 }
 
                 Text(
                     text = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
                         .format(calendar.apply { set(currentYear, currentMonth, 1) }.time),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
                 )
 
                 IconButton(
@@ -100,13 +135,13 @@ fun CalendarioScreen(
                         currentYear = calendar.get(Calendar.YEAR)
                     }
                 ) {
-                    Icon(Icons.Filled.ArrowForward, contentDescription = "Mes siguiente")
+                    Icon(Icons.Default.ArrowForward, contentDescription = "Mes siguiente")
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Días de la semana
+            // Días de la semana con mejor estilo
             val daysOfWeek = listOf("Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom")
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -116,7 +151,7 @@ fun CalendarioScreen(
                     Text(
                         text = day,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
                         modifier = Modifier.weight(1f),
                         textAlign = TextAlign.Center
                     )
@@ -132,21 +167,28 @@ fun CalendarioScreen(
             // Ajustar para que la semana comience en lunes
             val offset = if (firstDayOfMonth == Calendar.SUNDAY) 6 else firstDayOfMonth - Calendar.MONDAY
 
-            LazyVerticalGrid(columns = GridCells.Fixed(7)) {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(7),
+                modifier = Modifier.height(300.dp)
+            ) {
+                items(offset) {
+                    Spacer(modifier = Modifier.aspectRatio(1f))
+                }
+
                 items(daysInMonth) { day ->
                     val dayNumber = day + 1
                     val fechaFormateada = formatearFechaParaBD(dayNumber, currentMonth, currentYear)
                     val isSelected = selectedDate == fechaFormateada
-                    val isToday = isHoy(dayNumber, currentMonth, currentYear)
+                    val isToday = fechaFormateada == fechaActual
 
                     Box(
                         modifier = Modifier
                             .aspectRatio(1f)
-                            .padding(2.dp)
+                            .padding(4.dp)
                             .background(
                                 when {
-                                    isSelected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-                                    isToday -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
+                                    isSelected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                    isToday -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f)
                                     else -> Color.Transparent
                                 },
                                 shape = CircleShape
@@ -155,7 +197,7 @@ fun CalendarioScreen(
                                 when {
                                     isSelected -> BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
                                     isToday -> BorderStroke(1.dp, MaterialTheme.colorScheme.secondary)
-                                    else -> BorderStroke(0.dp, Color.Transparent)
+                                    else -> BorderStroke(0.5.dp, Color.LightGray.copy(alpha = 0.3f))
                                 },
                                 shape = CircleShape
                             )
@@ -164,48 +206,83 @@ fun CalendarioScreen(
                             },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = dayNumber.toString(),
-                            color = when {
-                                isSelected -> MaterialTheme.colorScheme.primary
-                                isToday -> MaterialTheme.colorScheme.secondary
-                                else -> MaterialTheme.colorScheme.onBackground
-                            }
-                        )
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = dayNumber.toString(),
+                                color = when {
+                                    isSelected -> MaterialTheme.colorScheme.primary
+                                    isToday -> MaterialTheme.colorScheme.secondary
+                                    else -> MaterialTheme.colorScheme.onBackground
+                                },
+                                fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal
+                            )
+                        }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // Fecha seleccionada
-            Row(
+            // Fecha seleccionada y botones de acción
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
-                Text(
-                    text = if (selectedDate.isNotEmpty()) "Fecha seleccionada: ${formatearFechaLegible(selectedDate)}"
-                    else "Seleccione una fecha",
-                    modifier = Modifier.weight(1f)
-                )
-
-                Button(
-                    onClick = { navigateToDetails() },
-                    enabled = selectedDate.isNotEmpty()
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Ver Detalles")
+                    Text(
+                        text = formatearFechaLegible(selectedDate),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        // Botón para ver detalles
+                        Button(
+                            onClick = { navigateToDetails() },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Ver detalles",
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Ver Detalles")
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        // Botón para añadir nota
+                        Button(
+                            onClick = { navigateToAddNota() },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Añadir nota",
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Añadir")
+                        }
+                    }
                 }
             }
-        }
-
-        //  añadir nota
-        Button(
-            onClick = { onNavigateToNota() },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-        ) {
-            Text("Añadir nota")
         }
     }
 }

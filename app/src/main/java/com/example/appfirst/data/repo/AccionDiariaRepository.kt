@@ -11,17 +11,6 @@ import kotlinx.coroutines.withContext
 class AccionDiariaRepository(private val dao: AccionDiariaDao) {
     suspend fun insert(accion: AccionDiaria) = dao.insertAccion(accion)
 
-    fun getTodas() = dao.getTodasAcciones()
-
-    fun getPorDia(dia: String): LiveData<List<AccionDiaria>> {
-        Log.d("AccionDiariaRepo", "Buscando acciones para día: $dia")
-        return if (dia == "Todos") {
-            dao.getTodasAcciones()
-        } else {
-            dao.getAccionesPorDia(dia)
-        }
-    }
-
     fun getAccionesFiltradas(texto: String, dia: String, categoria: String): LiveData<List<AccionDiaria>> {
         return if (texto.isEmpty() && dia == "Todos" && categoria == "Todas") {
             dao.getTodasAcciones()

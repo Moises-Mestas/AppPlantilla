@@ -51,6 +51,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appfirst.data.local.entity.AccionDiaria
 import com.example.appfirst.ui.screens.calendar.elementos.TarjetaAccionDiaria
 import androidx.compose.material.icons.filled.*
+import com.example.appfirst.ui.screens.calendar.elementos.AccionDiariaViewModelFactory
 
 @Composable
 fun HorarioDiarioScreen(
@@ -278,7 +279,6 @@ fun FormularioAccionDiariaScreen(
     onGuardar: (AccionDiaria) -> Unit,
     onCancelar: () -> Unit
 ) {
-    // Estados corregidos usando remember con mutableStateOf
     var titulo by remember { mutableStateOf(accionExistente?.titulo ?: "") }
     var descripcion by remember { mutableStateOf(accionExistente?.descripcion ?: "") }
     var horaInicio by remember { mutableStateOf(accionExistente?.horaInicio ?: "08:00") }
@@ -287,7 +287,6 @@ fun FormularioAccionDiariaScreen(
     var categoria by remember { mutableStateOf(accionExistente?.categoria ?: "Personal") }
     var prioridad by remember { mutableStateOf(accionExistente?.prioridad ?: 3) }
 
-    // ✅ CORRECCIÓN: Usar mutableStateOf con Set<String> en lugar de mutableStateSetOf
     var diasSeleccionados by remember {
         mutableStateOf(
             accionExistente?.diasSemana?.split(",")?.toSet() ?: setOf("Todos")

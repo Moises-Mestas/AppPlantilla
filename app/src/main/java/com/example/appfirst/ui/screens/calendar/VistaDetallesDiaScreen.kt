@@ -5,6 +5,11 @@ import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,85 +20,121 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.appfirst.data.local.entity.Nota
+import com.example.appfirst.ui.screens.calendar.elementos.NotaViewModelFactory
 import com.example.appfirst.ui.screens.calendar.elementos.TarjetaNota
 import java.text.SimpleDateFormat
 import java.util.Locale
+//import kotlinx.coroutines.flow.collectAsState
 
 @Composable
 fun VistaDetallesDiaScreen(
     fecha: String,
-    onBackToCalendario: () -> Unit
+    onBackToCalendario: () -> Unit,
+    onAddNota: (String) -> Unit,
+    onEditarNota: (Int) -> Unit
 ) {
     val viewModel: NotaViewModel = viewModel(
         factory = NotaViewModelFactory(LocalContext.current.applicationContext as Application)
     )
 
-    // Para debug
-    LaunchedEffect(fecha) {
-        Log.d("VistaDetalles", "Fecha recibida para buscar: $fecha")
-    }
-    // FORMA CORRECTA: Usar LiveData con observeAsState
-    val notas by viewModel.obtenerNotasPorFecha(fecha).observeAsState(emptyList())
+    // OBSERVA el StateFlow usando collectAsState() en lugar de observeAsState()
+    val notas by viewModel.notas.collectAsState()
 
-    // DEBUG: Ver todas las notas en la BD para diagnosticar
-    val todasLasNotas by viewModel.obtenerTodasLasNotas().observeAsState(emptyList())
-    LaunchedEffect(todasLasNotas) {
-        Log.d("VistaDetalles", "Todas las notas en BD: ${todasLasNotas.size}")
-        todasLasNotas.forEach { nota ->
-            Log.d("VistaDetalles", "Nota en BD: ${nota.titulo} - ${nota.fecha}")
-        }
+    // Carga las notas cuando la pantalla se muestra o cambia la fecha
+    LaunchedEffect(fecha) {
+        viewModel.cargarNotasPorFecha(fecha)
     }
 
     var seccionActiva by remember { mutableStateOf("Notas") }
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        // Botón para volver
-        Button(onClick = onBackToCalendario) {
-            Text("← Calendario")
+    // Función para eliminar nota - corregido el tipo de parámetro
+    fun eliminarNota(id: Int) {
+        if (id > 0) {
+            viewModel.eliminarNota(id)
+        } else {
+            Log.e("VistaDetalles", "No se puede eliminar nota sin ID")
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(start = 16.dp, end = 16.dp, top = 48.dp)
+    ) {
+        // Header mejorado
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(
+                onClick = onBackToCalendario,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Volver al calendario",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            Text(
+                text = "Detalles del día",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+
+            IconButton(
+                onClick = { onAddNota(fecha) },
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Añadir nota",
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Título con fecha
+        // Fecha
         Text(
-            text = "Detalles de ${formatearFechaDetalles(fecha)}",
-            style = MaterialTheme.typography.titleLarge,
+            text = formatearFechaDetalles(fecha),
+            style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.align(Alignment.CenterHorizontally),
-            fontWeight = FontWeight.Bold
-        )
-
-        // DEBUG: Mostrar la fecha que se está usando
-        Text(
-            text = "Buscando notas para: $fecha",
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Gray,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            color = MaterialTheme.colorScheme.primary
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Botones de sección
+        // Filtros de sección (mejorados)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            Button(
+            FilterChip(
+                selected = seccionActiva == "Notas",
                 onClick = { seccionActiva = "Notas" },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (seccionActiva == "Notas") MaterialTheme.colorScheme.primary else Color.LightGray
-                )
-            ) {
-                Text("Notas", color = Color.White)
-            }
+                label = { Text("Eventos") },
+                leadingIcon = {
+                    if (seccionActiva == "Notas") {
+                        Icon(Icons.Default.Check, contentDescription = "Seleccionado")
+                    }
+                }
+            )
 
-            Button(
+            FilterChip(
+                selected = seccionActiva == "Movimientos",
                 onClick = { seccionActiva = "Movimientos" },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (seccionActiva == "Movimientos") MaterialTheme.colorScheme.primary else Color.LightGray
-                )
-            ) {
-                Text("Movimientos", color = Color.White)
-            }
+                label = { Text("Movimientos") },
+                leadingIcon = {
+                    if (seccionActiva == "Movimientos") {
+                        Icon(Icons.Default.Check, contentDescription = "Seleccionado")
+                    }
+                }
+            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -101,25 +142,37 @@ fun VistaDetallesDiaScreen(
         when (seccionActiva) {
             "Notas" -> {
                 if (notas.isEmpty()) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    // Mensaje cuando no hay notas
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No hay eventos programados para esta fecha.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(16.dp)
-                        )
-                        Text(
-                            text = "Fecha buscada: $fecha",
-                            style = MaterialTheme.typography.bodySmall,
+                            text = "No hay eventos para este día",
+                            style = MaterialTheme.typography.bodyLarge,
                             color = Color.Gray
                         )
                     }
                 } else {
-                    LazyColumn {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         items(notas) { nota ->
-                            TarjetaNota(nota = nota)
+                            // Asegúrate de que nota.id no sea null
+                            val notaId = nota.id ?: 0
+
+                            TarjetaNota(
+                                nota = nota,
+                                onEditar = {
+                                    if (notaId > 0) {
+                                        onEditarNota(notaId)
+                                    }
+                                },
+                                onEliminar = { eliminarNota(notaId) } // Pasa el ID en lugar de la nota
+                            )
                         }
                     }
                 }
@@ -183,8 +236,8 @@ fun SeccionMovimientosDemo() {
                     movimiento,
                     modifier = Modifier.padding(vertical = 4.dp),
                     color = when {
-                        movimiento.startsWith("+") -> Color.Green
-                        movimiento.startsWith("-") -> Color.Red
+                        movimiento.startsWith("+") -> Color(0xFF4CAF50) // Verde
+                        movimiento.startsWith("-") -> Color(0xFFF44336) // Rojo
                         else -> MaterialTheme.colorScheme.onBackground
                     }
                 )

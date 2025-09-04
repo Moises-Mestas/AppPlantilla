@@ -1,11 +1,15 @@
 package com.example.appfirst.core.navigation
 
 import android.app.Application
-import android.net.Uri
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,18 +29,17 @@ import com.example.appfirst.ui.screens.onboarding.OnboardingScreen
 import com.example.appfirst.data.datastore.UserPrefs
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
 import com.example.appfirst.data.local.entity.AccionDiaria
+import com.example.appfirst.data.local.entity.Nota
 import com.example.appfirst.ui.screens.calendar.AccionDiariaViewModel
-import com.example.appfirst.ui.screens.calendar.AccionDiariaViewModelFactory
+import com.example.appfirst.ui.screens.calendar.elementos.AccionDiariaViewModelFactory
 import com.example.appfirst.ui.screens.calendar.CalendarioScreen
 import com.example.appfirst.ui.screens.calendar.FormularioAccionDiariaScreen
 import com.example.appfirst.ui.screens.calendar.FormularioNotaScreen
 import com.example.appfirst.ui.screens.calendar.HorarioDiarioScreen
 import com.example.appfirst.ui.screens.calendar.NotaViewModel
-import com.example.appfirst.ui.screens.calendar.NotaViewModelFactory
 import com.example.appfirst.ui.screens.calendar.VistaDetallesDiaScreen
+import com.example.appfirst.ui.screens.calendar.elementos.NotaViewModelFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URLDecoder
@@ -116,8 +119,9 @@ fun NavigationWrapper() {
                     val fechaCodificada = URLEncoder.encode(fecha, "UTF-8")
                     navController.navigate("detalles/$fechaCodificada")
                 },
-                onNavigateToNota = {
-                    navController.navigate("VistaNotas")
+                onNavigateToNota = { fecha ->
+                    val fechaCodificada = URLEncoder.encode(fecha, "UTF-8")
+                    navController.navigate("formularioNota/$fechaCodificada")
                 }
             )
         }
@@ -128,8 +132,89 @@ fun NavigationWrapper() {
 
             VistaDetallesDiaScreen(
                 fecha = fecha,
-                onBackToCalendario = { navController.popBackStack() }
+                onBackToCalendario = { navController.popBackStack() },
+                onAddNota = { fechaSeleccionada ->
+                    val fechaCod = URLEncoder.encode(fechaSeleccionada, "UTF-8")
+                    navController.navigate("formularioNota/$fechaCod")
+                },
+                onEditarNota = { notaId ->
+                    navController.navigate("editarNota/$notaId")
+                }
             )
+        }
+
+        composable("formularioNota/{fechaCodificada}") { backStackEntry ->
+            val fechaCodificada = backStackEntry.arguments?.getString("fechaCodificada") ?: ""
+            val fecha = URLDecoder.decode(fechaCodificada, "UTF-8")
+
+            FormularioNotaScreen(
+                fecha = fecha,
+                notaExistente = null, // Para crear nueva
+                onCancel = { navController.popBackStack() },
+                onSave = { nota ->
+                    notaViewModel.crearNota(nota)
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable("editarNota/{notaId}") { backStackEntry ->
+            val notaId = backStackEntry.arguments?.getString("notaId")?.toIntOrNull() ?: 0
+            val viewModel: NotaViewModel = viewModel(
+                factory = NotaViewModelFactory(LocalContext.current.applicationContext as Application)
+            )
+
+            var notaExistente by remember { mutableStateOf<Nota?>(null) }
+            var isLoading by remember { mutableStateOf(notaId > 0) }
+
+            // Cargar la nota
+            LaunchedEffect(notaId) {
+                if (notaId > 0) {
+                    try {
+                        notaExistente = viewModel.obtenerNotaPorId(notaId)
+                    } catch (e: Exception) {
+                        // Manejar error
+                    } finally {
+                        isLoading = false
+                    }
+                } else {
+                    isLoading = false
+                }
+            }
+
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else if (notaExistente != null) {
+                FormularioNotaScreen(
+                    fecha = notaExistente!!.fecha,
+                    notaExistente = notaExistente,
+                    onCancel = { navController.popBackStack() },
+                    onSave = { nota ->
+                        viewModel.actualizarNota(nota) // ✅ Usar ViewModel
+                        navController.popBackStack()
+                    },
+                    onDelete = {
+                        notaExistente?.id?.let { id ->
+                            viewModel.eliminarNota(id) // ✅ Usar ViewModel
+                            navController.popBackStack()
+                        }
+                    }
+                )
+            } else {
+                // Manejar caso de error
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("No se pudo cargar la nota")
+                    Button(onClick = { navController.popBackStack() }) {
+                        Text("Volver")
+                    }
+                }
+            }
         }
 
         composable("VistaNotas") {

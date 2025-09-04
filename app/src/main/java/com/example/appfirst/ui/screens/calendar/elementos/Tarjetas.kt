@@ -1,6 +1,10 @@
 package com.example.appfirst.ui.screens.calendar.elementos
 
+import androidx.compose.foundation.background
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -17,9 +22,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -29,52 +36,121 @@ import com.example.appfirst.data.local.entity.AccionDiaria
 import com.example.appfirst.data.local.entity.Nota
 
 @Composable
-fun TarjetaNota(nota: Nota) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+fun TarjetaNota(
+    nota: Nota,
+    onEditar: (Nota) -> Unit = {},
+    onEliminar: (Nota) -> Unit = {}
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = nota.titulo,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                // Header con título y botones de acción
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = nota.titulo,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(nota.color),
+                        modifier = Modifier.weight(1f)
+                    )
 
-            Spacer(modifier = Modifier.height(8.dp))
+                    // Botones de acción
+                    Row {
+                        IconButton(
+                            onClick = { onEditar(nota) },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Editar",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
 
-            Text(
-                text = nota.descripcion,
-                style = MaterialTheme.typography.bodyMedium
-            )
+                        IconButton(
+                            onClick = { onEliminar(nota) },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Eliminar",
+                                tint = Color.Red,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
 
-            Spacer(modifier = Modifier.height(8.dp))
+                // Descripción
+                if (nota.descripcion.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = nota.descripcion,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                    )
+                }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Hora: ${nota.horaInicio} - ${nota.horaFin}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
+                Spacer(modifier = Modifier.height(12.dp))
 
-                Text(
-                    text = nota.tipo,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(nota.color)
-                )
+                // Información adicional
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "${nota.horaInicio} - ${nota.horaFin}",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = nota.categoria,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                    }
+
+                    // Badge de prioridad
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                when (nota.prioridad) {
+                                    1 -> Color.Green.copy(alpha = 0.2f)
+                                    2 -> Color.Blue.copy(alpha = 0.2f)
+                                    3 -> Color.Yellow.copy(alpha = 0.2f)
+                                    4 -> Color.White.copy(alpha = 0.2f)
+                                    5 -> Color.Red.copy(alpha = 0.2f)
+                                    else -> Color.Gray.copy(alpha = 0.2f)
+                                },
+                                CircleShape
+                            )
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "P${nota.prioridad}",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
         }
     }
-}
+
 @Composable
 fun TarjetaAccionDiaria(
     accion: AccionDiaria,
-    //onEditar: @Composable () -> Unit,
     onEditar: () -> Unit,
     onEliminar: () -> Unit
 ) {
@@ -183,6 +259,3 @@ fun TarjetaAccionDiaria(
         }
     }
 }
-
-
-

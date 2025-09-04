@@ -8,27 +8,38 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.appfirst.data.local.entity.Nota
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface NotaDao {
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertNota(nota: Nota): Long
+    suspend fun insertar(nota: Nota): Long
 
     @Query("SELECT * FROM notas WHERE fecha = :fecha ORDER BY horaInicio ASC")
-    fun getNotasPorFecha(fecha: String): LiveData<List<Nota>>
+    fun obtenerNotasPorFecha(fecha: String): Flow<List<Nota>>
 
-    @Query("SELECT * FROM notas")
-    fun getTodasLasNotas(): LiveData<List<Nota>>
+    @Query("SELECT * FROM notas ORDER BY fecha DESC, horaInicio ASC")
+    fun obtenerTodasLasNotas(): Flow<List<Nota>>
 
-    @Delete
-    suspend fun deleteNota(nota: Nota)
+    @Query("SELECT * FROM notas WHERE id = :id")
+    suspend fun obtenerNotaPorId(id: Int): Nota?
+
+    @Query("SELECT * FROM notas WHERE fecha BETWEEN :fechaInicio AND :fechaFin ORDER BY fecha ASC, horaInicio ASC")
+    fun obtenerNotasPorRango(fechaInicio: String, fechaFin: String): Flow<List<Nota>>
 
     @Update
-    suspend fun updateNota(nota: Nota)
+    suspend fun actualizar(nota: Nota): Int
 
-    @Query("SELECT * FROM notas WHERE fecha BETWEEN :startDate AND :endDate")
-    fun getNotasPorRangoFechas(startDate: String, endDate: String): LiveData<List<Nota>>
+    @Delete
+    suspend fun eliminar(nota: Nota): Int
+
+    @Query("DELETE FROM notas WHERE id = :id")
+    suspend fun eliminarPorId(id: Int): Int
+
+    @Query("DELETE FROM notas WHERE fecha = :fecha")
+    suspend fun eliminarNotasPorFecha(fecha: String): Int
 
     @Query("SELECT * FROM notas WHERE fecha = :fecha")
-    suspend fun getNotasPorFechaDirecto(fecha: String): List<Nota>
+    suspend fun obtenerNotasPorFechaDirecto(fecha: String): List<Nota>
 }
