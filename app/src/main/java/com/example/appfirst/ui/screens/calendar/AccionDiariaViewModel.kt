@@ -21,7 +21,7 @@ class AccionDiariaViewModel(application: Application) : AndroidViewModel(applica
     val accionesFiltradas: LiveData<List<AccionDiaria>>
 
     init {
-        val accionDao = AppDatabase.getDatabase(application).accionDiariaDao()
+        val accionDao = AppDatabase.get(application).accionDiariaDao()
         repository = AccionDiariaRepository(accionDao)
 
         accionesFiltradas = MediatorLiveData<List<AccionDiaria>>().apply {

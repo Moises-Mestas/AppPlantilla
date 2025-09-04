@@ -21,7 +21,7 @@ class NotaViewModel(application: Application) : AndroidViewModel(application) {
     val notas: StateFlow<List<Nota>> = _notas.asStateFlow()
 
     init {
-        val notaDao = AppDatabase.getDatabase(application).notaDao()
+        val notaDao = AppDatabase.get(application).notaDao()
         repository = NotaRepository(notaDao)
     }
 

@@ -23,7 +23,7 @@ data class UserFormState(
 )
 
 class UserViewModel(app: Application) : AndroidViewModel(app) {
-    private val repo = UserRepository(AppDatabase.getDatabase(app).userDao())
+    private val repo = UserRepository(AppDatabase.get(app).userDao())
 
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query
