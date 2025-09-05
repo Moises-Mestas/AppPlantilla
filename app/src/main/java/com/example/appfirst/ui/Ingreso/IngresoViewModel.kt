@@ -205,52 +205,55 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
 
 
     // Guardar ingreso (crear o actualizar)
-    fun save() = viewModelScope.launch {
-        if (!validate()) return@launch
+    fun save(isGasto: Boolean = false) {
+        viewModelScope.launch {
+            if (!validate()) return@launch
 
-        val f = _form.value
-        val userId = _userId.value ?: run {
-            _message.value = "No se ha establecido el usuario. Vuelve a iniciar sesión."
-            return@launch
-        }
-
-        val fecha = f.fecha.toLongOrNull() ?: System.currentTimeMillis()
-        val monto = f.monto.replace(',', '.').toDouble() // ya validado
-
-        try {
-            val id = editingId
-            if (id == null) {
-                val newId = repo.crearIngreso(
-                    monto = monto,
-                    descripcion = f.descripcion.trim(),
-                    fecha = fecha,
-                    depositadoEn = f.depositadoEn,   // ✅ enum directo
-                    notas = f.notas.trim(),
-                    userId = userId
-                )
-                _navigateToSuccess.value = newId.toInt()
-                _message.value = "Ingreso creado exitosamente"
-            } else {
-                repo.actualizarIngreso(
-                    id = id,
-                    monto = monto,
-                    descripcion = f.descripcion.trim(),
-                    fecha = fecha,
-                    depositadoEn = f.depositadoEn,   // ✅ enum directo
-                    notas = f.notas.trim(),
-                    userId = userId
-                )
-                _navigateToSuccess.value = id
-                _message.value = "Ingreso actualizado exitosamente"
+            val f = _form.value
+            val userId = _userId.value ?: run {
+                _message.value = "No se ha establecido el usuario. Vuelve a iniciar sesión."
+                return@launch
             }
 
-            // Llamar a esta función después de guardar o actualizar
-            updateMontoTotal()  // Esto actualizará el monto total
+            val fecha = f.fecha.toLongOrNull() ?: System.currentTimeMillis()
+            val monto = f.monto.replace(',', '.').toDouble() // ya validado
 
-            startCreate() // limpia formulario
+            try {
+                val id = editingId
+                if (id == null) {
+                    val newId = repo.crearIngreso(
+                        monto = if (isGasto) -monto else monto,  // Si es gasto, lo hacemos negativo
+                        descripcion = f.descripcion.trim(),
+                        fecha = fecha,
+                        depositadoEn = f.depositadoEn,   // ✅ enum directo
+                        notas = f.notas.trim(),
+                        userId = userId
+                    )
+                    _navigateToSuccess.value = newId.toInt()
+                    _message.value = "Ingreso creado exitosamente"
+                } else {
+                    repo.actualizarIngreso(
+                        id = id,
+                        monto = if (isGasto) -monto else monto,
+                        descripcion = f.descripcion.trim(),
+                        fecha = fecha,
+                        depositadoEn = f.depositadoEn,   // ✅ enum directo
+                        notas = f.notas.trim(),
+                        userId = userId
+                    )
+                    _navigateToSuccess.value = id
+                    _message.value = "Ingreso actualizado exitosamente"
+                }
 
-        } catch (e: Exception) {
-            _form.value = f.copy(errors = mapOf("general" to (e.message ?: "Error desconocido")))
+                // Llamar a esta función después de guardar o actualizar
+                updateMontoTotal()  // Esto actualizará el monto total
+
+                startCreate() // limpia formulario
+
+            } catch (e: Exception) {
+                _form.value = f.copy(errors = mapOf("general" to (e.message ?: "Error desconocido")))
+
+            }
         }
     }
 

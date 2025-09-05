@@ -32,18 +32,10 @@ import kotlinx.coroutines.flow.first
 import com.example.appfirst.data.datastore.UserPrefs
 import com.example.appfirst.data.local.AppDatabase
 
-// Opcionales si tu versión de Material3 los requiere explícitos:
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.ui.graphics.RectangleShape
-
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IngresoScreen2(
-    navigateToCuentas: () -> Unit, // Agregamos la nueva función de navegación
+fun GastoScreen(
+    navigateToCuentas: () -> Unit,
     navigateBack: () -> Unit
 ) {
     val viewModel = rememberIngresoVM()
@@ -66,7 +58,7 @@ fun IngresoScreen2(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Agregar Ingreso", fontWeight = FontWeight.Bold) },
+                title = { Text("Agregar Gasto", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
@@ -81,8 +73,7 @@ fun IngresoScreen2(
                         selected = selectedItem == index,
                         onClick = {
                             selectedItem = index
-                            // Navegar a la vista de Cuentas si el icono de "Ahorros" es presionado
-                            if (index == 3) navigateToCuentas() // Índice de Ahorros
+                            if (index == 3) navigateToCuentas() // Navegar a cuentas
                         },
                         icon = { Icon(destination.icon, contentDescription = destination.contentDescription) },
                         label = { Text(destination.label) }
@@ -96,7 +87,7 @@ fun IngresoScreen2(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            IngresoFormScreen(
+            GastoFormScreen(
                 viewModel = viewModel,
                 onSuccess = { navigateBack() },
                 modifier = Modifier
@@ -104,18 +95,18 @@ fun IngresoScreen2(
                     .padding(30.dp)
             )
 
-            // 👇 FAB + ventana emergente
             AddFabWithSheet(
-                sheetOffsetY = 90.dp, // controla ALTURA del sheet: + baja, - sube
+                sheetOffsetY = 90.dp,
                 bottomPadding = innerPadding.calculateBottomPadding()
             )
         }
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IngresoFormScreen(
+fun GastoFormScreen(
     viewModel: IngresoViewModel,
     onSuccess: () -> Unit,
     modifier: Modifier = Modifier
@@ -145,7 +136,7 @@ fun IngresoFormScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            "Agregar Ingreso",
+            "Agregar Gasto",
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
@@ -244,11 +235,10 @@ fun IngresoFormScreen(
 
         Spacer(Modifier.height(24.dp))
 
-// En la pantalla IngresoScreen2, cuando se guarde, pasar isGasto = false
         Button(onClick = {
-            viewModel.save(isGasto = false)  // Pasamos isGasto como false
+            viewModel.save(isGasto = true)  // Pasamos isGasto = true para Gasto
         }, modifier = Modifier.fillMaxWidth()) {
-            Text("Guardar Ingreso")
+            Text("Guardar Gasto")
         }
 
         message?.let {
@@ -274,132 +264,5 @@ fun IngresoFormScreen(
             },
             onDismiss = { showDatePicker = false }
         )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AppDatePickerDialog(
-    initialDate: Calendar,
-    onDateSelected: (year: Int, month: Int, day: Int) -> Unit,
-    onDismiss: () -> Unit
-) {
-    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialDate.timeInMillis)
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = {
-                val millis = datePickerState.selectedDateMillis
-                if (millis != null) {
-                    val cal = Calendar.getInstance().apply { timeInMillis = millis }
-                    onDateSelected(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH))
-                }
-                onDismiss()
-            }) { Text("OK") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } }
-    ) {
-        DatePicker(state = datePickerState)
-    }
-}
-
-
-/* ---------- FAB + sheet ---------- */
-@Composable
-fun AddFabWithSheet(
-    sheetOffsetY: Dp = 80.dp,   // mueve la ventana emergente: + baja, - sube
-    bottomPadding: Dp = 0.dp
-) {
-    var open by remember { mutableStateOf(false) }
-
-    Box(Modifier.fillMaxSize()) {
-
-        // FAB (botón +)
-        FloatingActionButton(
-            onClick = { open = true },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = -70.dp + bottomPadding), // mueve el FAB
-            containerColor = MaterialTheme.colorScheme.primary
-        ) {
-            Icon(Icons.Filled.Add, contentDescription = "Agregar", tint = MaterialTheme.colorScheme.onPrimary)
-        }
-
-        if (open) {
-            // Fondo oscuro
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f))
-                    .clickable { open = false }
-            )
-
-            // Solo los botones (sin fondo)
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .padding(bottom = 8.dp + bottomPadding)
-                    .offset(y = sheetOffsetY),
-                verticalArrangement = Arrangement.spacedBy(20.dp) // espacio entre botones
-            ) {
-                // BOTÓN GASTO
-                ElevatedButton(
-                    onClick = { /* acción gasto */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(90.dp), // más pequeño
-                    shape = RectangleShape, // cuadrado
-                    contentPadding = PaddingValues(8.dp)
-                ) {
-                    Column(horizontalAlignment = Alignment.Start) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Outlined.ShoppingCart,
-                                contentDescription = null,
-                                modifier = Modifier.size(34.dp) // icono mediano
-                            )
-                            Spacer(Modifier.width(12.dp))
-                            Text("Gasto", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            "Registra una compra o un pago/gasto que hiciste en tu día.",
-                            fontSize = 16.sp, // más grande que antes
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                // BOTÓN INGRESO
-                ElevatedButton(
-                    onClick = { /* acción ingreso */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(90.dp),
-                    shape = RectangleShape,
-                    contentPadding = PaddingValues(8.dp)
-                ) {
-                    Column(horizontalAlignment = Alignment.Start) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Filled.AttachMoney,
-                                contentDescription = null,
-                                modifier = Modifier.size(34.dp)
-                            )
-                            Spacer(Modifier.width(12.dp))
-                            Text("Ingreso", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            "Registra tu salario, bonos o algún ingreso obtenido en tu día.",
-                            fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-        }
     }
 }

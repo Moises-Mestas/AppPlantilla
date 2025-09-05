@@ -16,6 +16,7 @@ import com.example.appfirst.ui.screens.home.RegistroScreen
 import com.example.appfirst.ui.screens.onboarding.OnboardingScreen
 import com.example.appfirst.data.datastore.UserPrefs
 import androidx.compose.ui.platform.LocalContext
+import com.example.appfirst.ui.ingresos.GastoScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.example.appfirst.ui.screens.tareas.TareasScreen
@@ -92,10 +93,12 @@ fun NavigationWrapper() {
         composable("tarea") {
             TareasScreen()
         }
+
         composable("ingreso") {
             IngresoScreen(
                 navigateToCuentas = { navController.navigate("cuentas") }, // Navegar a cuentas
-                navigateToForm = { navController.navigate("ingreso2") },
+                navigateToFormIngreso2 = { navController.navigate("ingreso2") }, // Navegar a form de ingreso
+                navigateToFormGasto = { navController.navigate("gastos") }, // Navegar a form de gasto
                 navigateBack = { navController.popBackStack() }
             )
         }
@@ -103,13 +106,22 @@ fun NavigationWrapper() {
         composable("ingreso2") {
             IngresoScreen2(
                 navigateBack = { navController.popBackStack() },
-                navigateToCuentas = { navController.navigate("cuentas") } // Navegar a cuentas
-// al guardar o atrás
+                navigateToCuentas = { navController.navigate("cuentas") }
             )
         }
+
+        composable("gastos") {
+            GastoScreen(
+                navigateToCuentas = { navController.navigate("cuentas") }, // Agregamos la navegación a cuentas
+                navigateBack = { navController.popBackStack() }
+            )
+        }
+
+
+
         composable("cuentas") {
             CuentasScreen(
-                navigateBack = { navController.popBackStack() } // Lógica para regresar atrás
+                navigateBack = { navController.popBackStack() }
             )
         }
     }

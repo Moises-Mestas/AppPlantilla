@@ -28,9 +28,10 @@ import java.util.Date
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IngresoScreen(
-    navigateToCuentas: () -> Unit, // Agregamos la nueva función de navegación
-    navigateToForm: () -> Unit,
-    navigateBack: () -> Unit = {}
+    navigateToCuentas: () -> Unit,
+    navigateToFormIngreso2: () -> Unit,  // Para navegar al formulario de ingreso
+    navigateToFormGasto: () -> Unit,    // Para navegar al formulario de gasto
+    navigateBack: () -> Unit
 ) {
     val viewModel = rememberIngresoVM()
     val context = LocalContext.current
@@ -78,8 +79,7 @@ fun IngresoScreen(
                         selected = selectedItem == index,
                         onClick = {
                             selectedItem = index
-                            // Navegar a la vista de Cuentas si el icono de "Ahorros" es presionado
-                            if (index == 3) navigateToCuentas() // Índice de Ahorros
+                            if (index == 3) navigateToCuentas() // Navegar a cuentas
                         },
                         icon = { Icon(destination.icon, contentDescription = destination.contentDescription) },
                         label = { Text(destination.label) }
@@ -94,15 +94,18 @@ fun IngresoScreen(
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
-            // Botón que ANTES abría el form inline → ahora navega a la vista 2
             Button(
-                onClick = navigateToForm,
-                modifier = Modifier
-                    .fillMaxWidth()
-
-                    .padding(bottom = 16.dp)
+                onClick = navigateToFormIngreso2,  // Cambié el nombre aquí
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
             ) {
                 Text("Agregar ingreso")
+            }
+
+            Button(
+                onClick = navigateToFormGasto,  // Cambié el nombre aquí
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            ) {
+                Text("Agregar gasto")
             }
 
             Spacer(Modifier.height(16.dp))
@@ -129,6 +132,7 @@ fun IngresoScreen(
         }
     }
 }
+
 
 @Composable
 fun IngresoItemSimple(ingreso: Ingreso) {
