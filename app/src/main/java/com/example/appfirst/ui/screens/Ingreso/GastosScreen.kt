@@ -1,16 +1,22 @@
 package com.example.appfirst.ui.ingresos
 
 // imports
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import com.example.appfirst.ui.screens.home.NavDestination
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -20,20 +26,24 @@ import com.example.appfirst.ui.ingreso.IngresoViewModel
 import kotlinx.coroutines.delay
 import java.util.Calendar
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.first
 import com.example.appfirst.data.datastore.UserPrefs
 import com.example.appfirst.data.local.AppDatabase
+import com.example.appfirst.ui.screens.ingreso.AddFabWithSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GastoScreen(
     navigateToCuentas: () -> Unit,
+    navigateToIngreso2: () -> Unit,
     navigateBack: () -> Unit
 ) {
     val viewModel = rememberIngresoVM()
     val context = LocalContext.current
+    var open by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         try {
@@ -91,12 +101,17 @@ fun GastoScreen(
 
             AddFabWithSheet(
                 sheetOffsetY = 90.dp,
-                bottomPadding = innerPadding.calculateBottomPadding()
+                bottomPadding = innerPadding.calculateBottomPadding(),
+                open = open,
+                onOpenChange = { open = it },
+                navigateToGastos = navigateToCuentas,
+                navigateToIngreso = navigateToIngreso2  // Aquí aseguramos que la función correcta es pasada
             )
+
+
         }
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -258,5 +273,111 @@ fun GastoFormScreen(
             },
             onDismiss = { showDatePicker = false }
         )
+    }
+}
+
+@Composable
+fun AddFabWithSheett(
+    sheetOffsetY: Dp = 80.dp,   // Ajusta la altura del sheet: +baja, -sube
+    bottomPadding: Dp = 0.dp,
+    open: Boolean,
+    onOpenChange: (Boolean) -> Unit,
+    navigateToGastos: () -> Unit,  // Función de navegación a GastoScreen
+    navigateToIngreso: () -> Unit // Función de navegación a IngresoScreen2
+) {
+    Box(Modifier.fillMaxSize()) {
+        // FAB (botón +)
+        FloatingActionButton(
+            onClick = { onOpenChange(true) },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 16.dp, bottom = 16.dp + bottomPadding), // Ajuste del FAB
+            containerColor = MaterialTheme.colorScheme.primary
+        ) {
+            Icon(Icons.Filled.Add, contentDescription = "Agregar", tint = MaterialTheme.colorScheme.onPrimary)
+        }
+
+        if (open) {
+            // Fondo oscuro
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f))
+                    .clickable { onOpenChange(false) } // Cerrar al hacer clic en el fondo oscuro
+            )
+
+            // Solo los botones (sin fondo)
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 8.dp + bottomPadding)
+                    .offset(y = sheetOffsetY),
+                verticalArrangement = Arrangement.spacedBy(20.dp) // espacio entre botones
+            ) {
+                // BOTÓN GASTO
+                ElevatedButton(
+                    onClick = {
+                        navigateToGastos() // Navegar a GastoScreen
+                        onOpenChange(false) // Cerrar la ventana emergente
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(90.dp),
+                    shape = RectangleShape, // cuadrado
+                    contentPadding = PaddingValues(8.dp)
+                ) {
+                    Column(horizontalAlignment = Alignment.Start) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Outlined.ShoppingCart,
+                                contentDescription = null,
+                                modifier = Modifier.size(34.dp) // icono mediano
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Text("Gasto", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "Registra una compra o un pago/gasto que hiciste en tu día.",
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                // BOTÓN INGRESO
+                ElevatedButton(
+                    onClick = {
+                        navigateToIngreso() // Navegar a IngresoScreen2
+                        onOpenChange(false) // Cerrar la ventana emergente
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(90.dp),
+                    shape = RectangleShape,
+                    contentPadding = PaddingValues(8.dp)
+                ) {
+                    Column(horizontalAlignment = Alignment.Start) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Filled.AttachMoney,
+                                contentDescription = null,
+                                modifier = Modifier.size(34.dp)
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Text("Ingreso", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "Registra tu salario, bonos o algún ingreso obtenido en tu día.",
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
     }
 }

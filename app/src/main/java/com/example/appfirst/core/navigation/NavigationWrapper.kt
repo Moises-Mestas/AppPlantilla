@@ -106,13 +106,16 @@ fun NavigationWrapper() {
         composable("ingreso2") {
             IngresoScreen2(
                 navigateBack = { navController.popBackStack() },
+                navigateToGastos = { navController.navigate("gastos") }, // Nave
+
                 navigateToCuentas = { navController.navigate("cuentas") }
             )
         }
 
         composable("gastos") {
             GastoScreen(
-                navigateToCuentas = { navController.navigate("cuentas") }, // Agregamos la navegación a cuentas
+                navigateToCuentas = { navController.navigate("cuentas") },
+                navigateToIngreso2 = { navController.navigate("ingreso2") }, // Navegar a form de ingreso
                 navigateBack = { navController.popBackStack() }
             )
         }

@@ -37,17 +37,20 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.ui.graphics.RectangleShape
-
+import com.example.appfirst.ui.screens.ingreso.AddFabWithSheet
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IngresoScreen2(
     navigateToCuentas: () -> Unit, // Agregamos la nueva función de navegación
+    navigateToGastos: () -> Unit,
+
     navigateBack: () -> Unit
 ) {
     val viewModel = rememberIngresoVM()
     val context = LocalContext.current
+    var open by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         try {
@@ -58,7 +61,8 @@ fun IngresoScreen2(
                 users.firstOrNull { it.email == email }?.id
             }
             if (userId != null) viewModel.setUserId(userId)
-        } catch (_: Exception) { }
+        } catch (_: Exception) {
+        }
     }
 
     var selectedItem by rememberSaveable { mutableIntStateOf(0) }
@@ -84,7 +88,12 @@ fun IngresoScreen2(
                             // Navegar a la vista de Cuentas si el icono de "Ahorros" es presionado
                             if (index == 3) navigateToCuentas() // Índice de Ahorros
                         },
-                        icon = { Icon(destination.icon, contentDescription = destination.contentDescription) },
+                        icon = {
+                            Icon(
+                                destination.icon,
+                                contentDescription = destination.contentDescription
+                            )
+                        },
                         label = { Text(destination.label) }
                     )
                 }
@@ -104,11 +113,18 @@ fun IngresoScreen2(
                     .padding(30.dp)
             )
 
-            // 👇 FAB + ventana emergente
             AddFabWithSheet(
-                sheetOffsetY = 90.dp, // controla ALTURA del sheet: + baja, - sube
-                bottomPadding = innerPadding.calculateBottomPadding()
+                sheetOffsetY = 90.dp,
+                bottomPadding = innerPadding.calculateBottomPadding(),
+                open = open,
+                onOpenChange = { open = it },
+                navigateToIngreso = navigateToCuentas, // Aquí puedes agregar la función de navegación para `IngresoScreen2`
+
+                navigateToGastos = navigateToGastos // Función correcta de navegación
             )
+
+
+
         }
     }
 }
@@ -307,8 +323,11 @@ fun AppDatePickerDialog(
 /* ---------- FAB + sheet ---------- */
 @Composable
 fun AddFabWithSheet(
+    onOpenChange: (Boolean) -> Unit,
     sheetOffsetY: Dp = 80.dp,   // mueve la ventana emergente: + baja, - sube
-    bottomPadding: Dp = 0.dp
+    bottomPadding: Dp = 0.dp,
+    navigateToGastos: () -> Unit  // Función de navegación a GastoScreen
+
 ) {
     var open by remember { mutableStateOf(false) }
 
@@ -346,7 +365,10 @@ fun AddFabWithSheet(
             ) {
                 // BOTÓN GASTO
                 ElevatedButton(
-                    onClick = { /* acción gasto */ },
+                    onClick = {
+                        navigateToGastos() // Navegar a GastoScreen
+                        onOpenChange(false) // Cerrar la ventana emergente
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(90.dp), // más pequeño

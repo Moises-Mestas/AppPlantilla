@@ -267,6 +267,12 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
             _message.value = "Error al eliminar: ${e.message}"
         }
     }
+    fun reloadData() {
+        // Esta función recarga los datos
+        viewModelScope.launch {
+            updateMontoTotal()  // Vuelve a calcular los totales
+        }
+    }
 
     // Limpiar mensajes
     fun clearMessage() {
