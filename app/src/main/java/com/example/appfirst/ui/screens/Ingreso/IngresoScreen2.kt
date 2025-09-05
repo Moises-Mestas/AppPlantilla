@@ -107,7 +107,7 @@ fun IngresoScreen2(
         ) {
             IngresoFormScreen(
                 viewModel = viewModel,
-                onSuccess = { navigateBack() },
+                onSuccess = { navigateToCuentas() },  // Cambiar navigateBack() a navigateToCuentas()
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(30.dp)

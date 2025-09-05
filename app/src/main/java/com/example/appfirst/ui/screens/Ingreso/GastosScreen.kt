@@ -93,7 +93,7 @@ fun GastoScreen(
         ) {
             GastoFormScreen(
                 viewModel = viewModel,
-                onSuccess = { navigateBack() },
+                onSuccess = { navigateToCuentas() },  // Cambiar navigateBack() a navigateToCuentas()
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(30.dp)
