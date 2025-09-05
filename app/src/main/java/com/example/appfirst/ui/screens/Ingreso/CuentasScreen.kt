@@ -36,13 +36,16 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.navigation.compose.rememberNavController
 import com.example.appfirst.ui.ingreso.rememberIngresoVM
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CuentasScreen(
-    navigateBack: () -> Unit // Función para navegar atrás
+    navigateBack: () -> Unit, // Función para navegar atrás
+    navigateToIngreso2: () -> Unit,
+    navigateToGastos: () -> Unit
 ) {
     val viewModel = rememberIngresoVM() // Asegúrate de obtener el viewModel
     val montoTotal by viewModel.montoTotal.collectAsState()  // Obtén el monto total
@@ -96,7 +99,6 @@ fun CuentasScreen(
             }
         }
     ) { innerPadding ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -152,7 +154,6 @@ fun CuentasScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ){
-
                     Text(
                         text = "Detalles de tarjeta...",
                         fontSize = 18.sp,
@@ -168,7 +169,6 @@ fun CuentasScreen(
                     )
                 }
             }
-
 
             // Sección EFECTIVO (morada)
             Card(
@@ -262,24 +262,30 @@ fun CuentasScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
-            }}
+            }
+        }
 
         AddFabWithSheet(
             sheetOffsetY = -30.dp,
             bottomPadding = innerPadding.calculateBottomPadding(),
             open = open,
-            onOpenChange = { open = it }
+            onOpenChange = { open = it },
+            navigateToGastos = navigateToGastos, // Pasamos la función de navegación
+            navigateToIngreso = navigateToIngreso2  // Pasamos la función de navegación
         )
     }
 }
 
 
+
 @Composable
 fun AddFabWithSheet(
-    sheetOffsetY: Dp = 50.dp,   // Mueve la ventana emergente más arriba ajustando este valor
+    sheetOffsetY: Dp = 80.dp,   // Ajusta la altura del sheet: +baja, -sube
     bottomPadding: Dp = 0.dp,
     open: Boolean,
-    onOpenChange: (Boolean) -> Unit
+    onOpenChange: (Boolean) -> Unit,
+    navigateToGastos: () -> Unit,  // Función de navegación a GastoScreen
+    navigateToIngreso: () -> Unit // Función de navegación a IngresoScreen2
 ) {
     Box(Modifier.fillMaxSize()) {
 
@@ -310,15 +316,18 @@ fun AddFabWithSheet(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 8.dp + bottomPadding)
-                    .offset(y = sheetOffsetY),  // Ajuste de la posición de los botones
+                    .offset(y = sheetOffsetY),
                 verticalArrangement = Arrangement.spacedBy(20.dp) // espacio entre botones
             ) {
                 // BOTÓN GASTO
                 ElevatedButton(
-                    onClick = { /* acción gasto */ },
+                    onClick = {
+                        navigateToGastos() // Navegar a GastoScreen
+                        onOpenChange(false) // Cerrar la ventana emergente
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(90.dp), // más pequeño
+                        .height(90.dp),
                     shape = RectangleShape, // cuadrado
                     contentPadding = PaddingValues(8.dp)
                 ) {
@@ -335,7 +344,7 @@ fun AddFabWithSheet(
                         Spacer(Modifier.height(4.dp))
                         Text(
                             "Registra una compra o un pago/gasto que hiciste en tu día.",
-                            fontSize = 16.sp, // más grande que antes
+                            fontSize = 16.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -343,7 +352,10 @@ fun AddFabWithSheet(
 
                 // BOTÓN INGRESO
                 ElevatedButton(
-                    onClick = { /* acción ingreso */ },
+                    onClick = {
+                        navigateToIngreso() // Navegar a IngresoScreen2
+                        onOpenChange(false) // Cerrar la ventana emergente
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(90.dp),
@@ -372,7 +384,5 @@ fun AddFabWithSheet(
         }
     }
 }
-
-
 
 
