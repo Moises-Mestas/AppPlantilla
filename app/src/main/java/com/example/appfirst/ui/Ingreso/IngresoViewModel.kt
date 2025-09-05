@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.appfirst.data.datastore.UserPrefs
 import com.example.appfirst.data.local.AppDatabase
 import com.example.appfirst.data.local.entity.Ingreso
+import com.example.appfirst.data.local.entity.MedioPago
 import com.example.appfirst.data.repo.IngresoRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -25,12 +26,42 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
     private val _montoTotal = MutableStateFlow(0.0)
     val montoTotal: StateFlow<Double> = _montoTotal
 
+
+
+    private val _montoTotalTarjeta = MutableStateFlow(0.0)
+    val montoTotalTarjeta: StateFlow<Double> = _montoTotalTarjeta
+
+    private val _montoTotalEfectivo = MutableStateFlow(0.0)
+    val montoTotalEfectivo: StateFlow<Double> = _montoTotalEfectivo
+
+    private val _montoTotalYape = MutableStateFlow(0.0)
+    val montoTotalYape: StateFlow<Double> = _montoTotalYape
     // Guardar el monto total cuando se crea un ingreso
+
     suspend fun updateMontoTotal() {
         val userId = _userId.value ?: return // Asegúrate de que userId no sea nulo
         val total = repo.getAllIngresosSum(userId) // Llama a la función con el userId
+
+        // Obtén la suma de cada tipo de pago desde el repositorio
+        val totalTarjeta = repo.getIngresosByDeposito(userId, MedioPago.TARJETA).first().sumOf { it.monto }
+        val totalEfectivo = repo.getIngresosByDeposito(userId, MedioPago.EFECTIVO).first().sumOf { it.monto }
+        val totalYape = repo.getIngresosByDeposito(userId, MedioPago.YAPE).first().sumOf { it.monto }
+
         _montoTotal.value = total
+        _montoTotalTarjeta.value = totalTarjeta
+        _montoTotalEfectivo.value = totalEfectivo
+        _montoTotalYape.value = totalYape
+
+
     }
+
+
+
+
+
+
+
+
 
     private val repo = IngresoRepository(AppDatabase.get(app).ingresoDao())
 

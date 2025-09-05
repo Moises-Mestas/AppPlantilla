@@ -46,7 +46,9 @@ fun CuentasScreen(
 ) {
     val viewModel = rememberIngresoVM() // Asegúrate de obtener el viewModel
     val montoTotal by viewModel.montoTotal.collectAsState()  // Obtén el monto total
-
+    val montoTotalTarjeta by viewModel.montoTotalTarjeta.collectAsState()
+    val montoTotalEfectivo by viewModel.montoTotalEfectivo.collectAsState()
+    val montoTotalYape by viewModel.montoTotalYape.collectAsState()
     var selectedItem by rememberSaveable { mutableIntStateOf(0) }
     var open by remember { mutableStateOf(false) }
 
@@ -104,19 +106,20 @@ fun CuentasScreen(
             // Título "Cuentas"
             Text(
                 text = "Cuentas:",
-                fontSize = 45.sp,
+                fontSize = 35.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp) // Ajuste de padding superior
             )
             // Mostrar el monto total
-
             Text(
-                text = "Monto Total: S/ ${"%.2f".format(montoTotal)}", // Muestra el monto total
-                fontSize = 22.sp,
+                text = "Monto Total: S/ ${"%.2f".format(montoTotalTarjeta + montoTotalEfectivo + montoTotalYape)}",
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(16.dp).align(Alignment.CenterHorizontally)
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.CenterHorizontally)
             )
             // Sección TARJETA (morada)
             Card(
@@ -144,14 +147,28 @@ fun CuentasScreen(
                     .height(100.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
-                Text(
-                    text = "Detalles de tarjeta...",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.fillMaxWidth() // texto alineado a la izquierda
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+
+                    Text(
+                        text = "Detalles de tarjeta...",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.fillMaxWidth(0.7f) // Asegurando que el texto ocupe solo parte del botón
+                    )
+                    Text(
+                        text = "S/ ${"%.2f".format(montoTotalTarjeta)}", // Monto total de tarjeta
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
+
 
             // Sección EFECTIVO (morada)
             Card(
@@ -179,13 +196,25 @@ fun CuentasScreen(
                     .height(100.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
-                Text(
-                    text = "Detalles de efectivo...",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Detalles de efectivo...",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.fillMaxWidth(0.7f)
+                    )
+                    Text(
+                        text = "S/ ${"%.2f".format(montoTotalEfectivo)}", // Monto total de efectivo
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
 
             // Sección YAPE (morada)
@@ -214,19 +243,29 @@ fun CuentasScreen(
                     .height(100.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
-                Text(
-                    text = "Detalles de yape...",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Detalles de yape...",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.fillMaxWidth(0.7f)
+                    )
+                    Text(
+                        text = "S/ ${"%.2f".format(montoTotalYape)}", // Monto total de yape
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }}
 
-        // 👇 FAB + ventana emergente
         AddFabWithSheet(
-            sheetOffsetY = -30.dp, // Ajustado a 50.dp para mover los botones más arriba
+            sheetOffsetY = -30.dp,
             bottomPadding = innerPadding.calculateBottomPadding(),
             open = open,
             onOpenChange = { open = it }
