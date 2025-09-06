@@ -294,7 +294,7 @@ fun AddFabWithSheet(
             onClick = { onOpenChange(true) },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 16.dp + bottomPadding), // Ajuste del FAB
+                .padding(end = 16.dp, bottom = 50.dp + bottomPadding), // Ajuste del FAB
             containerColor = MaterialTheme.colorScheme.primary
         ) {
             Icon(Icons.Filled.Add, contentDescription = "Agregar", tint = MaterialTheme.colorScheme.onPrimary)

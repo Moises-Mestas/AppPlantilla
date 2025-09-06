@@ -99,7 +99,7 @@ fun GastoScreen(
                     .padding(30.dp)
             )
 
-            AddFabWithSheet(
+            AddFabWithSheet2(
                 sheetOffsetY = 90.dp,
                 bottomPadding = innerPadding.calculateBottomPadding(),
                 open = open,
@@ -246,8 +246,12 @@ fun GastoFormScreen(
 
         Button(onClick = {
             viewModel.save(isGasto = true)  // Pasamos isGasto = true para Gasto
-        }, modifier = Modifier.fillMaxWidth()) {
-            Text("Guardar Gasto")
+        }, modifier = Modifier
+            .fillMaxWidth(0.6f)  // Ajusta el ancho, aquí 80% del ancho máximo
+        ) {
+            Text(        "Guardar Gasto",
+                fontSize = 20.sp,  // Aumenté el tamaño de la fuente
+                fontWeight = FontWeight.Bold)
         }
 
         message?.let {
@@ -277,7 +281,7 @@ fun GastoFormScreen(
 }
 
 @Composable
-fun AddFabWithSheett(
+fun AddFabWithSheet2(
     sheetOffsetY: Dp = 80.dp,   // Ajusta la altura del sheet: +baja, -sube
     bottomPadding: Dp = 0.dp,
     open: Boolean,
@@ -291,7 +295,7 @@ fun AddFabWithSheett(
             onClick = { onOpenChange(true) },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 16.dp + bottomPadding), // Ajuste del FAB
+                .padding(end = 16.dp, bottom = -70.dp + bottomPadding), // Ajuste del FAB
             containerColor = MaterialTheme.colorScheme.primary
         ) {
             Icon(Icons.Filled.Add, contentDescription = "Agregar", tint = MaterialTheme.colorScheme.onPrimary)

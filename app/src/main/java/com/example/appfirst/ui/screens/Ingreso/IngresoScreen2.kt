@@ -113,7 +113,7 @@ fun IngresoScreen2(
                     .padding(30.dp)
             )
 
-            AddFabWithSheet(
+            AddFabWithSheet2(
                 sheetOffsetY = 90.dp,
                 bottomPadding = innerPadding.calculateBottomPadding(),
                 open = open,
@@ -263,8 +263,12 @@ fun IngresoFormScreen(
 // En la pantalla IngresoScreen2, cuando se guarde, pasar isGasto = false
         Button(onClick = {
             viewModel.save(isGasto = false)  // Pasamos isGasto como false
-        }, modifier = Modifier.fillMaxWidth()) {
-            Text("Guardar Ingreso")
+        }, modifier = Modifier
+            .fillMaxWidth(0.6f)  // Ajusta el ancho, aquí 80% del ancho máximo
+        ) {
+            Text(        "Guardar Ingreso",
+                fontSize = 20.sp,  // Aumenté el tamaño de la fuente
+                fontWeight = FontWeight.Bold)
         }
 
         message?.let {
@@ -320,108 +324,3 @@ fun AppDatePickerDialog(
 }
 
 
-/* ---------- FAB + sheet ---------- */
-@Composable
-fun AddFabWithSheet(
-    onOpenChange: (Boolean) -> Unit,
-    sheetOffsetY: Dp = 80.dp,   // mueve la ventana emergente: + baja, - sube
-    bottomPadding: Dp = 0.dp,
-    navigateToGastos: () -> Unit  // Función de navegación a GastoScreen
-
-) {
-    var open by remember { mutableStateOf(false) }
-
-    Box(Modifier.fillMaxSize()) {
-
-        // FAB (botón +)
-        FloatingActionButton(
-            onClick = { open = true },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = -70.dp + bottomPadding), // mueve el FAB
-            containerColor = MaterialTheme.colorScheme.primary
-        ) {
-            Icon(Icons.Filled.Add, contentDescription = "Agregar", tint = MaterialTheme.colorScheme.onPrimary)
-        }
-
-        if (open) {
-            // Fondo oscuro
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f))
-                    .clickable { open = false }
-            )
-
-            // Solo los botones (sin fondo)
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .padding(bottom = 8.dp + bottomPadding)
-                    .offset(y = sheetOffsetY),
-                verticalArrangement = Arrangement.spacedBy(20.dp) // espacio entre botones
-            ) {
-                // BOTÓN GASTO
-                ElevatedButton(
-                    onClick = {
-                        navigateToGastos() // Navegar a GastoScreen
-                        onOpenChange(false) // Cerrar la ventana emergente
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(90.dp), // más pequeño
-                    shape = RectangleShape, // cuadrado
-                    contentPadding = PaddingValues(8.dp)
-                ) {
-                    Column(horizontalAlignment = Alignment.Start) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Outlined.ShoppingCart,
-                                contentDescription = null,
-                                modifier = Modifier.size(34.dp) // icono mediano
-                            )
-                            Spacer(Modifier.width(12.dp))
-                            Text("Gasto", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            "Registra una compra o un pago/gasto que hiciste en tu día.",
-                            fontSize = 16.sp, // más grande que antes
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                // BOTÓN INGRESO
-                ElevatedButton(
-                    onClick = { /* acción ingreso */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(90.dp),
-                    shape = RectangleShape,
-                    contentPadding = PaddingValues(8.dp)
-                ) {
-                    Column(horizontalAlignment = Alignment.Start) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Filled.AttachMoney,
-                                contentDescription = null,
-                                modifier = Modifier.size(34.dp)
-                            )
-                            Spacer(Modifier.width(12.dp))
-                            Text("Ingreso", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            "Registra tu salario, bonos o algún ingreso obtenido en tu día.",
-                            fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
