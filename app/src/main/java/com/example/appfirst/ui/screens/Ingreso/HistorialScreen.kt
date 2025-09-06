@@ -70,6 +70,7 @@ fun HistorialScreen(
             isLoading = false
         }
     }
+    val sortedIngresos = ingresos.sortedByDescending { it.fecha }
 
     Scaffold(
         topBar = {
@@ -128,7 +129,7 @@ fun HistorialScreen(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(ingresos) { ingreso ->
+                    items(sortedIngresos) { ingreso ->
                         IngresoItemSimple(ingreso = ingreso)
                     }
                 }
