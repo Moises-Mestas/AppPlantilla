@@ -17,10 +17,10 @@ import com.example.appfirst.ui.screens.onboarding.OnboardingScreen
 import com.example.appfirst.data.datastore.UserPrefs
 import androidx.compose.ui.platform.LocalContext
 import com.example.appfirst.ui.ingresos.GastoScreen
+import com.example.appfirst.ui.ingresos.HistorialScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.example.appfirst.ui.screens.tareas.TareasScreen
-import com.example.appfirst.ui.ingresos.IngresoScreen
 import com.example.appfirst.ui.ingresos.IngresoScreen2
 import com.example.appfirst.ui.screens.ingreso.CuentasScreen
 
@@ -85,7 +85,6 @@ fun NavigationWrapper() {
         composable("principal") {
             PrincipalScreen(
                 navigateTotarea = { navController.navigate("tarea") },
-                navigateToIngreso = { navController.navigate("ingreso") },
                 navigateToCuentas = { navController.navigate("cuentas") } // Navegar a cuentas
             )
         }
@@ -94,40 +93,45 @@ fun NavigationWrapper() {
             TareasScreen()
         }
 
-        composable("ingreso") {
-            IngresoScreen(
+        composable("historial") {
+            HistorialScreen(
                 navigateToCuentas = { navController.navigate("cuentas") }, // Navegar a cuentas
                 navigateToFormIngreso2 = { navController.navigate("ingreso2") }, // Navegar a form de ingreso
                 navigateToFormGasto = { navController.navigate("gastos") }, // Navegar a form de gasto
-                navigateBack = { navController.popBackStack() }
+                navigateBack = { navController.popBackStack() } // Función de volver atrás
             )
         }
 
+
         composable("ingreso2") {
             IngresoScreen2(
+                navController = navController,
                 navigateBack = { navController.popBackStack() },
                 navigateToGastos = { navController.navigate("gastos") }, // Nave
-
+                navigateToHistorial = { navController.navigate("historial") },  // Asegúrate de tener este destino
                 navigateToCuentas = { navController.navigate("cuentas") }
             )
         }
 
         composable("gastos") {
             GastoScreen(
+                navController = navController,
                 navigateToCuentas = { navController.navigate("cuentas") },
-                navigateToIngreso2 = { navController.navigate("ingreso2") }, // Navegar a form de ingreso
+                navigateToIngreso2 = { navController.navigate("ingreso2") },
+                navigateToHistorial = { navController.navigate("historial") }, // Nave
                 navigateBack = { navController.popBackStack() }
             )
         }
-
-
 
         composable("cuentas") {
             CuentasScreen(
-                navigateToIngreso2 = { navController.navigate("ingreso2") }, // Navegar a form de ingreso
-                navigateToGastos = { navController.navigate("gastos") }, // Nave
+                navController = navController,
+                navigateToHistorial = { navController.navigate("historial") },
+                navigateToIngreso2 = { navController.navigate("ingreso2") },
+                navigateToGastos = { navController.navigate("gastos") },
                 navigateBack = { navController.popBackStack() }
             )
         }
+
     }
 }

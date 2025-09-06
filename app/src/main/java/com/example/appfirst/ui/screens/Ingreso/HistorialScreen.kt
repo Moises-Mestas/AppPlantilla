@@ -1,4 +1,4 @@
-// com.example.appfirst.ui.ingresos.IngresoScreen.kt
+// com.example.appfirst.ui.ingresos.HistorialScreen.kt
 package com.example.appfirst.ui.ingresos
 
 import androidx.compose.foundation.layout.*
@@ -10,7 +10,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -27,10 +26,12 @@ import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IngresoScreen(
+fun HistorialScreen(
     navigateToCuentas: () -> Unit,
     navigateToFormIngreso2: () -> Unit,  // Para navegar al formulario de ingreso
     navigateToFormGasto: () -> Unit,    // Para navegar al formulario de gasto
+
+
     navigateBack: () -> Unit
 ) {
     val viewModel = rememberIngresoVM()

@@ -62,7 +62,6 @@ enum class NavDestination(
 fun PrincipalScreen(
     modifier: Modifier = Modifier,
     navigateTotarea: () -> Unit,
-    navigateToIngreso: () -> Unit,
     navigateToCuentas: () -> Unit // Agregamos la nueva función de navegación
 
 ){
@@ -184,20 +183,7 @@ fun PrincipalScreen(
                     fontWeight = FontWeight.Bold
                 )
             }
-            Button(
-                onClick = {
-                    navigateToIngreso() // Navegar a la pantalla de ingreso
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 24.dp)
-            ) {
-                Text(
-                    text = "Ingreso",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+
 
             Card(
                 modifier = Modifier

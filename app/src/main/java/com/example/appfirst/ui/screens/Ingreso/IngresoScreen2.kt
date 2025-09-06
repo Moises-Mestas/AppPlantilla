@@ -37,14 +37,18 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.navigation.NavController
 import com.example.appfirst.ui.screens.ingreso.AddFabWithSheet
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IngresoScreen2(
+    navController: NavController, // Recibe el navController
+
     navigateToCuentas: () -> Unit, // Agregamos la nueva función de navegación
     navigateToGastos: () -> Unit,
+    navigateToHistorial: () -> Unit,
 
     navigateBack: () -> Unit
 ) {
@@ -75,7 +79,7 @@ fun IngresoScreen2(
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
                 title = {
-                    Text("+ Ingreso +", fontWeight = FontWeight.Bold)
+                    Text("+++ INGRESO +++", fontWeight = FontWeight.Bold)
                 },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
@@ -129,10 +133,13 @@ fun IngresoScreen2(
                 open = open,
                 onOpenChange = { open = it },
                 navigateToIngreso = navigateToCuentas, // Aquí puedes agregar la función de navegación para `IngresoScreen2`
+                navigateToHistorial = navigateToHistorial, // Pasamos la función de navegación
 
                 navigateToGastos = navigateToGastos // Función correcta de navegación
             )
-
+            if (!open) {  // Mostrar HistorialButton solo si el popup está cerrado
+                HistorialButton2(navigateToHistorial = { navController.navigate("historial") })
+            }
 
 
         }

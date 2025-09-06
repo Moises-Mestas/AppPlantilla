@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,17 +28,23 @@ import kotlinx.coroutines.delay
 import java.util.Calendar
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
+import androidx.navigation.NavController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.first
 import com.example.appfirst.data.datastore.UserPrefs
 import com.example.appfirst.data.local.AppDatabase
 import com.example.appfirst.ui.screens.ingreso.AddFabWithSheet
+import com.example.appfirst.ui.screens.ingreso.HistorialButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GastoScreen(
+    navController: NavController, // Recibe el navController
+
     navigateToCuentas: () -> Unit,
+    navigateToHistorial: () -> Unit,
+
     navigateToIngreso2: () -> Unit,
     navigateBack: () -> Unit
 ) {
@@ -67,7 +74,7 @@ fun GastoScreen(
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
                 title = {
-                    Text("- Gasto -", fontWeight = FontWeight.Bold)
+                    Text("--- GASTO ---", fontWeight = FontWeight.Bold)
                 },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
@@ -115,10 +122,12 @@ fun GastoScreen(
                 open = open,
                 onOpenChange = { open = it },
                 navigateToGastos = navigateToCuentas,
+                navigateToHistorial = navigateToHistorial, // Pasamos la función de navegación
                 navigateToIngreso = navigateToIngreso2  // Aquí aseguramos que la función correcta es pasada
             )
-
-
+            if (!open) {  // Mostrar HistorialButton solo si el popup está cerrado
+                HistorialButton2(navigateToHistorial = { navController.navigate("historial") })
+            }
         }
     }
 }
@@ -297,6 +306,8 @@ fun AddFabWithSheet2(
     open: Boolean,
     onOpenChange: (Boolean) -> Unit,
     navigateToGastos: () -> Unit,  // Función de navegación a GastoScreen
+    navigateToHistorial: () -> Unit,
+
     navigateToIngreso: () -> Unit // Función de navegación a IngresoScreen2
 ) {
     Box(Modifier.fillMaxSize()) {
@@ -310,6 +321,12 @@ fun AddFabWithSheet2(
         ) {
             Icon(Icons.Filled.Add, contentDescription = "Agregar", tint = MaterialTheme.colorScheme.onPrimary)
         }
+
+
+
+
+
+
 
         if (open) {
             // Fondo oscuro
@@ -392,6 +409,26 @@ fun AddFabWithSheet2(
                     }
                 }
             }
+        }
+    }
+}
+@Composable
+fun HistorialButton2(
+    navigateToHistorial: () -> Unit  // Función para navegar al HistorialScreen
+) {
+    Box(Modifier.fillMaxSize()) {  // Colocamos el FloatingActionButton dentro de un Box
+        FloatingActionButton(
+            onClick = { navigateToHistorial() }, // Acción de navegación al Historial
+            modifier = Modifier
+                .align(Alignment.BottomStart)  // Alineación en la parte inferior izquierda
+                .padding(start = 16.dp, bottom = 30.dp), // Ajuste de padding para posicionarlo
+            containerColor = MaterialTheme.colorScheme.primary
+        ) {
+            Icon(
+                imageVector = Icons.Filled.History,  // Icono de historial
+                contentDescription = "Historial",
+                tint = MaterialTheme.colorScheme.onPrimary  // Ajustar color
+            )
         }
     }
 }

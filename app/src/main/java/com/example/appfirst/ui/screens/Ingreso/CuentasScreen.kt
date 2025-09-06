@@ -1,5 +1,6 @@
 package com.example.appfirst.ui.screens.ingreso
 
+import androidx.compose.material.icons.filled.History // Si no lo necesitas, elimínalo.
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -36,6 +37,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.appfirst.ui.ingreso.rememberIngresoVM
 
@@ -43,7 +45,11 @@ import com.example.appfirst.ui.ingreso.rememberIngresoVM
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CuentasScreen(
+    navController: NavController, // Recibe el navController
+    navigateToHistorial: () -> Unit,
+
     navigateBack: () -> Unit, // Función para navegar atrás
+
     navigateToIngreso2: () -> Unit,
     navigateToGastos: () -> Unit
 ) {
@@ -275,11 +281,17 @@ fun CuentasScreen(
             open = open,
             onOpenChange = { open = it },
             navigateToGastos = navigateToGastos, // Pasamos la función de navegación
+            navigateToHistorial = navigateToHistorial, // Pasamos la función de navegación
+
             navigateToIngreso = navigateToIngreso2  // Pasamos la función de navegación
         )
+
+        if (!open) {  // Mostrar HistorialButton solo si el popup está cerrado
+            HistorialButton(navigateToHistorial = { navController.navigate("historial") })
+        }
+
     }
 }
-
 
 
 @Composable
@@ -289,7 +301,10 @@ fun AddFabWithSheet(
     open: Boolean,
     onOpenChange: (Boolean) -> Unit,
     navigateToGastos: () -> Unit,  // Función de navegación a GastoScreen
+    navigateToHistorial: () -> Unit,  // Función de navegación a GastoScreen
+
     navigateToIngreso: () -> Unit // Función de navegación a IngresoScreen2
+
 ) {
     Box(Modifier.fillMaxSize()) {
 
@@ -301,8 +316,20 @@ fun AddFabWithSheet(
                 .padding(end = 16.dp, bottom = 50.dp + bottomPadding), // Ajuste del FAB
             containerColor = MaterialTheme.colorScheme.primary
         ) {
-            Icon(Icons.Filled.Add, contentDescription = "Agregar", tint = MaterialTheme.colorScheme.onPrimary)
+            Icon(
+                Icons.Filled.Add,
+                contentDescription = "Agregar",
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
         }
+
+
+
+
+
+
+
+
 
         if (open) {
             // Fondo oscuro
@@ -390,3 +417,23 @@ fun AddFabWithSheet(
 }
 
 
+    @Composable
+    fun HistorialButton(
+        navigateToHistorial: () -> Unit  // Función para navegar al HistorialScreen
+    ) {
+        Box(Modifier.fillMaxSize()) {  // Colocamos el FloatingActionButton dentro de un Box
+            FloatingActionButton(
+                onClick = { navigateToHistorial() }, // Acción de navegación al Historial
+                modifier = Modifier
+                    .align(Alignment.BottomStart)  // Alineación en la parte inferior izquierda
+                    .padding(start = 16.dp, bottom = 155.dp), // Ajuste de padding para posicionarlo
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.History,  // Icono de historial
+                    contentDescription = "Historial",
+                    tint = MaterialTheme.colorScheme.onPrimary  // Ajustar color
+                )
+            }
+        }
+    }
