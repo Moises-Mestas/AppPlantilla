@@ -31,6 +31,7 @@ import com.example.appfirst.data.local.entity.Ingreso
 import com.example.appfirst.ui.ingreso.rememberIngresoVM
 import com.example.appfirst.ui.screens.home.NavDestination
 import com.example.appfirst.ui.screens.ingreso.AddFabWithSheet
+import java.util.Calendar
 import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,10 +48,16 @@ fun HistorialScreen(
     val context = LocalContext.current
     val ingresos by viewModel.ingresos.collectAsState()
 
+    val montoTotalTarjeta by viewModel.montoTotalTarjeta.collectAsState()
+    val montoTotalEfectivo by viewModel.montoTotalEfectivo.collectAsState()
+    val montoTotalYape by viewModel.montoTotalYape.collectAsState()
+
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var selectedItem by remember { mutableStateOf(0) }
     var open by remember { mutableStateOf(false) } // Estado para la ventana emergente
+    var fechaSeleccionada by remember { mutableStateOf(System.currentTimeMillis()) } // Fecha seleccionada
+    var fechaSeleccionada2 by remember { mutableStateOf(System.currentTimeMillis()) } // Segunda fecha seleccionada
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
@@ -115,6 +122,58 @@ fun HistorialScreen(
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center // Centrar los textos
+            ) {
+                // Título "Monto Total"
+                Text(
+                    text = "Monto Total",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 16.dp, bottom = 4.dp) // Ajuste de padding
+                )
+            }
+
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center // Centrar el texto "BALANCE"
+            ) {
+                // Título "BALANCE"
+                Text(
+                    text = "BALANCE",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 8.dp) // Ajuste de padding
+                )
+            }
+            // Mostrar el monto total
+            Text(
+                text = "S/ ${"%.2f".format(montoTotalTarjeta + montoTotalEfectivo + montoTotalYape)}",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+            // Agregar la sección de fecha aquí
+            FechaSeleccionadaSection1(
+                fecha = fechaSeleccionada,
+                onFechaChange = { nuevaFecha ->
+                    fechaSeleccionada = nuevaFecha // Actualizar la fecha seleccionada
+                }
+            )
+
+            // Agregar la segunda sección de fecha debajo de la primera
+            FechaSeleccionadaSection1(
+                fecha = fechaSeleccionada2,
+                onFechaChange = { nuevaFecha ->
+                    fechaSeleccionada2 = nuevaFecha // Actualizar la segunda fecha seleccionada
+                }
+            )
             when {
                 isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
@@ -136,6 +195,7 @@ fun HistorialScreen(
             }
         }
 
+
         // Agregar botones FAB para acciones
         AddFabWithSheet3(
             sheetOffsetY = -20.dp,
@@ -154,7 +214,62 @@ fun HistorialScreen(
     }
 }
 
+@Composable
+fun FechaSeleccionadaSection1(
+    fecha: Long, // Recibe la fecha en formato Long
+    onFechaChange: (Long) -> Unit // Función para manejar el cambio de fecha
+) {
+    var showDatePicker by remember { mutableStateOf(false) }
 
+    // Convertir la fecha en Long a una fecha legible
+    val formattedFecha = formatFecha(fecha)
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp) // Reduce el espacio entre el texto y el botón
+    ) {
+        Text(
+            text = "Fecha: $formattedFecha",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
+        )
+        OutlinedButton(
+            onClick = { showDatePicker = true },
+            modifier = Modifier
+                .padding(start = 4.dp) // Ajusta el espacio a la izquierda
+                .widthIn(min = 80.dp) // Ajusta el tamaño mínimo del botón
+                .height(40.dp), // Ajusta la altura del botón
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp) // Ajusta el padding dentro del botón
+        ) {
+            Text("Cambiar fecha")
+        }
+    }
+
+    if (showDatePicker) {
+        AppDatePickerDialog(
+            initialDate = Calendar.getInstance().apply { timeInMillis = fecha },
+            onDateSelected = { year, month, day ->
+                val cal = Calendar.getInstance().apply {
+                    timeInMillis = fecha
+                    set(Calendar.YEAR, year)
+                    set(Calendar.MONTH, month)
+                    set(Calendar.DAY_OF_MONTH, day)
+                }
+                onFechaChange(cal.timeInMillis) // Llamar la función para actualizar la fecha
+                showDatePicker = false // Cerrar el selector de fecha
+            },
+            onDismiss = { showDatePicker = false }
+        )
+    }
+}
+
+
+// Helper para formatear la fecha
+fun formatFecha(timestamp: Long): String = try {
+    android.text.format.DateFormat.format("dd/MM/yy HH:mm", Date(timestamp)).toString()
+} catch (e: Exception) {
+    "Fecha inválida"
+}
 @Composable
 fun HistorialButton(
     navigateToHistorial: () -> Unit  // Función para navegar al HistorialScreen
@@ -312,8 +427,4 @@ fun IngresoItemSimple(ingreso: Ingreso) {
 }
 
 // 👇 Deja este helper aquí para que lo use la lista (y también la vista 2 lo verá por estar en el mismo package)
-fun formatFecha(timestamp: Long): String = try {
-    android.text.format.DateFormat.format("dd/MM/yy HH:mm", Date(timestamp)).toString()
-} catch (e: Exception) {
-    "Fecha inválida"
-}
+
