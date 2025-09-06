@@ -1,17 +1,25 @@
 // com.example.appfirst.ui.ingresos.HistorialScreen.kt
 package com.example.appfirst.ui.ingresos
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +30,7 @@ import com.example.appfirst.data.local.AppDatabase
 import com.example.appfirst.data.local.entity.Ingreso
 import com.example.appfirst.ui.ingreso.rememberIngresoVM
 import com.example.appfirst.ui.screens.home.NavDestination
+import com.example.appfirst.ui.screens.ingreso.AddFabWithSheet
 import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,8 +40,8 @@ fun HistorialScreen(
     navigateToFormIngreso2: () -> Unit,  // Para navegar al formulario de ingreso
     navigateToFormGasto: () -> Unit,    // Para navegar al formulario de gasto
 
-
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
+    navigateToHistorial: () -> Unit  // Función para navegar al HistorialScreen
 ) {
     val viewModel = rememberIngresoVM()
     val context = LocalContext.current
@@ -41,6 +50,7 @@ fun HistorialScreen(
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var selectedItem by remember { mutableStateOf(0) }
+    var open by remember { mutableStateOf(false) } // Estado para la ventana emergente
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
@@ -64,13 +74,22 @@ fun HistorialScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mis Ingresos", fontWeight = FontWeight.Bold) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
+                title = {
+                    Text("-+-+ HISTORIAL +-+- ", fontWeight = FontWeight.Bold, fontSize = 30.sp)
+                },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = MaterialTheme.colorScheme.onPrimary // Cambiar el color del icono a blanco
+                        )
                     }
-                },
-                scrollBehavior = scrollBehavior
+                }
             )
         },
         bottomBar = {
@@ -95,22 +114,6 @@ fun HistorialScreen(
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
-            Button(
-                onClick = navigateToFormIngreso2,  // Cambié el nombre aquí
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-            ) {
-                Text("Agregar ingreso")
-            }
-
-            Button(
-                onClick = navigateToFormGasto,  // Cambié el nombre aquí
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-            ) {
-                Text("Agregar gasto")
-            }
-
-            Spacer(Modifier.height(16.dp))
-
             when {
                 isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
@@ -131,8 +134,160 @@ fun HistorialScreen(
                 }
             }
         }
+
+        // Agregar botones FAB para acciones
+        AddFabWithSheet3(
+            sheetOffsetY = -20.dp,
+            bottomPadding = innerPadding.calculateBottomPadding(),
+            open = open, // Pasamos el estado de la ventana emergente
+            onOpenChange = { open = it }, // Función para cambiar el estado de la ventana emergente
+            navigateToGastos = navigateToFormGasto,
+            navigateToHistorial = navigateToHistorial,
+            navigateToIngreso = navigateToFormIngreso2
+        )
+
+        // Mostrar HistorialButton solo si el popup está cerrado
+        if (!open) {
+            HistorialButton(navigateToHistorial = navigateToHistorial)
+        }
     }
 }
+
+
+@Composable
+fun HistorialButton(
+    navigateToHistorial: () -> Unit  // Función para navegar al HistorialScreen
+) {
+    Box(Modifier.fillMaxSize()) {  // Colocamos el FloatingActionButton dentro de un Box
+        FloatingActionButton(
+            onClick = { navigateToHistorial() }, // Acción de navegación al Historial
+            modifier = Modifier
+                .align(Alignment.BottomStart)  // Alineación en la parte inferior izquierda
+                .padding(start = 16.dp, bottom = 155.dp), // Ajuste de padding para posicionarlo
+            containerColor = MaterialTheme.colorScheme.primary
+        ) {
+            Icon(
+                imageVector = Icons.Filled.History,  // Icono de historial
+                contentDescription = "Historial",
+                tint = MaterialTheme.colorScheme.onPrimary  // Ajustar color
+            )
+        }
+    }
+}
+
+@Composable
+fun AddFabWithSheet3(
+    sheetOffsetY: Dp = 80.dp,   // Ajusta la altura del sheet: +baja, -sube
+    bottomPadding: Dp = 0.dp,
+    open: Boolean,
+    onOpenChange: (Boolean) -> Unit,
+    navigateToGastos: () -> Unit,  // Función de navegación a GastoScreen
+    navigateToHistorial: () -> Unit,  // Función de navegación a HistorialScreen
+    navigateToIngreso: () -> Unit // Función de navegación a IngresoScreen2
+) {
+    Box(Modifier.fillMaxSize()) {
+
+        // FAB (botón +)
+        FloatingActionButton(
+            onClick = { onOpenChange(true) }, // Abre el popup al presionar el FAB
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 16.dp, bottom = 50.dp + bottomPadding), // Ajuste del FAB
+            containerColor = MaterialTheme.colorScheme.primary
+        ) {
+            Icon(
+                Icons.Filled.Add,
+                contentDescription = "Agregar",
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
+        }
+
+        if (open) {
+            // Fondo oscuro
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f))
+                    .clickable() { onOpenChange(false) } // Cerrar al hacer clic en el fondo oscuro
+            )
+
+            // Solo los botones (sin fondo)
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 8.dp + bottomPadding)
+                    .offset(y = sheetOffsetY),
+                verticalArrangement = Arrangement.spacedBy(20.dp) // espacio entre botones
+            ) {
+                // BOTÓN GASTO
+                ElevatedButton(
+                    onClick = {
+                        navigateToGastos() // Navegar a GastoScreen
+                        onOpenChange(false) // Cerrar la ventana emergente
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(90.dp),
+                    shape = RectangleShape, // cuadrado
+                    contentPadding = PaddingValues(8.dp)
+                ) {
+                    Column(horizontalAlignment = Alignment.Start) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Outlined.ShoppingCart,
+                                contentDescription = null,
+                                modifier = Modifier.size(34.dp) // icono mediano
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Text("Gasto", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "Registra una compra o un pago/gasto que hiciste en tu día.",
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                // BOTÓN INGRESO
+                ElevatedButton(
+                    onClick = {
+                        navigateToIngreso() // Navegar a IngresoScreen2
+                        onOpenChange(false) // Cerrar la ventana emergente
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(90.dp),
+                    shape = RectangleShape,
+                    contentPadding = PaddingValues(8.dp)
+                ) {
+                    Column(horizontalAlignment = Alignment.Start) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Filled.AttachMoney,
+                                contentDescription = null,
+                                modifier = Modifier.size(34.dp)
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Text("Ingreso", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "Registra tu salario, bonos o algún ingreso obtenido en tu día.",
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 
 
 @Composable

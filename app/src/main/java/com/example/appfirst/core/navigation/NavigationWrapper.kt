@@ -97,7 +97,9 @@ fun NavigationWrapper() {
             HistorialScreen(
                 navigateToCuentas = { navController.navigate("cuentas") }, // Navegar a cuentas
                 navigateToFormIngreso2 = { navController.navigate("ingreso2") }, // Navegar a form de ingreso
-                navigateToFormGasto = { navController.navigate("gastos") }, // Navegar a form de gasto
+                navigateToFormGasto = { navController.navigate("gastos") },
+                navigateToHistorial = { navController.navigate("historial") },  // Asegúrate de tener este destino
+// Navegar a form de gasto
                 navigateBack = { navController.popBackStack() } // Función de volver atrás
             )
         }
