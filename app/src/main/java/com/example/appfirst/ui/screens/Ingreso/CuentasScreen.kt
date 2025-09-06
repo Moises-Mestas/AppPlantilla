@@ -67,7 +67,11 @@ fun CuentasScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = MaterialTheme.colorScheme.onPrimary // Cambiar el color del icono a blanco
+                        )
                     }
                 }
             )

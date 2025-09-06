@@ -62,10 +62,20 @@ fun GastoScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Agregar Gasto", fontWeight = FontWeight.Bold) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
+                title = {
+                    Text("- Gasto -", fontWeight = FontWeight.Bold)
+                },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = MaterialTheme.colorScheme.onPrimary // Cambiar el color del icono a blanco
+                        )
                     }
                 }
             )

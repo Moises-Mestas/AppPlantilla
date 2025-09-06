@@ -70,10 +70,20 @@ fun IngresoScreen2(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Agregar Ingreso", fontWeight = FontWeight.Bold) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
+                title = {
+                    Text("+ Ingreso +", fontWeight = FontWeight.Bold)
+                },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = MaterialTheme.colorScheme.onPrimary // Cambiar el color del icono a blanco
+                        )
                     }
                 }
             )
