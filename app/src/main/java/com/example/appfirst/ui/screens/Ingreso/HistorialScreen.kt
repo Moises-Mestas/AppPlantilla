@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,6 +59,7 @@ fun HistorialScreen(
     var open by remember { mutableStateOf(false) } // Estado para la ventana emergente
     var fechaSeleccionada by remember { mutableStateOf<Long?>(null) } // Fecha seleccionada
     var fechaSeleccionada2 by remember { mutableStateOf<Long?>(null) } // Segunda fecha seleccionada
+    var selectedPaymentType by remember { mutableStateOf("TOTAL") } // Tipo de pago seleccionado
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
@@ -85,7 +87,24 @@ fun HistorialScreen(
             (fechaSeleccionada == null || it.fecha >= fechaSeleccionada!!) &&
                     (fechaSeleccionada2 == null || it.fecha <= fechaSeleccionada2!!)
         }
+        .filter {
+            // Filtrar por el tipo de pago seleccionado
+            when (selectedPaymentType) {
+                "TARJETA" -> it.depositadoEn == com.example.appfirst.data.local.entity.MedioPago.TARJETA
+                "EFECTIVO" -> it.depositadoEn == com.example.appfirst.data.local.entity.MedioPago.EFECTIVO
+                "YAPE" -> it.depositadoEn == com.example.appfirst.data.local.entity.MedioPago.YAPE
+                else -> true // Si es TOTAL, mostrar todos los ingresos
+            }
+        }
         .sortedByDescending { it.fecha } // Ordenar los ingresos de más reciente a más antiguo
+
+    // Calculamos el monto total según el tipo de pago seleccionado
+    val totalMonto = when (selectedPaymentType) {
+        "TARJETA" -> montoTotalTarjeta
+        "EFECTIVO" -> montoTotalEfectivo
+        "YAPE" -> montoTotalYape
+        else -> montoTotalTarjeta + montoTotalEfectivo + montoTotalYape // TOTAL
+    }
 
     Scaffold(
         topBar = {
@@ -155,9 +174,9 @@ fun HistorialScreen(
                     modifier = Modifier.padding(bottom = 8.dp) // Ajuste de padding
                 )
             }
-            // Mostrar el monto total
+            // Mostrar el monto total basado en el tipo seleccionado
             Text(
-                text = "S/ ${"%.2f".format(montoTotalTarjeta + montoTotalEfectivo + montoTotalYape)}",
+                text = "S/ ${"%.2f".format(totalMonto)}",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
@@ -165,6 +184,37 @@ fun HistorialScreen(
                     .padding(8.dp)
                     .align(Alignment.CenterHorizontally)
             )
+
+            // Cuadro de opciones para seleccionar el tipo de monto (TOTAL, TARJETA, EFECTIVO, YAPE)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val options = listOf("TOTAL", "TARJETA", "EFECTIVO", "YAPE")
+                options.forEach { option ->
+                    Button(
+                        onClick = { selectedPaymentType = option },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (selectedPaymentType == option) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                        ),
+                        modifier = Modifier
+                            .weight(1f) // Esto hace que el botón ocupe el 100% del ancho disponible
+                            .padding(0.dp), // Elimina el padding para que el texto ocupe casi todo el espacio
+                        contentPadding = PaddingValues(0.dp) // Ajustamos el padding interno a 0 para que el texto ocupe el espacio completo
+                    ) {
+                        Text(
+                            option,
+                            fontWeight = FontWeight.Bold, // Texto en negrita
+                            fontSize = 14.sp, // Cambia este valor para controlar el tamaño del texto
+                            modifier = Modifier.fillMaxWidth(), // Asegura que el texto ocupe todo el ancho disponible
+                            textAlign = TextAlign.Center // Centra el texto dentro del botón
+                        )
+                    }
+                }
+            }
+
+
             // Agregar la sección de fecha aquí
             FechaSeleccionadaSection1(
                 fecha = fechaSeleccionada ?: System.currentTimeMillis(),
@@ -226,6 +276,7 @@ fun HistorialScreen(
         }
     }
 }
+
 
 @Composable
 fun RestablecerButton(onReset: () -> Unit) {
