@@ -56,8 +56,8 @@ fun HistorialScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var selectedItem by remember { mutableStateOf(0) }
     var open by remember { mutableStateOf(false) } // Estado para la ventana emergente
-    var fechaSeleccionada by remember { mutableStateOf(System.currentTimeMillis()) } // Fecha seleccionada
-    var fechaSeleccionada2 by remember { mutableStateOf(System.currentTimeMillis()) } // Segunda fecha seleccionada
+    var fechaSeleccionada by remember { mutableStateOf<Long?>(null) } // Fecha seleccionada
+    var fechaSeleccionada2 by remember { mutableStateOf<Long?>(null) } // Segunda fecha seleccionada
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
@@ -77,7 +77,15 @@ fun HistorialScreen(
             isLoading = false
         }
     }
-    val sortedIngresos = ingresos.sortedByDescending { it.fecha }
+
+    // Filtrar los ingresos por fecha si hay un rango seleccionado
+    val filteredIngresos = ingresos
+        .filter {
+            // Filtrar solo si las fechas de inicio o fin están definidas
+            (fechaSeleccionada == null || it.fecha >= fechaSeleccionada!!) &&
+                    (fechaSeleccionada2 == null || it.fecha <= fechaSeleccionada2!!)
+        }
+        .sortedByDescending { it.fecha } // Ordenar los ingresos de más reciente a más antiguo
 
     Scaffold(
         topBar = {
@@ -126,7 +134,6 @@ fun HistorialScreen(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center // Centrar los textos
             ) {
-                // Título "Monto Total"
                 Text(
                     text = "Monto Total",
                     fontSize = 32.sp,
@@ -140,7 +147,6 @@ fun HistorialScreen(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center // Centrar el texto "BALANCE"
             ) {
-                // Título "BALANCE"
                 Text(
                     text = "BALANCE",
                     fontSize = 20.sp,
@@ -161,7 +167,7 @@ fun HistorialScreen(
             )
             // Agregar la sección de fecha aquí
             FechaSeleccionadaSection1(
-                fecha = fechaSeleccionada,
+                fecha = fechaSeleccionada ?: System.currentTimeMillis(),
                 onFechaChange = { nuevaFecha ->
                     fechaSeleccionada = nuevaFecha // Actualizar la fecha seleccionada
                 }
@@ -169,11 +175,19 @@ fun HistorialScreen(
 
             // Agregar la segunda sección de fecha debajo de la primera
             FechaSeleccionadaSection1(
-                fecha = fechaSeleccionada2,
+                fecha = fechaSeleccionada2 ?: System.currentTimeMillis(),
                 onFechaChange = { nuevaFecha ->
                     fechaSeleccionada2 = nuevaFecha // Actualizar la segunda fecha seleccionada
                 }
             )
+
+            // Agregar el botón "Restablecer"
+            RestablecerButton {
+                // Restablecer las fechas de los filtros
+                fechaSeleccionada = null
+                fechaSeleccionada2 = null
+            }
+
             when {
                 isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
@@ -181,20 +195,19 @@ fun HistorialScreen(
                 errorMessage != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(errorMessage ?: "Error desconocido", color = MaterialTheme.colorScheme.error)
                 }
-                ingresos.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                filteredIngresos.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text("No hay ingresos. ¡Agrega uno desde el botón!")
                 }
                 else -> LazyColumn(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(sortedIngresos) { ingreso ->
+                    items(filteredIngresos) { ingreso ->
                         IngresoItemSimple(ingreso = ingreso)
                     }
                 }
             }
         }
-
 
         // Agregar botones FAB para acciones
         AddFabWithSheet3(
@@ -214,6 +227,19 @@ fun HistorialScreen(
     }
 }
 
+@Composable
+fun RestablecerButton(onReset: () -> Unit) {
+    Button(
+        onClick = onReset,
+        modifier = Modifier
+            .padding(top = 8.dp)
+            .fillMaxWidth()
+            .height(48.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+    ) {
+        Text("Restablecer", color = MaterialTheme.colorScheme.onSecondary)
+    }
+}
 @Composable
 fun FechaSeleccionadaSection1(
     fecha: Long, // Recibe la fecha en formato Long
@@ -270,6 +296,7 @@ fun formatFecha(timestamp: Long): String = try {
 } catch (e: Exception) {
     "Fecha inválida"
 }
+
 @Composable
 fun HistorialButton(
     navigateToHistorial: () -> Unit  // Función para navegar al HistorialScreen
