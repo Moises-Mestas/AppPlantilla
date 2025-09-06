@@ -23,3 +23,9 @@ object FormTarea
 
 @Serializable
 object Asignatura
+
+@Serializable
+object Examen
+
+@Serializable
+object  Recordatorio

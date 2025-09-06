@@ -90,7 +90,9 @@ fun NavigationWrapper() {
         composable ("tarea" ){
             AgendaScreen(
                 navigatetoAsignatura = {navController.navigate("Asignatura")},
-                navigateToFormTarea = {navController.navigate("FormTarea")}
+                navigateToFormTarea = {navController.navigate("FormTarea") } ,
+                navigateToExamen= {navController.navigate("Examen")},
+                        navigateToRecordatorio={navController.navigate("recordatorio")}
             )
         }
         composable ("FormTarea"){
@@ -99,5 +101,9 @@ fun NavigationWrapper() {
         composable ("Asignatura" ){
             AsignaturaScreen()
         }
+        composable ("Examen") {
+            FormExamenScreen() }
+        composable ("recordatorio") {
+            RecordatorioScreen() }
+        }
     }
-}

@@ -18,6 +18,7 @@ data class ExamenFormState(
     val asignaturaId: Long? = null,
     val categoria: String = "escrito", // Categoría por defecto
     val nota: String = "",
+    val archivos: List<String> = emptyList(), // ✅ lista de archivos
     val errors: Map<String, String> = emptyMap()
 )
 
@@ -91,7 +92,8 @@ class ExamenViewModel(app: Application) : AndroidViewModel(app) {
             fechaRecordatorio = examen.fechaRecordatorio.toString(),
             asignaturaId = examen.asignaturaId,
             categoria = examen.categoria,
-            nota = examen.nota ?: ""
+            nota = examen.nota ?: "",
+            archivos = examen.archivos ?: emptyList() // ✅ cargar archivos
         )
     }
 
@@ -102,7 +104,8 @@ class ExamenViewModel(app: Application) : AndroidViewModel(app) {
         fechaRecordatorio: String? = null,
         asignaturaId: Long? = null,
         categoria: String? = null,
-        nota: String? = null
+        nota: String? = null,
+        archivos: List<String>? = null
     ) {
         _form.value = _form.value.copy(
             titulo = titulo ?: _form.value.titulo,
@@ -110,7 +113,8 @@ class ExamenViewModel(app: Application) : AndroidViewModel(app) {
             fechaRecordatorio = fechaRecordatorio ?: _form.value.fechaRecordatorio,
             asignaturaId = asignaturaId ?: _form.value.asignaturaId,
             categoria = categoria ?: _form.value.categoria,
-            nota = nota ?: _form.value.nota
+            nota = nota ?: _form.value.nota,
+            archivos = archivos ?: _form.value.archivos // ✅ actualizar archivos
         )
     }
 
@@ -140,6 +144,11 @@ class ExamenViewModel(app: Application) : AndroidViewModel(app) {
             errs["categoria"] = "Categoría inválida. Use: oral, escrito, práctico"
         }
 
+        // ✅ validación de archivos (opcional)
+        if (f.archivos.any { it.isBlank() }) {
+            errs["archivos"] = "Hay un archivo inválido"
+        }
+
         _form.value = f.copy(errors = errs)
         return errs.isEmpty()
     }
@@ -164,6 +173,7 @@ class ExamenViewModel(app: Application) : AndroidViewModel(app) {
                     asignaturaId = f.asignaturaId!!,
                     categoria = f.categoria,
                     nota = if (f.nota.isBlank()) null else f.nota,
+                    archivos = f.archivos, // ✅ guardar archivos
                     userId = userId
                 )
                 _navigateToSuccess.value = newId
@@ -178,6 +188,7 @@ class ExamenViewModel(app: Application) : AndroidViewModel(app) {
                     asignaturaId = f.asignaturaId!!,
                     categoria = f.categoria,
                     nota = if (f.nota.isBlank()) null else f.nota,
+                    archivos = f.archivos, // ✅ actualizar archivos
                     userId = userId
                 )
                 _navigateToSuccess.value = id

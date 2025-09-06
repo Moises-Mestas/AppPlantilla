@@ -113,7 +113,8 @@ class RecordatorioViewModel(app: Application) : AndroidViewModel(app) {
         titulo: String? = null,
         fechaRecordatorio: String? = null,
         color: String? = null,
-        nota: String? = null
+        nota: String? = null,
+        archivos: List<String>
     ) {
         _form.value = _form.value.copy(
             titulo = titulo ?: _form.value.titulo,
