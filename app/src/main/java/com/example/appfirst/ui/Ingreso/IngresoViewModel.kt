@@ -263,6 +263,8 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
         try {
             repo.eliminarIngreso(id, userId)
             _message.value = "Ingreso eliminado"
+            updateMontoTotal()           // <--- recalcula totales después de eliminar
+
         } catch (e: Exception) {
             _message.value = "Error al eliminar: ${e.message}"
         }

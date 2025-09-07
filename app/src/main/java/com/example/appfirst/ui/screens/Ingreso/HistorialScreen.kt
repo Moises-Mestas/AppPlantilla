@@ -7,9 +7,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.*
@@ -63,6 +64,9 @@ fun HistorialScreen(
     var fechaSeleccionada2 by remember { mutableStateOf<Long?>(null) }  // hasta
     var selectedPaymentType by remember { mutableStateOf("TOTAL") }     // TOTAL/TARJETA/EFECTIVO/YAPE
 
+    // Para el diálogo de confirmación de borrado
+    var pendingDelete by remember { mutableStateOf<Ingreso?>(null) }
+
     // Cargar userId
     LaunchedEffect(Unit) {
         try {
@@ -88,7 +92,7 @@ fun HistorialScreen(
         }
         .filter {
             when (selectedPaymentType) {
-                "TARJETA" -> it.depositadoEn == com.example.appfirst.data.local.entity.MedioPago.TARJETA
+                "TARJETA"  -> it.depositadoEn == com.example.appfirst.data.local.entity.MedioPago.TARJETA
                 "EFECTIVO" -> it.depositadoEn == com.example.appfirst.data.local.entity.MedioPago.EFECTIVO
                 "YAPE"     -> it.depositadoEn == com.example.appfirst.data.local.entity.MedioPago.YAPE
                 else       -> true
@@ -113,7 +117,11 @@ fun HistorialScreen(
                 title = { Text("-+-+ HISTORIAL +-+- ", fontWeight = FontWeight.Bold, fontSize = 30.sp) },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = MaterialTheme.colorScheme.onPrimary)
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 }
             )
@@ -235,10 +243,37 @@ fun HistorialScreen(
                             onClick = {
                                 val id = ingreso.id
                                 if (ingreso.monto < 0) navigateToEditGasto(id) else navigateToEditIngreso(id)
-                            }
+                            },
+                            onDelete = { pendingDelete = ingreso }   // abrir confirmación
                         )
                     }
                 }
+            }
+
+            // Diálogo de confirmación (queda fuera de la LazyColumn)
+            pendingDelete?.let { p ->
+                AlertDialog(
+                    onDismissRequest = { pendingDelete = null },
+                    title = { Text("Eliminar ${if (p.monto < 0) "gasto" else "ingreso"}") },
+                    text = {
+                        Text(
+                            "¿Seguro que deseas eliminar \"${p.descripcion}\" por S/ " +
+                                    "%.2f".format(kotlin.math.abs(p.monto)) +
+                                    "? Esta acción no se puede deshacer."
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            viewModel.delete(p.id)   // borra
+                            // si tu VM no recalcula totales automáticamente, descomenta:
+                            // viewModel.reloadData()
+                            pendingDelete = null
+                        }) { Text("Eliminar") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { pendingDelete = null }) { Text("Cancelar") }
+                    }
+                )
             }
         }
 
@@ -263,21 +298,47 @@ fun HistorialScreen(
 @Composable
 fun IngresoItemSimple(
     ingreso: Ingreso,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onDelete: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
     ) {
-        Column(Modifier.padding(16.dp)) {
-            Text(ingreso.descripcion, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-            Text("Monto: S/ ${"%.2f".format(ingreso.monto)}", fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
-            Text("Depositado en: ${ingreso.depositadoEn}", fontSize = 12.sp)
-            if (ingreso.notas.isNotBlank()) {
-                Text("Notas: ${ingreso.notas}", fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+        Box(Modifier.fillMaxWidth()) {
+            // Contenido
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .padding(end = 48.dp) // deja espacio para el botón X
+            ) {
+                Text(
+                    text = ingreso.descripcion,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text("Monto: S/ ${"%.2f".format(ingreso.monto)}", fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
+                Text("Depositado en: ${ingreso.depositadoEn}", fontSize = 12.sp)
+                if (ingreso.notas.isNotBlank()) {
+                    Text("Notas: ${ingreso.notas}", fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+                }
+                Text("Fecha: ${formatFecha(ingreso.fecha)}", fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
             }
-            Text("Fecha: ${formatFecha(ingreso.fecha)}", fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+
+            // Botón X arriba-derecha
+            IconButton(
+                onClick = onDelete,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Eliminar",
+                )
+            }
         }
     }
 }
@@ -320,7 +381,6 @@ fun FechaSeleccionadaSection1(
     }
 
     if (showDatePicker) {
-        // Usa la implementación que ya tienes en el mismo paquete
         AppDatePickerDialog(
             initialDate = Calendar.getInstance().apply { timeInMillis = fecha },
             onDateSelected = { year, month, day ->
