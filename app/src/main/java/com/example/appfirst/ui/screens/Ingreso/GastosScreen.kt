@@ -41,6 +41,7 @@ import com.example.appfirst.ui.screens.ingreso.HistorialButton
 @Composable
 fun GastoScreen(
     navController: NavController, // Recibe el navController
+    gastoId: Int? = null,                // <<< NUEVO
 
     navigateToCuentas: () -> Unit,
     navigateToHistorial: () -> Unit,
@@ -51,6 +52,21 @@ fun GastoScreen(
     val viewModel = rememberIngresoVM()
     val context = LocalContext.current
     var open by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        try {
+            val userDao = AppDatabase.get(context).userDao()
+            val userId = withContext(Dispatchers.IO) {
+                val email = UserPrefs.getLoggedUserEmail(context)
+                val users = userDao.getAllUsers().first()
+                users.firstOrNull { it.email == email }?.id
+            }
+            if (userId != null) {
+                viewModel.setUserId(userId)
+                if (gastoId != null) viewModel.loadForEdit(gastoId) else viewModel.startCreate()
+            }
+        } catch (_: Exception) {}
+    }
+
 
     LaunchedEffect(Unit) {
         try {

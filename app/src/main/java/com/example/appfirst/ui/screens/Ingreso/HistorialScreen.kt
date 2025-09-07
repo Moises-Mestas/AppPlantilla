@@ -23,15 +23,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withContext
 import com.example.appfirst.data.datastore.UserPrefs
 import com.example.appfirst.data.local.AppDatabase
 import com.example.appfirst.data.local.entity.Ingreso
 import com.example.appfirst.ui.ingreso.rememberIngresoVM
 import com.example.appfirst.ui.screens.home.NavDestination
-import com.example.appfirst.ui.screens.ingreso.AddFabWithSheet
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import java.util.Calendar
 import java.util.Date
 
@@ -39,16 +38,17 @@ import java.util.Date
 @Composable
 fun HistorialScreen(
     navigateToCuentas: () -> Unit,
-    navigateToFormIngreso2: () -> Unit,  // Para navegar al formulario de ingreso
-    navigateToFormGasto: () -> Unit,    // Para navegar al formulario de gasto
-
+    navigateToFormIngreso2: () -> Unit,   // crear ingreso
+    navigateToFormGasto: () -> Unit,      // crear gasto
     navigateBack: () -> Unit,
-    navigateToHistorial: () -> Unit  // Función para navegar al HistorialScreen
+    navigateToHistorial: () -> Unit,
+    navigateToEditIngreso: (Int) -> Unit, // editar ingreso
+    navigateToEditGasto: (Int) -> Unit    // editar gasto
 ) {
     val viewModel = rememberIngresoVM()
     val context = LocalContext.current
-    val ingresos by viewModel.ingresos.collectAsState()
 
+    val ingresos by viewModel.ingresos.collectAsState()
     val montoTotalTarjeta by viewModel.montoTotalTarjeta.collectAsState()
     val montoTotalEfectivo by viewModel.montoTotalEfectivo.collectAsState()
     val montoTotalYape by viewModel.montoTotalYape.collectAsState()
@@ -56,14 +56,14 @@ fun HistorialScreen(
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var selectedItem by remember { mutableStateOf(0) }
-    var open by remember { mutableStateOf(false) } // Estado para la ventana emergente
-    var fechaSeleccionada by remember { mutableStateOf<Long?>(null) } // Fecha seleccionada
-    var fechaSeleccionada2 by remember { mutableStateOf<Long?>(null) } // Segunda fecha seleccionada
-    var selectedPaymentType by remember { mutableStateOf("TOTAL") } // Tipo de pago seleccionado
+    var open by remember { mutableStateOf(false) }
 
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    // Filtros
+    var fechaSeleccionada by remember { mutableStateOf<Long?>(null) }   // desde
+    var fechaSeleccionada2 by remember { mutableStateOf<Long?>(null) }  // hasta
+    var selectedPaymentType by remember { mutableStateOf("TOTAL") }     // TOTAL/TARJETA/EFECTIVO/YAPE
 
-    // Carga userId
+    // Cargar userId
     LaunchedEffect(Unit) {
         try {
             val userDao = AppDatabase.get(context).userDao()
@@ -80,30 +80,27 @@ fun HistorialScreen(
         }
     }
 
-    // Filtrar los ingresos por fecha si hay un rango seleccionado
+    // Aplicar filtros
     val filteredIngresos = ingresos
         .filter {
-            // Filtrar solo si las fechas de inicio o fin están definidas
             (fechaSeleccionada == null || it.fecha >= fechaSeleccionada!!) &&
                     (fechaSeleccionada2 == null || it.fecha <= fechaSeleccionada2!!)
         }
         .filter {
-            // Filtrar por el tipo de pago seleccionado
             when (selectedPaymentType) {
                 "TARJETA" -> it.depositadoEn == com.example.appfirst.data.local.entity.MedioPago.TARJETA
                 "EFECTIVO" -> it.depositadoEn == com.example.appfirst.data.local.entity.MedioPago.EFECTIVO
-                "YAPE" -> it.depositadoEn == com.example.appfirst.data.local.entity.MedioPago.YAPE
-                else -> true // Si es TOTAL, mostrar todos los ingresos
+                "YAPE"     -> it.depositadoEn == com.example.appfirst.data.local.entity.MedioPago.YAPE
+                else       -> true
             }
         }
-        .sortedByDescending { it.fecha } // Ordenar los ingresos de más reciente a más antiguo
+        .sortedByDescending { it.fecha }
 
-    // Calculamos el monto total según el tipo de pago seleccionado
     val totalMonto = when (selectedPaymentType) {
-        "TARJETA" -> montoTotalTarjeta
+        "TARJETA"  -> montoTotalTarjeta
         "EFECTIVO" -> montoTotalEfectivo
-        "YAPE" -> montoTotalYape
-        else -> montoTotalTarjeta + montoTotalEfectivo + montoTotalYape // TOTAL
+        "YAPE"     -> montoTotalYape
+        else       -> montoTotalTarjeta + montoTotalEfectivo + montoTotalYape
     }
 
     Scaffold(
@@ -113,16 +110,10 @@ fun HistorialScreen(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
-                title = {
-                    Text("-+-+ HISTORIAL +-+- ", fontWeight = FontWeight.Bold, fontSize = 30.sp)
-                },
+                title = { Text("-+-+ HISTORIAL +-+- ", fontWeight = FontWeight.Bold, fontSize = 30.sp) },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
-                        Icon(
-                            Icons.Default.ArrowBack,
-                            contentDescription = "Volver",
-                            tint = MaterialTheme.colorScheme.onPrimary // Cambiar el color del icono a blanco
-                        )
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
             )
@@ -134,7 +125,7 @@ fun HistorialScreen(
                         selected = selectedItem == index,
                         onClick = {
                             selectedItem = index
-                            if (index == 3) navigateToCuentas() // Navegar a cuentas
+                            if (index == 3) navigateToCuentas()
                         },
                         icon = { Icon(destination.icon, contentDescription = destination.contentDescription) },
                         label = { Text(destination.label) }
@@ -149,32 +140,25 @@ fun HistorialScreen(
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center // Centrar los textos
-            ) {
+            // Títulos
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Text(
-                    text = "Monto Total",
+                    "Monto Total",
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(top = 16.dp, bottom = 4.dp) // Ajuste de padding
+                    modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
                 )
             }
-
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center // Centrar el texto "BALANCE"
-            ) {
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Text(
-                    text = "BALANCE",
+                    "BALANCE",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 8.dp) // Ajuste de padding
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
             }
-            // Mostrar el monto total basado en el tipo seleccionado
             Text(
                 text = "S/ ${"%.2f".format(totalMonto)}",
                 fontSize = 24.sp,
@@ -185,7 +169,7 @@ fun HistorialScreen(
                     .align(Alignment.CenterHorizontally)
             )
 
-            // Cuadro de opciones para seleccionar el tipo de monto (TOTAL, TARJETA, EFECTIVO, YAPE)
+            // Selector TOTAL/TARJETA/EFECTIVO/YAPE
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -196,48 +180,41 @@ fun HistorialScreen(
                     Button(
                         onClick = { selectedPaymentType = option },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (selectedPaymentType == option) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+                            containerColor = if (selectedPaymentType == option)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.secondary
                         ),
-                        modifier = Modifier
-                            .weight(1f) // Esto hace que el botón ocupe el 100% del ancho disponible
-                            .padding(0.dp), // Elimina el padding para que el texto ocupe casi todo el espacio
-                        contentPadding = PaddingValues(0.dp) // Ajustamos el padding interno a 0 para que el texto ocupe el espacio completo
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(0.dp)
                     ) {
                         Text(
                             option,
-                            fontWeight = FontWeight.Bold, // Texto en negrita
-                            fontSize = 14.sp, // Cambia este valor para controlar el tamaño del texto
-                            modifier = Modifier.fillMaxWidth(), // Asegura que el texto ocupe todo el ancho disponible
-                            textAlign = TextAlign.Center // Centra el texto dentro del botón
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
                         )
                     }
                 }
             }
 
-
-            // Agregar la sección de fecha aquí
+            // Filtros por fecha: desde / hasta
             FechaSeleccionadaSection1(
                 fecha = fechaSeleccionada ?: System.currentTimeMillis(),
-                onFechaChange = { nuevaFecha ->
-                    fechaSeleccionada = nuevaFecha // Actualizar la fecha seleccionada
-                }
+                onFechaChange = { nueva -> fechaSeleccionada = nueva }
             )
-
-            // Agregar la segunda sección de fecha debajo de la primera
             FechaSeleccionadaSection1(
                 fecha = fechaSeleccionada2 ?: System.currentTimeMillis(),
-                onFechaChange = { nuevaFecha ->
-                    fechaSeleccionada2 = nuevaFecha // Actualizar la segunda fecha seleccionada
-                }
+                onFechaChange = { nueva -> fechaSeleccionada2 = nueva }
             )
 
-            // Agregar el botón "Restablecer"
             RestablecerButton {
-                // Restablecer las fechas de los filtros
                 fechaSeleccionada = null
                 fechaSeleccionada2 = null
             }
 
+            // Lista
             when {
                 isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
@@ -253,30 +230,57 @@ fun HistorialScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(filteredIngresos) { ingreso ->
-                        IngresoItemSimple(ingreso = ingreso)
+                        IngresoItemSimple(
+                            ingreso = ingreso,
+                            onClick = {
+                                val id = ingreso.id
+                                if (ingreso.monto < 0) navigateToEditGasto(id) else navigateToEditIngreso(id)
+                            }
+                        )
                     }
                 }
             }
         }
 
-        // Agregar botones FAB para acciones
+        // FABs y hoja
         AddFabWithSheet3(
             sheetOffsetY = -20.dp,
             bottomPadding = innerPadding.calculateBottomPadding(),
-            open = open, // Pasamos el estado de la ventana emergente
-            onOpenChange = { open = it }, // Función para cambiar el estado de la ventana emergente
+            open = open,
+            onOpenChange = { open = it },
             navigateToGastos = navigateToFormGasto,
             navigateToHistorial = navigateToHistorial,
             navigateToIngreso = navigateToFormIngreso2
         )
-
-        // Mostrar HistorialButton solo si el popup está cerrado
         if (!open) {
             HistorialButton(navigateToHistorial = navigateToHistorial)
         }
     }
 }
 
+/* -------------------------- Helpers fuera de la pantalla -------------------------- */
+
+@Composable
+fun IngresoItemSimple(
+    ingreso: Ingreso,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text(ingreso.descripcion, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Text("Monto: S/ ${"%.2f".format(ingreso.monto)}", fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
+            Text("Depositado en: ${ingreso.depositadoEn}", fontSize = 12.sp)
+            if (ingreso.notas.isNotBlank()) {
+                Text("Notas: ${ingreso.notas}", fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+            }
+            Text("Fecha: ${formatFecha(ingreso.fecha)}", fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+        }
+    }
+}
 
 @Composable
 fun RestablecerButton(onReset: () -> Unit) {
@@ -291,38 +295,32 @@ fun RestablecerButton(onReset: () -> Unit) {
         Text("Restablecer", color = MaterialTheme.colorScheme.onSecondary)
     }
 }
+
 @Composable
 fun FechaSeleccionadaSection1(
-    fecha: Long, // Recibe la fecha en formato Long
-    onFechaChange: (Long) -> Unit // Función para manejar el cambio de fecha
+    fecha: Long,
+    onFechaChange: (Long) -> Unit
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
-
-    // Convertir la fecha en Long a una fecha legible
     val formattedFecha = formatFecha(fecha)
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp) // Reduce el espacio entre el texto y el botón
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Text(
-            text = "Fecha: $formattedFecha",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium
-        )
+        Text("Fecha: $formattedFecha", fontSize = 16.sp, fontWeight = FontWeight.Medium)
         OutlinedButton(
             onClick = { showDatePicker = true },
             modifier = Modifier
-                .padding(start = 4.dp) // Ajusta el espacio a la izquierda
-                .widthIn(min = 80.dp) // Ajusta el tamaño mínimo del botón
-                .height(40.dp), // Ajusta la altura del botón
-            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp) // Ajusta el padding dentro del botón
-        ) {
-            Text("Cambiar fecha")
-        }
+                .padding(start = 4.dp)
+                .widthIn(min = 80.dp)
+                .height(40.dp),
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+        ) { Text("Cambiar fecha") }
     }
 
     if (showDatePicker) {
+        // Usa la implementación que ya tienes en el mismo paquete
         AppDatePickerDialog(
             initialDate = Calendar.getInstance().apply { timeInMillis = fecha },
             onDateSelected = { year, month, day ->
@@ -332,16 +330,15 @@ fun FechaSeleccionadaSection1(
                     set(Calendar.MONTH, month)
                     set(Calendar.DAY_OF_MONTH, day)
                 }
-                onFechaChange(cal.timeInMillis) // Llamar la función para actualizar la fecha
-                showDatePicker = false // Cerrar el selector de fecha
+                onFechaChange(cal.timeInMillis)
+                showDatePicker = false
             },
             onDismiss = { showDatePicker = false }
         )
     }
 }
 
-
-// Helper para formatear la fecha
+// Formateador local (evita imports duplicados)
 fun formatFecha(timestamp: Long): String = try {
     android.text.format.DateFormat.format("dd/MM/yy HH:mm", Date(timestamp)).toString()
 } catch (e: Exception) {
@@ -349,63 +346,49 @@ fun formatFecha(timestamp: Long): String = try {
 }
 
 @Composable
-fun HistorialButton(
-    navigateToHistorial: () -> Unit  // Función para navegar al HistorialScreen
-) {
-    Box(Modifier.fillMaxSize()) {  // Colocamos el FloatingActionButton dentro de un Box
+fun HistorialButton(navigateToHistorial: () -> Unit) {
+    Box(Modifier.fillMaxSize()) {
         FloatingActionButton(
-            onClick = { navigateToHistorial() }, // Acción de navegación al Historial
+            onClick = { navigateToHistorial() },
             modifier = Modifier
-                .align(Alignment.BottomStart)  // Alineación en la parte inferior izquierda
-                .padding(start = 16.dp, bottom = 155.dp), // Ajuste de padding para posicionarlo
+                .align(Alignment.BottomStart)
+                .padding(start = 16.dp, bottom = 155.dp),
             containerColor = MaterialTheme.colorScheme.primary
         ) {
-            Icon(
-                imageVector = Icons.Filled.History,  // Icono de historial
-                contentDescription = "Historial",
-                tint = MaterialTheme.colorScheme.onPrimary  // Ajustar color
-            )
+            Icon(Icons.Filled.History, contentDescription = "Historial", tint = MaterialTheme.colorScheme.onPrimary)
         }
     }
 }
 
 @Composable
 fun AddFabWithSheet3(
-    sheetOffsetY: Dp = 80.dp,   // Ajusta la altura del sheet: +baja, -sube
+    sheetOffsetY: Dp = 80.dp,
     bottomPadding: Dp = 0.dp,
     open: Boolean,
     onOpenChange: (Boolean) -> Unit,
-    navigateToGastos: () -> Unit,  // Función de navegación a GastoScreen
-    navigateToHistorial: () -> Unit,  // Función de navegación a HistorialScreen
-    navigateToIngreso: () -> Unit // Función de navegación a IngresoScreen2
+    navigateToGastos: () -> Unit,
+    navigateToHistorial: () -> Unit,
+    navigateToIngreso: () -> Unit
 ) {
     Box(Modifier.fillMaxSize()) {
-
-        // FAB (botón +)
         FloatingActionButton(
-            onClick = { onOpenChange(true) }, // Abre el popup al presionar el FAB
+            onClick = { onOpenChange(true) },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 50.dp + bottomPadding), // Ajuste del FAB
+                .padding(end = 16.dp, bottom = 50.dp + bottomPadding),
             containerColor = MaterialTheme.colorScheme.primary
         ) {
-            Icon(
-                Icons.Filled.Add,
-                contentDescription = "Agregar",
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
+            Icon(Icons.Filled.Add, contentDescription = "Agregar", tint = MaterialTheme.colorScheme.onPrimary)
         }
 
         if (open) {
-            // Fondo oscuro
             Box(
                 Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f))
-                    .clickable() { onOpenChange(false) } // Cerrar al hacer clic en el fondo oscuro
+                    .clickable { onOpenChange(false) }
             )
 
-            // Solo los botones (sin fondo)
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -413,45 +396,10 @@ fun AddFabWithSheet3(
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 8.dp + bottomPadding)
                     .offset(y = sheetOffsetY),
-                verticalArrangement = Arrangement.spacedBy(20.dp) // espacio entre botones
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                // BOTÓN GASTO
                 ElevatedButton(
-                    onClick = {
-                        navigateToGastos() // Navegar a GastoScreen
-                        onOpenChange(false) // Cerrar la ventana emergente
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(90.dp),
-                    shape = RectangleShape, // cuadrado
-                    contentPadding = PaddingValues(8.dp)
-                ) {
-                    Column(horizontalAlignment = Alignment.Start) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Outlined.ShoppingCart,
-                                contentDescription = null,
-                                modifier = Modifier.size(34.dp) // icono mediano
-                            )
-                            Spacer(Modifier.width(12.dp))
-                            Text("Gasto", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            "Registra una compra o un pago/gasto que hiciste en tu día.",
-                            fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                // BOTÓN INGRESO
-                ElevatedButton(
-                    onClick = {
-                        navigateToIngreso() // Navegar a IngresoScreen2
-                        onOpenChange(false) // Cerrar la ventana emergente
-                    },
+                    onClick = { navigateToGastos(); onOpenChange(false) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(90.dp),
@@ -460,49 +408,34 @@ fun AddFabWithSheet3(
                 ) {
                     Column(horizontalAlignment = Alignment.Start) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Filled.AttachMoney,
-                                contentDescription = null,
-                                modifier = Modifier.size(34.dp)
-                            )
+                            Icon(Icons.Outlined.ShoppingCart, contentDescription = null, modifier = Modifier.size(34.dp))
+                            Spacer(Modifier.width(12.dp))
+                            Text("Gasto", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(Modifier.height(4.dp))
+                        Text("Registra una compra o un pago/gasto que hiciste en tu día.", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+
+                ElevatedButton(
+                    onClick = { navigateToIngreso(); onOpenChange(false) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(90.dp),
+                    shape = RectangleShape,
+                    contentPadding = PaddingValues(8.dp)
+                ) {
+                    Column(horizontalAlignment = Alignment.Start) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Filled.AttachMoney, contentDescription = null, modifier = Modifier.size(34.dp))
                             Spacer(Modifier.width(12.dp))
                             Text("Ingreso", fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         }
                         Spacer(Modifier.height(4.dp))
-                        Text(
-                            "Registra tu salario, bonos o algún ingreso obtenido en tu día.",
-                            fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Text("Registra tu salario, bonos o algún ingreso obtenido en tu día.", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
         }
     }
 }
-
-
-
-
-@Composable
-fun IngresoItemSimple(ingreso: Ingreso) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = ingreso.descripcion,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Text("Monto: S/ ${"%.2f".format(ingreso.monto)}", fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
-            Text("Depositado en: ${ingreso.depositadoEn}", fontSize = 12.sp)
-            if (ingreso.notas.isNotBlank()) {
-                Text("Notas: ${ingreso.notas}", fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
-            }
-            Text("Fecha: ${formatFecha(ingreso.fecha)}", fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
-        }
-    }
-}
-
-// 👇 Deja este helper aquí para que lo use la lista (y también la vista 2 lo verá por estar en el mismo package)
-

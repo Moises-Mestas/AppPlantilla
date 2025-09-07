@@ -24,6 +24,8 @@ import com.example.appfirst.ui.screens.tareas.TareasScreen
 import com.example.appfirst.ui.ingresos.IngresoScreen2
 import com.example.appfirst.ui.screens.ingreso.CuentasScreen
 
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 
 @Composable
 fun NavigationWrapper() {
@@ -46,8 +48,7 @@ fun NavigationWrapper() {
     }
 
     NavHost(
-        navController = navController,
-        startDestination = startDestination
+        navController = navController, startDestination = startDestination
     ) {
         composable("onboarding") {
             OnboardingScreen(
@@ -93,24 +94,16 @@ fun NavigationWrapper() {
             TareasScreen()
         }
 
-        composable("historial") {
-            HistorialScreen(
-                navigateToCuentas = { navController.navigate("cuentas") }, // Navegar a cuentas
-                navigateToFormIngreso2 = { navController.navigate("ingreso2") }, // Navegar a form de ingreso
-                navigateToFormGasto = { navController.navigate("gastos") },
-                navigateToHistorial = { navController.navigate("historial") },  // Asegúrate de tener este destino
-// Navegar a form de gasto
-                navigateBack = { navController.popBackStack() } // Función de volver atrás
-            )
-        }
+
 
 
         composable("ingreso2") {
             IngresoScreen2(
                 navController = navController,
+                ingresoId = null,  // creación
                 navigateBack = { navController.popBackStack() },
-                navigateToGastos = { navController.navigate("gastos") }, // Nave
-                navigateToHistorial = { navController.navigate("historial") },  // Asegúrate de tener este destino
+                navigateToGastos = { navController.navigate("gastos") },
+                navigateToHistorial = { navController.navigate("historial") },
                 navigateToCuentas = { navController.navigate("cuentas") }
             )
         }
@@ -118,9 +111,10 @@ fun NavigationWrapper() {
         composable("gastos") {
             GastoScreen(
                 navController = navController,
+                gastoId = null, // creación
                 navigateToCuentas = { navController.navigate("cuentas") },
                 navigateToIngreso2 = { navController.navigate("ingreso2") },
-                navigateToHistorial = { navController.navigate("historial") }, // Nave
+                navigateToHistorial = { navController.navigate("historial") },
                 navigateBack = { navController.popBackStack() }
             )
         }
@@ -134,6 +128,53 @@ fun NavigationWrapper() {
                 navigateBack = { navController.popBackStack() }
             )
         }
+
+        composable("historial") {
+            HistorialScreen(
+                navigateToCuentas = { navController.navigate("cuentas") },
+                navigateToFormIngreso2 = { navController.navigate("ingreso2") },  // crear
+                navigateToFormGasto = { navController.navigate("gastos") },      // crear
+                navigateBack = { navController.popBackStack() },
+                navigateToHistorial = { navController.navigate("historial") },
+                navigateToEditIngreso = { id -> navController.navigate("ingreso2/$id") }, // EDITAR ingreso
+                navigateToEditGasto = { id -> navController.navigate("gastos/$id") }      // EDITAR gasto
+            )
+        }
+
+
+// Ingreso (crear/editar)
+        // Editar ingreso
+        composable(
+            route = "ingreso2/{id}",
+            arguments = listOf(navArgument("id") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getInt("id")
+            IngresoScreen2(
+                navController = navController,
+                ingresoId = id,  // edición
+                navigateBack = { navController.popBackStack() },
+                navigateToGastos = { navController.navigate("gastos") },
+                navigateToHistorial = { navController.navigate("historial") },
+                navigateToCuentas = { navController.navigate("cuentas") }
+            )
+        }
+
+        // Editar gasto
+        composable(
+            route = "gastos/{id}",
+            arguments = listOf(navArgument("id") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getInt("id")
+            GastoScreen(
+                navController = navController,
+                gastoId = id, // edición
+                navigateToCuentas = { navController.navigate("cuentas") },
+                navigateToIngreso2 = { navController.navigate("ingreso2") },
+                navigateToHistorial = { navController.navigate("historial") },
+                navigateBack = { navController.popBackStack() }
+            )
+        }
+
 
     }
 }

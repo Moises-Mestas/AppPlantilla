@@ -45,6 +45,7 @@ import com.example.appfirst.ui.screens.ingreso.AddFabWithSheet
 @Composable
 fun IngresoScreen2(
     navController: NavController, // Recibe el navController
+    ingresoId: Int? = null,                 // <<< NUEVO
 
     navigateToCuentas: () -> Unit, // Agregamos la nueva función de navegación
     navigateToGastos: () -> Unit,
@@ -55,6 +56,28 @@ fun IngresoScreen2(
     val viewModel = rememberIngresoVM()
     val context = LocalContext.current
     var open by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        try {
+            val userDao = AppDatabase.get(context).userDao()
+            val userId = withContext(Dispatchers.IO) {
+                val email = UserPrefs.getLoggedUserEmail(context)
+                val users = userDao.getAllUsers().first()
+                users.firstOrNull { it.email == email }?.id
+            }
+            if (userId != null) {
+                viewModel.setUserId(userId)
+
+                // 👇 aquí decidimos crear o editar:
+                if (ingresoId != null) {
+                    viewModel.loadForEdit(ingresoId)   // precarga los campos
+                } else {
+                    viewModel.startCreate()            // limpia y setea fecha por defecto
+                }
+            }
+        } catch (_: Exception) { }
+    }
+
 
     LaunchedEffect(Unit) {
         try {
