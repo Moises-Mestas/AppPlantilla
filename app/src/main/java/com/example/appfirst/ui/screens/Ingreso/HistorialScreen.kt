@@ -221,7 +221,15 @@ fun HistorialScreen(
                 fechaSeleccionada = null
                 fechaSeleccionada2 = null
             }
-
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Transacciones recientes:",
+                fontSize = 25.sp,
+                fontWeight = FontWeight.Bold,   // ← negrita
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.align(Alignment.Start) // asegura alineación a la izquierda
+            )
+            Divider(Modifier.padding(top = 4.dp))
             // Lista
             when {
                 isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
