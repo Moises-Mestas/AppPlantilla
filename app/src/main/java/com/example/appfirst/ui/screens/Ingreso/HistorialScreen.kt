@@ -3,12 +3,15 @@ package com.example.appfirst.ui.ingresos
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.History
@@ -17,11 +20,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appfirst.data.datastore.UserPrefs
@@ -34,17 +40,18 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.util.Calendar
 import java.util.Date
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistorialScreen(
     navigateToCuentas: () -> Unit,
-    navigateToFormIngreso2: () -> Unit,   // crear ingreso
-    navigateToFormGasto: () -> Unit,      // crear gasto
+    navigateToFormIngreso2: () -> Unit,
+    navigateToFormGasto: () -> Unit,
     navigateBack: () -> Unit,
     navigateToHistorial: () -> Unit,
-    navigateToEditIngreso: (Int) -> Unit, // editar ingreso
-    navigateToEditGasto: (Int) -> Unit    // editar gasto
+    navigateToEditIngreso: (Int) -> Unit,
+    navigateToEditGasto: (Int) -> Unit
 ) {
     val viewModel = rememberIngresoVM()
     val context = LocalContext.current
@@ -66,6 +73,8 @@ fun HistorialScreen(
 
     // Para el diálogo de confirmación de borrado
     var pendingDelete by remember { mutableStateOf<Ingreso?>(null) }
+
+
 
     // Cargar userId
     LaunchedEffect(Unit) {
@@ -298,8 +307,19 @@ fun HistorialScreen(
         if (!open) {
             HistorialButton(navigateToHistorial = navigateToHistorial)
         }
+
+        // 👇 Aquí agregamos los botones movibles
+        MovableArrowButtons(
+            onArrowUpClick = { /* TODO acción para subir */ },
+            onArrowDownClick = { /* TODO acción para bajar */ }
+        )
     }
 }
+
+
+
+
+
 
 /* -------------------------- Helpers fuera de la pantalla -------------------------- */
 
@@ -309,25 +329,34 @@ fun IngresoItemSimple(
     onClick: () -> Unit,
     onDelete: () -> Unit
 ) {
+    // Verde si es ingreso, rojo si es gasto
+    val backgroundColor = if (ingreso.monto < 0) {
+        androidx.compose.ui.graphics.Color(0xFFFFCDD2) // rojo claro
+    } else {
+        androidx.compose.ui.graphics.Color(0xFFC8E6C9) // verde claro
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(containerColor = backgroundColor) // 👈 aquí se aplica
     ) {
         Box(Modifier.fillMaxWidth()) {
-            // Contenido
             Column(
                 modifier = Modifier
                     .padding(16.dp)
-                    .padding(end = 48.dp) // deja espacio para el botón X
+                    .padding(end = 48.dp)
             ) {
                 Text(
                     text = ingreso.descripcion,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = androidx.compose.ui.graphics.Color.Black
                 )
-                Text("Monto: S/ ${"%.2f".format(ingreso.monto)}", fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
+                Text("Monto: S/ ${"%.2f".format(ingreso.monto)}",
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(top = 4.dp))
                 Text("Depositado en: ${ingreso.depositadoEn}", fontSize = 12.sp)
                 if (ingreso.notas.isNotBlank()) {
                     Text("Notas: ${ingreso.notas}", fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
@@ -335,21 +364,21 @@ fun IngresoItemSimple(
                 Text("Fecha: ${formatFecha(ingreso.fecha)}", fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
             }
 
-            // Botón X arriba-derecha
+            // Botón X para eliminar
             IconButton(
                 onClick = onDelete,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(8.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Filled.Close,
-                    contentDescription = "Eliminar",
-                )
+                Icon(Icons.Filled.Close, contentDescription = "Eliminar")
             }
         }
     }
 }
+
+
+
 
 @Composable
 fun RestablecerButton(onReset: () -> Unit) {
@@ -504,6 +533,48 @@ fun AddFabWithSheet3(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun MovableArrowButtons(
+    onArrowUpClick: () -> Unit,
+    onArrowDownClick: () -> Unit
+) {
+    var offsetUp by remember { mutableStateOf(Offset(830f, 840f)) }
+    var offsetDown by remember { mutableStateOf(Offset(830f, 935f)) }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        SmallFloatingActionButton(
+            onClick = onArrowUpClick,
+            containerColor = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .size(35.dp) // tamaño del botón
+                .offset { IntOffset(offsetUp.x.roundToInt(), offsetUp.y.roundToInt()) }
+
+
+        ) {
+            Icon(
+                Icons.Filled.ArrowUpward,
+                contentDescription = "Subir",
+                modifier = Modifier.size(30.dp) // tamaño del ícono
+            )
+        }
+
+        SmallFloatingActionButton(
+            onClick = onArrowDownClick,
+            containerColor = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier
+                .size(35.dp)
+                .offset { IntOffset(offsetDown.x.roundToInt(), offsetDown.y.roundToInt()) }
+
+        ) {
+            Icon(
+                Icons.Filled.ArrowDownward,
+                contentDescription = "Bajar",
+                modifier = Modifier.size(30.dp)
+            )
         }
     }
 }
