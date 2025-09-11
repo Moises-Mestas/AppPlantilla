@@ -74,7 +74,9 @@ fun HistorialScreen(
     // Para el diálogo de confirmación de borrado
     var pendingDelete by remember { mutableStateOf<Ingreso?>(null) }
 
+    var isAscending by remember { mutableStateOf(true) }  // Estado para controlar el orden
 
+    var isFilteredByAmount by remember { mutableStateOf(false) }  // Si el orden es por monto o por fecha
 
     // Cargar userId
     LaunchedEffect(Unit) {
@@ -93,8 +95,9 @@ fun HistorialScreen(
         }
     }
 
-    // Aplicar filtros
-    val filteredIngresos = ingresos
+    // Aplicar filtros y orden
+    // Aplicar filtros y orden
+    var filteredIngresos = ingresos
         .filter {
             (fechaSeleccionada == null || it.fecha >= fechaSeleccionada!!) &&
                     (fechaSeleccionada2 == null || it.fecha <= fechaSeleccionada2!!)
@@ -107,7 +110,14 @@ fun HistorialScreen(
                 else       -> true
             }
         }
-        .sortedByDescending { it.fecha }
+        .sortedByDescending { it.fecha }  // Ordena por fecha, de más reciente a más antiguo
+
+    // Si el filtro por monto está activado, ordena por monto
+    if (isFilteredByAmount) {
+        filteredIngresos = filteredIngresos.sortedBy {
+            if (isAscending) it.monto else -it.monto
+        }
+    }
 
     val totalMonto = when (selectedPaymentType) {
         "TARJETA"  -> montoTotalTarjeta
@@ -229,6 +239,8 @@ fun HistorialScreen(
             RestablecerButton {
                 fechaSeleccionada = null
                 fechaSeleccionada2 = null
+                isFilteredByAmount = false  // Eliminar el filtro de monto
+                isAscending = true  // Volver a ordenar por fecha (más reciente a más antiguo)
             }
             Spacer(Modifier.height(8.dp))
             Text(
@@ -308,11 +320,23 @@ fun HistorialScreen(
             HistorialButton(navigateToHistorial = navigateToHistorial)
         }
 
-        // 👇 Aquí agregamos los botones movibles
+// Aquí agregamos los botones movibles de flechas
         MovableArrowButtons(
-            onArrowUpClick = { /* TODO acción para subir */ },
-            onArrowDownClick = { /* TODO acción para bajar */ }
-        )
+            onArrowUpClick = {
+                isFilteredByAmount = true  // Activar el filtro por monto
+                isAscending = false  // Orden ascendente (mayor a menor)
+            },
+            onArrowDownClick = {
+                isFilteredByAmount = true  // Activar el filtro por monto
+                isAscending = true  // Orden descendente (menor a mayor)
+            },
+                onMoneyIconClick = {
+                    // Aquí puedes agregar alguna acción que desees realizar cuando se haga clic en el icono de dinero
+                }
+            )
+
+
+
     }
 }
 
@@ -540,10 +564,14 @@ fun AddFabWithSheet3(
 @Composable
 fun MovableArrowButtons(
     onArrowUpClick: () -> Unit,
-    onArrowDownClick: () -> Unit
+    onArrowDownClick: () -> Unit,
+    onMoneyIconClick: () -> Unit
+
 ) {
     var offsetUp by remember { mutableStateOf(Offset(830f, 840f)) }
     var offsetDown by remember { mutableStateOf(Offset(830f, 935f)) }
+    var offsetMoneyIcon by remember { mutableStateOf(Offset(930f, 890f)) }
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         SmallFloatingActionButton(
@@ -575,6 +603,28 @@ fun MovableArrowButtons(
                 contentDescription = "Bajar",
                 modifier = Modifier.size(30.dp)
             )
+        }
+        Box(modifier = Modifier.fillMaxSize()) {
+            SmallFloatingActionButton(
+                onClick = onMoneyIconClick,
+                containerColor = androidx.compose.ui.graphics.Color.Green,  // Aquí cambiamos el color a verde
+                modifier = Modifier
+                    .size(30.dp) // tamaño del botón
+                    .offset {
+                        IntOffset(
+                            offsetMoneyIcon.x.roundToInt(),
+                            offsetMoneyIcon.y.roundToInt()
+                        )
+                    }
+            ) {
+                Icon(
+                    Icons.Filled.AttachMoney, // Ícono de dinero
+                    contentDescription = "Dinero",
+                    modifier = Modifier.size(40.dp) // tamaño del ícono
+                )
+            }
+
+
         }
     }
 }
