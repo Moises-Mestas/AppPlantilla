@@ -3,6 +3,8 @@ package com.example.appfirst.data.repo
 import com.example.appfirst.data.local.dao.IngresoDao
 import com.example.appfirst.data.local.entity.Ingreso
 import com.example.appfirst.data.local.entity.MedioPago
+
+import com.example.appfirst.data.local.entity.TipoNota
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 
@@ -12,6 +14,8 @@ class IngresoRepository(private val dao: IngresoDao) {
 
     fun getIngresosByUser(userId: Long): Flow<List<Ingreso>> =
         dao.getIngresosByUser(userId)
+    fun getIngresosByNotas(userId: Long, notas: TipoNota): Flow<List<Ingreso>> =
+        dao.getIngresosByNotas(userId, notas)
 
     fun getIngresosByDateRange(userId: Long, startDate: Long, endDate: Long): Flow<List<Ingreso>> =
         dao.getIngresosByDateRange(userId, startDate, endDate)
@@ -35,7 +39,7 @@ class IngresoRepository(private val dao: IngresoDao) {
         descripcion: String,
         fecha: Long,
         depositadoEn: MedioPago,   // 👈 enum
-        notas: String,
+        notas: TipoNota,
         userId: Long
     ): Long {
         if (descripcion.isBlank()) {
@@ -48,7 +52,7 @@ class IngresoRepository(private val dao: IngresoDao) {
             descripcion = descripcion.trim(),
             fecha = fecha,
             depositadoEn = depositadoEn,  // ✅ enum directo
-            notas = notas.trim(),
+            notas = notas,
             userId = userId
         )
         return dao.insert(ingreso)
@@ -60,7 +64,7 @@ class IngresoRepository(private val dao: IngresoDao) {
         descripcion: String,
         fecha: Long,
         depositadoEn: MedioPago,   // 👈 enum
-        notas: String,
+        notas: TipoNota,
         userId: Long
     ) {
         val ingresoExistente = dao.getIngresoById(id, userId)
@@ -76,7 +80,7 @@ class IngresoRepository(private val dao: IngresoDao) {
             descripcion = descripcion.trim(),
             fecha = fecha,
             depositadoEn = depositadoEn,  // ✅ enum
-            notas = notas.trim()
+            notas = notas
         )
         dao.update(ingresoActualizado)
     }

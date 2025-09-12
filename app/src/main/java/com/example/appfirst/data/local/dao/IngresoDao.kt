@@ -3,6 +3,7 @@ package com.example.appfirst.data.local.dao
 import androidx.room.*
 import com.example.appfirst.data.local.entity.Ingreso
 import com.example.appfirst.data.local.entity.MedioPago
+import com.example.appfirst.data.local.entity.TipoNota
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -37,6 +38,10 @@ interface IngresoDao {
 
     @Query("SELECT SUM(monto) FROM ingresos WHERE userId = :userId")
     suspend fun getAllIngresosSum(userId: Long): Double
+    @Query("SELECT * FROM ingresos WHERE userId = :userId AND notas = :notas ORDER BY fecha DESC")
+    fun getIngresosByNotas(userId: Long, notas: TipoNota): Flow<List<Ingreso>>
+
+
 
 }
 

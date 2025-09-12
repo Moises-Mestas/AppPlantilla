@@ -34,6 +34,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.first
 import com.example.appfirst.data.datastore.UserPrefs
 import com.example.appfirst.data.local.AppDatabase
+import com.example.appfirst.data.local.entity.TipoNota
 import com.example.appfirst.ui.screens.ingreso.AddFabWithSheet
 import com.example.appfirst.ui.screens.ingreso.HistorialButton
 
@@ -50,8 +51,20 @@ fun GastoScreen(
     navigateBack: () -> Unit
 ) {
     val viewModel = rememberIngresoVM()
+
+
     val context = LocalContext.current
     var open by remember { mutableStateOf(false) }
+
+    val gastoTypes = listOf(
+        TipoNota.ALOJAMIENTO,
+        TipoNota.COMIDA,
+        TipoNota.ENTRETENIMIENTO,
+        TipoNota.FAMILIA,
+        TipoNota.MASCOTAS,
+        TipoNota.EDUCACION,
+        TipoNota.OTROS
+    )
     LaunchedEffect(Unit) {
         try {
             val userDao = AppDatabase.get(context).userDao()
@@ -158,7 +171,15 @@ fun GastoFormScreen(
     val form by viewModel.form.collectAsState()
     val message by viewModel.message.collectAsState()
     val navigateToSuccess by viewModel.navigateToSuccess.collectAsState()
-
+    val gastoTypes = listOf(
+        TipoNota.ALOJAMIENTO,
+        TipoNota.COMIDA,
+        TipoNota.ENTRETENIMIENTO,
+        TipoNota.FAMILIA,
+        TipoNota.MASCOTAS,
+        TipoNota.EDUCACION,
+        TipoNota.OTROS
+    )
     LaunchedEffect(Unit) {
         if (form.fecha.isBlank()) {
             viewModel.onFormChange(fecha = System.currentTimeMillis().toString())
@@ -268,14 +289,36 @@ fun GastoFormScreen(
 
         Spacer(Modifier.height(20.dp))
 
-        Text("Notas:", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
+        // Notas (TipoNota) DropdownMenu
+        Text("Categoria:", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(8.dp))
-        OutlinedTextField(
-            value = form.notas,
-            onValueChange = { viewModel.onFormChange(notas = it) },
-            label = { Text("Notas (opcional)") },
-            modifier = Modifier.fillMaxWidth()
-        )
+
+        var expanded2 by remember { mutableStateOf(false) }
+        ExposedDropdownMenuBox(expanded = expanded2, onExpandedChange = { expanded2 = !expanded2 }) {
+            val labelActual = form.notas.display() // Mostrar el nombre legible de TipoNota
+            OutlinedTextField(
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                readOnly = true,
+                value = labelActual,
+                onValueChange = {},
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded2) },
+                placeholder = { Text("Selecciona una nota") }
+            )
+
+            ExposedDropdownMenu(expanded = expanded2, onDismissRequest = { expanded2 = false }) {
+                gastoTypes.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option.display()) },
+                        onClick = {
+                            viewModel.onFormChange(notas = option)
+                            expanded2 = false
+                        }
+                    )
+                }
+            }
+        }
 
         Spacer(Modifier.height(24.dp))
 

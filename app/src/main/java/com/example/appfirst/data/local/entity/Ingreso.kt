@@ -3,9 +3,6 @@ package com.example.appfirst.data.local.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.ForeignKey
-import androidx.room.TypeConverters
-import com.example.appfirst.data.local.converters.DateConverter
-import com.example.appfirst.data.local.entity.User
 
 @Entity(
     tableName = "ingresos",
@@ -24,7 +21,10 @@ data class Ingreso(
     val descripcion: String,
     val fecha: Long,  // Fecha almacenada como Long (milisegundos desde epoch)
     @field:androidx.room.ColumnInfo(name = "depositado_en")
-    val depositadoEn: MedioPago,    val notas: String,
+    val depositadoEn: MedioPago,
+
+    @field:androidx.room.ColumnInfo(name = "notas")
+    val notas: TipoNota, // Usamos el enum TipoNota en lugar de un String
     val userId: Long, // ← FOREIGN KEY
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()

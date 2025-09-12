@@ -7,6 +7,7 @@ import com.example.appfirst.data.datastore.UserPrefs
 import com.example.appfirst.data.local.AppDatabase
 import com.example.appfirst.data.local.entity.Ingreso
 import com.example.appfirst.data.local.entity.MedioPago
+import com.example.appfirst.data.local.entity.TipoNota
 import com.example.appfirst.data.repo.IngresoRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -17,7 +18,7 @@ data class IngresoFormState(
     val descripcion: String = "",
     val fecha: String = "",
     val depositadoEn: com.example.appfirst.data.local.entity.MedioPago = com.example.appfirst.data.local.entity.MedioPago.TARJETA,
-    val notas: String = "",
+    val notas: com.example.appfirst.data.local.entity.TipoNota = com.example.appfirst.data.local.entity.TipoNota.OTROS,
     val errors: Map<String, String> = emptyMap()
 )
 
@@ -109,10 +110,8 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
             val q = queryText.trim()
             ingresosList.filter { ingreso ->
                 ingreso.descripcion.contains(q, ignoreCase = true) ||
-                        ingreso.notas.contains(q, ignoreCase = true) ||
-                        // Si creaste "label" o "display()", usa eso; si no, usa name:
+                        ingreso.notas.display().contains(q, ignoreCase = true)
                         ingreso.depositadoEn.name.contains(q, ignoreCase = true)
-                // o: ingreso.depositadoEn.label.contains(q, ignoreCase = true)
             }
         }
     }
@@ -169,17 +168,18 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
         monto: String? = null,
         descripcion: String? = null,
         fecha: String? = null,
-        depositadoEn: com.example.appfirst.data.local.entity.MedioPago? = null,
-        notas: String? = null
+        depositadoEn: MedioPago? = null,
+        notas: TipoNota? = null // Cambiar a TipoNota
     ) {
         _form.value = _form.value.copy(
             monto = monto ?: _form.value.monto,
             descripcion = descripcion ?: _form.value.descripcion,
             fecha = fecha ?: _form.value.fecha,
             depositadoEn = depositadoEn ?: _form.value.depositadoEn,
-            notas = notas ?: _form.value.notas
+            notas = notas ?: _form.value.notas // Asignar TipoNota
         )
     }
+
 
     // Validar formulario
     private fun validate(): Boolean {
@@ -226,7 +226,7 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
                         descripcion = f.descripcion.trim(),
                         fecha = fecha,
                         depositadoEn = f.depositadoEn,   // ✅ enum directo
-                        notas = f.notas.trim(),
+                        notas = f.notas,
                         userId = userId
                     )
                     _navigateToSuccess.value = newId.toInt()
@@ -238,7 +238,7 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
                         descripcion = f.descripcion.trim(),
                         fecha = fecha,
                         depositadoEn = f.depositadoEn,   // ✅ enum directo
-                        notas = f.notas.trim(),
+                        notas = f.notas,
                         userId = userId
                     )
                     _navigateToSuccess.value = id

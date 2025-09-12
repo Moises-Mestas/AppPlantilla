@@ -382,9 +382,10 @@ fun IngresoItemSimple(
                     fontSize = 14.sp,
                     modifier = Modifier.padding(top = 4.dp))
                 Text("Depositado en: ${ingreso.depositadoEn}", fontSize = 12.sp)
-                if (ingreso.notas.isNotBlank()) {
-                    Text("Notas: ${ingreso.notas}", fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+                if (ingreso.notas.name.isNotBlank()) {  // Usamos 'name' para acceder al valor del enum.
+                    Text("Categoria: ${ingreso.notas.display()}", fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
                 }
+
                 Text("Fecha: ${formatFecha(ingreso.fecha)}", fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
             }
 
@@ -560,71 +561,67 @@ fun AddFabWithSheet3(
         }
     }
 }
-
 @Composable
 fun MovableArrowButtons(
     onArrowUpClick: () -> Unit,
     onArrowDownClick: () -> Unit,
     onMoneyIconClick: () -> Unit
-
 ) {
-    var offsetUp by remember { mutableStateOf(Offset(830f, 840f)) }
-    var offsetDown by remember { mutableStateOf(Offset(830f, 935f)) }
-    var offsetMoneyIcon by remember { mutableStateOf(Offset(930f, 890f)) }
-
-
     Box(modifier = Modifier.fillMaxSize()) {
-        SmallFloatingActionButton(
-            onClick = onArrowUpClick,
-            containerColor = MaterialTheme.colorScheme.primary,
+        // Usamos Column para los botones de flecha y un Row para alinear el botón de dinero a la derecha
+        Row(
             modifier = Modifier
-                .size(35.dp) // tamaño del botón
-                .offset { IntOffset(offsetUp.x.roundToInt(), offsetUp.y.roundToInt()) }
-
-
+                .align(Alignment.TopEnd)  // Alineamos todos los botones hacia la parte derecha
+                .padding(end = 30.dp, top = 315.dp)  // Controlamos el espacio desde la parte derecha y superior
         ) {
-            Icon(
-                Icons.Filled.ArrowUpward,
-                contentDescription = "Subir",
-                modifier = Modifier.size(30.dp) // tamaño del ícono
-            )
-        }
+            // Columna para los botones de flecha
+            Column(
+                modifier = Modifier
+                    .align(Alignment.CenterVertically) // Alinea la columna de flechas verticalmente
+                    .padding(end = 8.dp)  // Separación entre las flechas y el botón de dinero
+            ) {
+                // Flecha arriba
+                SmallFloatingActionButton(
+                    onClick = onArrowUpClick,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(35.dp) // tamaño del botón
+                ) {
+                    Icon(
+                        Icons.Filled.ArrowUpward,
+                        contentDescription = "Subir",
+                        modifier = Modifier.size(30.dp) // tamaño del ícono
+                    )
+                }
 
-        SmallFloatingActionButton(
-            onClick = onArrowDownClick,
-            containerColor = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier
-                .size(35.dp)
-                .offset { IntOffset(offsetDown.x.roundToInt(), offsetDown.y.roundToInt()) }
+                // Flecha abajo
+                SmallFloatingActionButton(
+                    onClick = onArrowDownClick,
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.size(35.dp) // tamaño del botón
+                ) {
+                    Icon(
+                        Icons.Filled.ArrowDownward,
+                        contentDescription = "Bajar",
+                        modifier = Modifier.size(30.dp) // tamaño del ícono
+                    )
+                }
+            }
 
-        ) {
-            Icon(
-                Icons.Filled.ArrowDownward,
-                contentDescription = "Bajar",
-                modifier = Modifier.size(30.dp)
-            )
-        }
-        Box(modifier = Modifier.fillMaxSize()) {
+            // Botón de dinero (a la derecha de las flechas, centrado verticalmente)
             SmallFloatingActionButton(
                 onClick = onMoneyIconClick,
-                containerColor = androidx.compose.ui.graphics.Color.Green,  // Aquí cambiamos el color a verde
+                containerColor = androidx.compose.ui.graphics.Color.Green, // Color verde
                 modifier = Modifier
-                    .size(30.dp) // tamaño del botón
-                    .offset {
-                        IntOffset(
-                            offsetMoneyIcon.x.roundToInt(),
-                            offsetMoneyIcon.y.roundToInt()
-                        )
-                    }
+                    .size(35.dp) // tamaño del botón
+                    .align(Alignment.CenterVertically) // Alinea verticalmente con el centro de las flechas
             ) {
                 Icon(
                     Icons.Filled.AttachMoney, // Ícono de dinero
                     contentDescription = "Dinero",
-                    modifier = Modifier.size(40.dp) // tamaño del ícono
+                    modifier = Modifier.size(30.dp) // tamaño del ícono
                 )
             }
-
-
         }
     }
 }
+

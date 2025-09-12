@@ -38,6 +38,7 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.navigation.NavController
+import com.example.appfirst.data.local.entity.TipoNota
 import com.example.appfirst.ui.screens.ingreso.AddFabWithSheet
 
 
@@ -53,10 +54,18 @@ fun IngresoScreen2(
 
     navigateBack: () -> Unit
 ) {
+
     val viewModel = rememberIngresoVM()
     val context = LocalContext.current
     var open by remember { mutableStateOf(false) }
 
+    val ingresoTypes = listOf(
+        TipoNota.TRABAJO,
+        TipoNota.BONOS,
+        TipoNota.PROPINAS,
+        TipoNota.INVERSIONES,
+        TipoNota.OTROS
+    ) // Solo mostramos opciones de ingreso
     LaunchedEffect(Unit) {
         try {
             val userDao = AppDatabase.get(context).userDao()
@@ -179,7 +188,13 @@ fun IngresoFormScreen(
     val form by viewModel.form.collectAsState()
     val message by viewModel.message.collectAsState()
     val navigateToSuccess by viewModel.navigateToSuccess.collectAsState()
-
+    val ingresoTypes = listOf(
+        TipoNota.TRABAJO,
+        TipoNota.BONOS,
+        TipoNota.PROPINAS,
+        TipoNota.INVERSIONES,
+        TipoNota.OTROS
+    )
     LaunchedEffect(Unit) {
         if (form.fecha.isBlank()) {
             viewModel.onFormChange(fecha = System.currentTimeMillis().toString())
@@ -289,18 +304,44 @@ fun IngresoFormScreen(
 
         Spacer(Modifier.height(20.dp))
 
-        Text("Notas:", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
+
+
+
+
+
+        // Para las Notas (TipoNota):
+        Text("Categoria:", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(8.dp))
-        OutlinedTextField(
-            value = form.notas,
-            onValueChange = { viewModel.onFormChange(notas = it) },
-            label = { Text("Notas (opcional)") },
-            modifier = Modifier.fillMaxWidth()
-        )
+
+        var expanded2 by remember { mutableStateOf(false) }
+        ExposedDropdownMenuBox(expanded = expanded2, onExpandedChange = { expanded2 = !expanded2 }) {
+            val labelActual = form.notas.display() // Mostrar el nombre legible de TipoNota
+            OutlinedTextField(
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                readOnly = true,
+                value = labelActual,
+                onValueChange = {},
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded2) },
+                placeholder = { Text("Selecciona una nota") }
+            )
+
+            ExposedDropdownMenu(expanded = expanded2, onDismissRequest = { expanded2 = false }) {
+                ingresoTypes.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option.display()) },
+                        onClick = {
+                            viewModel.onFormChange(notas = option)
+                            expanded2 = false
+                        }
+                    )
+                }
+            }
+        }
 
         Spacer(Modifier.height(24.dp))
 
-// En la pantalla IngresoScreen2, cuando se guarde, pasar isGasto = false
         Button(onClick = {
             viewModel.save(isGasto = false)  // Pasamos isGasto como false
         }, modifier = Modifier
@@ -320,6 +361,7 @@ fun IngresoFormScreen(
         }
     }
 
+    // El DatePicker se mantiene igual
     if (showDatePicker) {
         AppDatePickerDialog(
             initialDate = Calendar.getInstance().apply { timeInMillis = dateMillis },
