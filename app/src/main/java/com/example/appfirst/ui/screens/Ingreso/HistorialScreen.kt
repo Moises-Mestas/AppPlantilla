@@ -1,4 +1,4 @@
-// com.example.appfirst.ui.ingresos.HistorialScreen.kt
+
 package com.example.appfirst.ui.ingresos
 
 import androidx.compose.foundation.background
@@ -7,6 +7,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -21,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -67,16 +69,16 @@ fun HistorialScreen(
     var open by remember { mutableStateOf(false) }
 
     // Filtros
-    var fechaSeleccionada by remember { mutableStateOf<Long?>(null) }   // desde
-    var fechaSeleccionada2 by remember { mutableStateOf<Long?>(null) }  // hasta
-    var selectedPaymentType by remember { mutableStateOf("TOTAL") }     // TOTAL/TARJETA/EFECTIVO/YAPE
+    var fechaSeleccionada by remember { mutableStateOf<Long?>(null) }
+    var fechaSeleccionada2 by remember { mutableStateOf<Long?>(null) }
+    var selectedPaymentType by remember { mutableStateOf("TOTAL") }
 
     // Para el diálogo de confirmación de borrado
     var pendingDelete by remember { mutableStateOf<Ingreso?>(null) }
 
-    var isAscending by remember { mutableStateOf(true) }  // Estado para controlar el orden
+    var isAscending by remember { mutableStateOf(true) }
 
-    var isFilteredByAmount by remember { mutableStateOf(false) }  // Si el orden es por monto o por fecha
+    var isFilteredByAmount by remember { mutableStateOf(false) }
 
     // Cargar userId
     LaunchedEffect(Unit) {
@@ -96,7 +98,7 @@ fun HistorialScreen(
     }
 
     // Aplicar filtros y orden
-    // Aplicar filtros y orden
+
     var filteredIngresos = ingresos
         .filter {
             (fechaSeleccionada == null || it.fecha >= fechaSeleccionada!!) &&
@@ -110,9 +112,8 @@ fun HistorialScreen(
                 else       -> true
             }
         }
-        .sortedByDescending { it.fecha }  // Ordena por fecha, de más reciente a más antiguo
+        .sortedByDescending { it.fecha }
 
-    // Si el filtro por monto está activado, ordena por monto
     if (isFilteredByAmount) {
         filteredIngresos = filteredIngresos.sortedBy {
             if (isAscending) it.monto else -it.monto
@@ -239,16 +240,16 @@ fun HistorialScreen(
             RestablecerButton {
                 fechaSeleccionada = null
                 fechaSeleccionada2 = null
-                isFilteredByAmount = false  // Eliminar el filtro de monto
-                isAscending = true  // Volver a ordenar por fecha (más reciente a más antiguo)
+                isFilteredByAmount = false
+                isAscending = true
             }
             Spacer(Modifier.height(8.dp))
             Text(
                 "Transacciones recientes:",
                 fontSize = 25.sp,
-                fontWeight = FontWeight.Bold,   // ← negrita
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.align(Alignment.Start) // asegura alineación a la izquierda
+                modifier = Modifier.align(Alignment.Start)
             )
             Divider(Modifier.padding(top = 4.dp))
             // Lista
@@ -273,7 +274,7 @@ fun HistorialScreen(
                                 val id = ingreso.id
                                 if (ingreso.monto < 0) navigateToEditGasto(id) else navigateToEditIngreso(id)
                             },
-                            onDelete = { pendingDelete = ingreso }   // abrir confirmación
+                            onDelete = { pendingDelete = ingreso }
                         )
                     }
                 }
@@ -293,9 +294,7 @@ fun HistorialScreen(
                     },
                     confirmButton = {
                         TextButton(onClick = {
-                            viewModel.delete(p.id)   // borra
-                            // si tu VM no recalcula totales automáticamente, descomenta:
-                            // viewModel.reloadData()
+                            viewModel.delete(p.id)
                             pendingDelete = null
                         }) { Text("Eliminar") }
                     },
@@ -306,7 +305,7 @@ fun HistorialScreen(
             }
         }
 
-        // FABs y hoja
+
         AddFabWithSheet3(
             sheetOffsetY = -20.dp,
             bottomPadding = innerPadding.calculateBottomPadding(),
@@ -320,22 +319,20 @@ fun HistorialScreen(
             HistorialButton(navigateToHistorial = navigateToHistorial)
         }
 
-// Aquí agregamos los botones movibles de flechas
+
         MovableArrowButtons(
             onArrowUpClick = {
-                isFilteredByAmount = true  // Activar el filtro por monto
-                isAscending = false  // Orden ascendente (mayor a menor)
+                isFilteredByAmount = true
+                isAscending = false
             },
             onArrowDownClick = {
-                isFilteredByAmount = true  // Activar el filtro por monto
-                isAscending = true  // Orden descendente (menor a mayor)
+                isFilteredByAmount = true
+                isAscending = true
             },
                 onMoneyIconClick = {
-                    // Aquí puedes agregar alguna acción que desees realizar cuando se haga clic en el icono de dinero
+
                 }
             )
-
-
 
     }
 }
@@ -353,7 +350,7 @@ fun IngresoItemSimple(
     onClick: () -> Unit,
     onDelete: () -> Unit
 ) {
-    // Verde si es ingreso, rojo si es gasto
+
     val backgroundColor = if (ingreso.monto < 0) {
         androidx.compose.ui.graphics.Color(0xFFFFCDD2) // rojo claro
     } else {
@@ -367,40 +364,89 @@ fun IngresoItemSimple(
         colors = CardDefaults.cardColors(containerColor = backgroundColor) // 👈 aquí se aplica
     ) {
         Box(Modifier.fillMaxWidth()) {
-            Column(
+
+            Row(
                 modifier = Modifier
                     .padding(16.dp)
-                    .padding(end = 48.dp)
             ) {
-                Text(
-                    text = ingreso.descripcion,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = androidx.compose.ui.graphics.Color.Black
-                )
-                Text("Monto: S/ ${"%.2f".format(ingreso.monto)}",
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(top = 4.dp))
-                Text("Depositado en: ${ingreso.depositadoEn}", fontSize = 12.sp)
-                if (ingreso.notas.name.isNotBlank()) {  // Usamos 'name' para acceder al valor del enum.
-                    Text("Categoria: ${ingreso.notas.display()}", fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+
+                Column(modifier = Modifier.weight(0.8f)) {
+                    Text(
+                        text = "Fecha: ${formatFecha(ingreso.fecha)}",
+                        fontSize = 18.sp,  // Aumento del tamaño de la fuente de la fecha
+                        fontWeight = FontWeight.Bold, // Negrita
+                        color = androidx.compose.ui.graphics.Color.Black
+                    )
+                    Spacer(Modifier.height(8.dp))
+
+                    Text(
+                        text = "Descripción: ${ingreso.descripcion}",
+                        fontSize = 16.sp,
+
+                        color = androidx.compose.ui.graphics.Color.Black
+                    )
+                    Spacer(Modifier.height(8.dp))
+
+                    Text(
+                        text = "Depositado en: ${ingreso.depositadoEn}",
+                        fontSize = 16.sp,
+
+                        color = androidx.compose.ui.graphics.Color.Black
+                    )
+                    Spacer(Modifier.height(8.dp))
+
+                    Text(
+                        text = "Categoría: ${ingreso.notas.display()}",
+                        fontSize = 16.sp,
+
+                        color = androidx.compose.ui.graphics.Color.Black
+                    )
                 }
 
-                Text("Fecha: ${formatFecha(ingreso.fecha)}", fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+
+                Spacer(Modifier.width(20.dp))  // Ajusta la distancia entre las columnas
+
+                // Columna para el monto (a la derecha)
+                Column(
+                    modifier = Modifier
+                        .weight(0.5f)  // Menor peso para la columna del monto
+                        .fillMaxHeight()
+                        .padding(top = 40.dp) // Esto mueve el monto hacia abajo
+                ) {
+                    Text(
+                        text = "S/ ${"%.2f".format(ingreso.monto)}",
+                        fontSize = 20.sp,  // Aumento del tamaño de la fuente del monto
+                        fontWeight = FontWeight.Bold,  // Negrita
+                        color = androidx.compose.ui.graphics.Color.Black,
+                        modifier = Modifier.fillMaxWidth() // Asegura que se alinee al ancho disponible
+                    )
+                }
             }
 
-            // Botón X para eliminar
             IconButton(
                 onClick = onDelete,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(8.dp)
             ) {
-                Icon(Icons.Filled.Close, contentDescription = "Eliminar")
+                // Crear un fondo rojo medio con forma redondeada para el botón
+                Box(
+                    modifier = Modifier
+                        .background(Color(0xFFF44336), shape = CircleShape) // Fondo rojo y forma circular
+                        .padding(3.dp) // Padding alrededor del icono
+                ) {
+                    Icon(
+                        Icons.Filled.Close,
+                        contentDescription = "Eliminar",
+                        tint = Color.White // Hacer el icono blanco para contrastar con el fondo rojo
+                    )
+                }
             }
+
         }
     }
 }
+
 
 
 
@@ -460,7 +506,6 @@ fun FechaSeleccionadaSection1(
     }
 }
 
-// Formateador local (evita imports duplicados)
 fun formatFecha(timestamp: Long): String = try {
     android.text.format.DateFormat.format("dd/MM/yy HH:mm", Date(timestamp)).toString()
 } catch (e: Exception) {
@@ -568,57 +613,56 @@ fun MovableArrowButtons(
     onMoneyIconClick: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        // Usamos Column para los botones de flecha y un Row para alinear el botón de dinero a la derecha
         Row(
             modifier = Modifier
-                .align(Alignment.TopEnd)  // Alineamos todos los botones hacia la parte derecha
-                .padding(end = 30.dp, top = 315.dp)  // Controlamos el espacio desde la parte derecha y superior
+                .align(Alignment.TopEnd)
+                .padding(end = 30.dp, top = 315.dp)
         ) {
-            // Columna para los botones de flecha
+
             Column(
                 modifier = Modifier
-                    .align(Alignment.CenterVertically) // Alinea la columna de flechas verticalmente
-                    .padding(end = 8.dp)  // Separación entre las flechas y el botón de dinero
+                    .align(Alignment.CenterVertically)
+                    .padding(end = 8.dp)
             ) {
-                // Flecha arriba
+
                 SmallFloatingActionButton(
                     onClick = onArrowUpClick,
                     containerColor = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(35.dp) // tamaño del botón
+                    modifier = Modifier.size(35.dp)
                 ) {
                     Icon(
                         Icons.Filled.ArrowUpward,
                         contentDescription = "Subir",
-                        modifier = Modifier.size(30.dp) // tamaño del ícono
+                        modifier = Modifier.size(30.dp)
                     )
                 }
 
-                // Flecha abajo
+
                 SmallFloatingActionButton(
                     onClick = onArrowDownClick,
                     containerColor = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.size(35.dp) // tamaño del botón
+                    modifier = Modifier.size(35.dp)
                 ) {
                     Icon(
                         Icons.Filled.ArrowDownward,
                         contentDescription = "Bajar",
-                        modifier = Modifier.size(30.dp) // tamaño del ícono
+                        modifier = Modifier.size(30.dp)
                     )
                 }
             }
 
-            // Botón de dinero (a la derecha de las flechas, centrado verticalmente)
+
             SmallFloatingActionButton(
                 onClick = onMoneyIconClick,
-                containerColor = androidx.compose.ui.graphics.Color.Green, // Color verde
+                containerColor = androidx.compose.ui.graphics.Color.Green,
                 modifier = Modifier
-                    .size(35.dp) // tamaño del botón
-                    .align(Alignment.CenterVertically) // Alinea verticalmente con el centro de las flechas
+                    .size(35.dp)
+                    .align(Alignment.CenterVertically)
             ) {
                 Icon(
-                    Icons.Filled.AttachMoney, // Ícono de dinero
+                    Icons.Filled.AttachMoney,
                     contentDescription = "Dinero",
-                    modifier = Modifier.size(30.dp) // tamaño del ícono
+                    modifier = Modifier.size(30.dp)
                 )
             }
         }

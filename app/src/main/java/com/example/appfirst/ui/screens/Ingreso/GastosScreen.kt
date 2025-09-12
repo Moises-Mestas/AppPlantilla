@@ -473,20 +473,20 @@ fun AddFabWithSheet2(
 }
 @Composable
 fun HistorialButton2(
-    navigateToHistorial: () -> Unit  // Función para navegar al HistorialScreen
+    navigateToHistorial: () -> Unit
 ) {
-    Box(Modifier.fillMaxSize()) {  // Colocamos el FloatingActionButton dentro de un Box
+    Box(Modifier.fillMaxSize()) {
         FloatingActionButton(
-            onClick = { navigateToHistorial() }, // Acción de navegación al Historial
+            onClick = { navigateToHistorial() },
             modifier = Modifier
-                .align(Alignment.BottomStart)  // Alineación en la parte inferior izquierda
-                .padding(start = 16.dp, bottom = 30.dp), // Ajuste de padding para posicionarlo
+                .align(Alignment.BottomStart)
+                .padding(start = 16.dp, bottom = 30.dp),
             containerColor = MaterialTheme.colorScheme.primary
         ) {
             Icon(
-                imageVector = Icons.Filled.History,  // Icono de historial
+                imageVector = Icons.Filled.History,
                 contentDescription = "Historial",
-                tint = MaterialTheme.colorScheme.onPrimary  // Ajustar color
+                tint = MaterialTheme.colorScheme.onPrimary
             )
         }
     }
