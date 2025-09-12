@@ -14,3 +14,8 @@ object Registro
 
 @Serializable
 object Principal
+
+//seccion del calendario :v
+@Serializable object VistaCalendario
+@Serializable object DetallesFecha
+@Serializable object VistaNotas

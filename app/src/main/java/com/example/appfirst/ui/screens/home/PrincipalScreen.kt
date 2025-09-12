@@ -44,22 +44,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 
 enum class NavDestination(
     val icon: ImageVector,
     val label: String,
-    val contentDescription: String
+    val contentDescription: String,
+    val route: String
 ) {
-    DATE(Icons.Default.DateRange , "Calendario" , "Icono de calendario"),
-    SONGS(Icons.Default.AccountBox, "Amigos", "Icono de amigos"),
-    HOME(Icons.Default.Home, "Inicio", "Icono de inicio"),
-    FAVORITES(Icons.Default.Face, "Ahorros", "Icono de ahorros"),
-    PROFILE(Icons.Default.Email, "chat", "Icono de chat")
+    DATE(Icons.Default.DateRange , "Calendario" , "Icono de calendario", "calendario"),
+    HORARIO(Icons.Default.AccountBox, "Horario", "Icono de horario", "horario-diario"),
+    HOME(Icons.Default.Home, "Inicio", "Icono de inicio", "inicio"),
+    FAVORITES(Icons.Default.Face, "Ahorros", "Icono de ahorros", "ahorros"),
+    PROFILE(Icons.Default.Email, "chat", "Icono de chat", "chat")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PrincipalScreen(modifier: Modifier = Modifier) {
+fun PrincipalScreen(
+    navController: NavController,
+    modifier: Modifier = Modifier
+) {
     var selectedItem by rememberSaveable { mutableIntStateOf(0) }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
@@ -84,7 +89,17 @@ fun PrincipalScreen(modifier: Modifier = Modifier) {
                 NavDestination.entries.forEachIndexed { index, destination ->
                     NavigationBarItem(
                         selected = selectedItem == index,
-                        onClick = { selectedItem = index },
+                        onClick = {
+                            selectedItem = index
+                            when (destination) {
+                                // destinos/rutas
+                                NavDestination.DATE -> navController.navigate("VistaCalendario")
+                                NavDestination.HOME -> navController.navigate("inicio")
+                                NavDestination.HORARIO -> navController.navigate("horario-diario")
+                                NavDestination.FAVORITES -> navController.navigate("ahorros")
+                                NavDestination.PROFILE -> navController.navigate("chat")
+                            }
+                        },
                         icon = {
                             Icon(
                                 destination.icon,
