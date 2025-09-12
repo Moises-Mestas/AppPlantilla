@@ -282,7 +282,7 @@ fun TarjetaNotaHorario(nota: Nota) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Nota - ${nota.horaRecordatorio ?: "Sin hora específica"}",
+                text = "Nota - ${nota.horaInicio ?: "Sin hora específica"}",
                 style = MaterialTheme.typography.labelSmall,
                 color = Color.Gray
             )

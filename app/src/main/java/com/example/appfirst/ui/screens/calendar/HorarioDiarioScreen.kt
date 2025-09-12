@@ -47,6 +47,7 @@ import com.example.appfirst.data.local.entity.AccionDiaria
 import com.example.appfirst.ui.screens.calendar.elementos.AccionDiariaViewModelFactory
 import com.example.appfirst.ui.screens.calendar.elementos.TarjetaNotaHorario
 import androidx.compose.runtime.collectAsState
+import com.example.appfirst.ui.screens.calendar.elementos.TarjetaNota
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
