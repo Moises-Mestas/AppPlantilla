@@ -1,6 +1,6 @@
 package com.example.appfirst.ui.ingresos
 
-// imports
+
 import com.example.appfirst.ui.screens.home.NavDestination
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableIntStateOf
@@ -45,10 +45,10 @@ import com.example.appfirst.ui.screens.ingreso.AddFabWithSheet
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IngresoScreen2(
-    navController: NavController, // Recibe el navController
-    ingresoId: Int? = null,                 // <<< NUEVO
+    navController: NavController,
+    ingresoId: Int? = null,
 
-    navigateToCuentas: () -> Unit, // Agregamos la nueva función de navegación
+    navigateToCuentas: () -> Unit,
     navigateToGastos: () -> Unit,
     navigateToHistorial: () -> Unit,
 
@@ -65,7 +65,7 @@ fun IngresoScreen2(
         TipoNota.PROPINAS,
         TipoNota.INVERSIONES,
         TipoNota.OTROS
-    ) // Solo mostramos opciones de ingreso
+    )
     LaunchedEffect(Unit) {
         try {
             val userDao = AppDatabase.get(context).userDao()
@@ -77,11 +77,11 @@ fun IngresoScreen2(
             if (userId != null) {
                 viewModel.setUserId(userId)
 
-                // 👇 aquí decidimos crear o editar:
+
                 if (ingresoId != null) {
-                    viewModel.loadForEdit(ingresoId)   // precarga los campos
+                    viewModel.loadForEdit(ingresoId)
                 } else {
-                    viewModel.startCreate()            // limpia y setea fecha por defecto
+                    viewModel.startCreate()
                 }
             }
         } catch (_: Exception) { }
@@ -118,7 +118,7 @@ fun IngresoScreen2(
                         Icon(
                             Icons.Default.ArrowBack,
                             contentDescription = "Volver",
-                            tint = MaterialTheme.colorScheme.onPrimary // Cambiar el color del icono a blanco
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 }
@@ -131,8 +131,8 @@ fun IngresoScreen2(
                         selected = selectedItem == index,
                         onClick = {
                             selectedItem = index
-                            // Navegar a la vista de Cuentas si el icono de "Ahorros" es presionado
-                            if (index == 3) navigateToCuentas() // Índice de Ahorros
+
+                            if (index == 3) navigateToCuentas()
                         },
                         icon = {
                             Icon(
@@ -153,7 +153,7 @@ fun IngresoScreen2(
         ) {
             IngresoFormScreen(
                 viewModel = viewModel,
-                onSuccess = { navigateToCuentas() },  // Cambiar navigateBack() a navigateToCuentas()
+                onSuccess = { navigateToCuentas() },
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(30.dp)
@@ -164,10 +164,10 @@ fun IngresoScreen2(
                 bottomPadding = innerPadding.calculateBottomPadding(),
                 open = open,
                 onOpenChange = { open = it },
-                navigateToIngreso = navigateToCuentas, // Aquí puedes agregar la función de navegación para `IngresoScreen2`
-                navigateToHistorial = navigateToHistorial, // Pasamos la función de navegación
+                navigateToIngreso = navigateToCuentas,
+                navigateToHistorial = navigateToHistorial,
 
-                navigateToGastos = navigateToGastos // Función correcta de navegación
+                navigateToGastos = navigateToGastos
             )
             if (!open) {  // Mostrar HistorialButton solo si el popup está cerrado
                 HistorialButton2(navigateToHistorial = { navController.navigate("historial") })
@@ -343,12 +343,12 @@ fun IngresoFormScreen(
         Spacer(Modifier.height(24.dp))
 
         Button(onClick = {
-            viewModel.save(isGasto = false)  // Pasamos isGasto como false
+            viewModel.save(isGasto = false)
         }, modifier = Modifier
-            .fillMaxWidth(0.6f)  // Ajusta el ancho, aquí 80% del ancho máximo
+            .fillMaxWidth(0.6f)
         ) {
             Text(        "Guardar Ingreso",
-                fontSize = 20.sp,  // Aumenté el tamaño de la fuente
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold)
         }
 
@@ -361,7 +361,7 @@ fun IngresoFormScreen(
         }
     }
 
-    // El DatePicker se mantiene igual
+
     if (showDatePicker) {
         AppDatePickerDialog(
             initialDate = Calendar.getInstance().apply { timeInMillis = dateMillis },

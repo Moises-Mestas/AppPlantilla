@@ -38,23 +38,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+
 import com.example.appfirst.ui.ingreso.rememberIngresoVM
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CuentasScreen(
-    navController: NavController, // Recibe el navController
+    navController: NavController,
     navigateToHistorial: () -> Unit,
 
-    navigateBack: () -> Unit, // Función para navegar atrás
+    navigateBack: () -> Unit,
 
     navigateToIngreso2: () -> Unit,
     navigateToGastos: () -> Unit
 ) {
-    val viewModel = rememberIngresoVM() // Asegúrate de obtener el viewModel
-    val montoTotal by viewModel.montoTotal.collectAsState()  // Obtén el monto total
+    val viewModel = rememberIngresoVM()
+    val montoTotal by viewModel.montoTotal.collectAsState()
     val montoTotalTarjeta by viewModel.montoTotalTarjeta.collectAsState()
     val montoTotalEfectivo by viewModel.montoTotalEfectivo.collectAsState()
     val montoTotalYape by viewModel.montoTotalYape.collectAsState()
@@ -76,7 +76,7 @@ fun CuentasScreen(
                         Icon(
                             Icons.Default.ArrowBack,
                             contentDescription = "Volver",
-                            tint = MaterialTheme.colorScheme.onPrimary // Cambiar el color del icono a blanco
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 }
@@ -121,9 +121,9 @@ fun CuentasScreen(
                 fontSize = 35.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp) // Ajuste de padding superior
+                modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp)
             )
-            // Mostrar el monto total
+
             Text(
                 text = "Monto Total: S/ ${"%.2f".format(montoTotalTarjeta + montoTotalEfectivo + montoTotalYape)}",
                 fontSize = 24.sp,
@@ -133,7 +133,7 @@ fun CuentasScreen(
                     .padding(16.dp)
                     .align(Alignment.CenterHorizontally)
             )
-            // Sección TARJETA (morada)
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -150,7 +150,7 @@ fun CuentasScreen(
                 )
             }
 
-            // Cuadro gris TARJETA (botón)
+
             Button(
                 onClick = { /* Acción para tarjeta */ },
                 modifier = Modifier
@@ -169,10 +169,10 @@ fun CuentasScreen(
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.fillMaxWidth(0.7f) // Asegurando que el texto ocupe solo parte del botón
+                        modifier = Modifier.fillMaxWidth(0.7f)
                     )
                     Text(
-                        text = "S/ ${"%.2f".format(montoTotalTarjeta)}", // Monto total de tarjeta
+                        text = "S/ ${"%.2f".format(montoTotalTarjeta)}",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.primary
@@ -180,7 +180,7 @@ fun CuentasScreen(
                 }
             }
 
-            // Sección EFECTIVO (morada)
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -197,7 +197,7 @@ fun CuentasScreen(
                 )
             }
 
-            // Cuadro gris EFECTIVO (botón)
+
             Button(
                 onClick = { /* Acción efectivo */ },
                 modifier = Modifier
@@ -227,7 +227,7 @@ fun CuentasScreen(
                 }
             }
 
-            // Sección YAPE (morada)
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -244,7 +244,7 @@ fun CuentasScreen(
                 )
             }
 
-            // Cuadro gris YAPE (botón)
+
             Button(
                 onClick = { /* Acción yape */ },
                 modifier = Modifier
@@ -266,7 +266,7 @@ fun CuentasScreen(
                         modifier = Modifier.fillMaxWidth(0.7f)
                     )
                     Text(
-                        text = "S/ ${"%.2f".format(montoTotalYape)}", // Monto total de yape
+                        text = "S/ ${"%.2f".format(montoTotalYape)}",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.primary
@@ -280,13 +280,13 @@ fun CuentasScreen(
             bottomPadding = innerPadding.calculateBottomPadding(),
             open = open,
             onOpenChange = { open = it },
-            navigateToGastos = navigateToGastos, // Pasamos la función de navegación
-            navigateToHistorial = navigateToHistorial, // Pasamos la función de navegación
+            navigateToGastos = navigateToGastos,
+            navigateToHistorial = navigateToHistorial,
 
-            navigateToIngreso = navigateToIngreso2  // Pasamos la función de navegación
+            navigateToIngreso = navigateToIngreso2
         )
 
-        if (!open) {  // Mostrar HistorialButton solo si el popup está cerrado
+        if (!open) {
             HistorialButton(navigateToHistorial = { navController.navigate("historial") })
         }
 
@@ -296,24 +296,24 @@ fun CuentasScreen(
 
 @Composable
 fun AddFabWithSheet(
-    sheetOffsetY: Dp = 80.dp,   // Ajusta la altura del sheet: +baja, -sube
+    sheetOffsetY: Dp = 80.dp,
     bottomPadding: Dp = 0.dp,
     open: Boolean,
     onOpenChange: (Boolean) -> Unit,
-    navigateToGastos: () -> Unit,  // Función de navegación a GastoScreen
-    navigateToHistorial: () -> Unit,  // Función de navegación a GastoScreen
+    navigateToGastos: () -> Unit,
+    navigateToHistorial: () -> Unit,
 
-    navigateToIngreso: () -> Unit // Función de navegación a IngresoScreen2
+    navigateToIngreso: () -> Unit
 
 ) {
     Box(Modifier.fillMaxSize()) {
 
-        // FAB (botón +)
+
         FloatingActionButton(
             onClick = { onOpenChange(true) },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 50.dp + bottomPadding), // Ajuste del FAB
+                .padding(end = 16.dp, bottom = 50.dp + bottomPadding),
             containerColor = MaterialTheme.colorScheme.primary
         ) {
             Icon(
@@ -332,12 +332,12 @@ fun AddFabWithSheet(
 
 
         if (open) {
-            // Fondo oscuro
+
             Box(
                 Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f))
-                    .clickable { onOpenChange(false) } // Cerrar al hacer clic en el fondo oscuro
+                    .clickable { onOpenChange(false) }
             )
 
             // Solo los botones (sin fondo)
@@ -348,18 +348,18 @@ fun AddFabWithSheet(
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 8.dp + bottomPadding)
                     .offset(y = sheetOffsetY),
-                verticalArrangement = Arrangement.spacedBy(20.dp) // espacio entre botones
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 // BOTÓN GASTO
                 ElevatedButton(
                     onClick = {
-                        navigateToGastos() // Navegar a GastoScreen
-                        onOpenChange(false) // Cerrar la ventana emergente
+                        navigateToGastos()
+                        onOpenChange(false)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(90.dp),
-                    shape = RectangleShape, // cuadrado
+                    shape = RectangleShape,
                     contentPadding = PaddingValues(8.dp)
                 ) {
                     Column(horizontalAlignment = Alignment.Start) {
@@ -384,8 +384,8 @@ fun AddFabWithSheet(
                 // BOTÓN INGRESO
                 ElevatedButton(
                     onClick = {
-                        navigateToIngreso() // Navegar a IngresoScreen2
-                        onOpenChange(false) // Cerrar la ventana emergente
+                        navigateToIngreso()
+                        onOpenChange(false)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -419,20 +419,20 @@ fun AddFabWithSheet(
 
     @Composable
     fun HistorialButton(
-        navigateToHistorial: () -> Unit  // Función para navegar al HistorialScreen
+        navigateToHistorial: () -> Unit
     ) {
-        Box(Modifier.fillMaxSize()) {  // Colocamos el FloatingActionButton dentro de un Box
+        Box(Modifier.fillMaxSize()) {
             FloatingActionButton(
-                onClick = { navigateToHistorial() }, // Acción de navegación al Historial
+                onClick = { navigateToHistorial() },
                 modifier = Modifier
-                    .align(Alignment.BottomStart)  // Alineación en la parte inferior izquierda
-                    .padding(start = 16.dp, bottom = 155.dp), // Ajuste de padding para posicionarlo
+                    .align(Alignment.BottomStart)
+                    .padding(start = 16.dp, bottom = 155.dp),
                 containerColor = MaterialTheme.colorScheme.primary
             ) {
                 Icon(
-                    imageVector = Icons.Filled.History,  // Icono de historial
+                    imageVector = Icons.Filled.History,
                     contentDescription = "Historial",
-                    tint = MaterialTheme.colorScheme.onPrimary  // Ajustar color
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
         }

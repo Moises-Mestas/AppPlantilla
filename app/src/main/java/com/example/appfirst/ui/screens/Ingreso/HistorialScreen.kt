@@ -73,7 +73,7 @@ fun HistorialScreen(
     var fechaSeleccionada2 by remember { mutableStateOf<Long?>(null) }
     var selectedPaymentType by remember { mutableStateOf("TOTAL") }
 
-    // Para el diálogo de confirmación de borrado
+
     var pendingDelete by remember { mutableStateOf<Ingreso?>(null) }
 
     var isAscending by remember { mutableStateOf(true) }
@@ -404,21 +404,21 @@ fun IngresoItemSimple(
                 }
 
 
-                Spacer(Modifier.width(20.dp))  // Ajusta la distancia entre las columnas
+                Spacer(Modifier.width(20.dp))
 
-                // Columna para el monto (a la derecha)
+
                 Column(
                     modifier = Modifier
-                        .weight(0.5f)  // Menor peso para la columna del monto
+                        .weight(0.5f)
                         .fillMaxHeight()
-                        .padding(top = 40.dp) // Esto mueve el monto hacia abajo
+                        .padding(top = 40.dp)
                 ) {
                     Text(
                         text = "S/ ${"%.2f".format(ingreso.monto)}",
-                        fontSize = 20.sp,  // Aumento del tamaño de la fuente del monto
-                        fontWeight = FontWeight.Bold,  // Negrita
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
                         color = androidx.compose.ui.graphics.Color.Black,
-                        modifier = Modifier.fillMaxWidth() // Asegura que se alinee al ancho disponible
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
@@ -429,16 +429,16 @@ fun IngresoItemSimple(
                     .align(Alignment.TopEnd)
                     .padding(8.dp)
             ) {
-                // Crear un fondo rojo medio con forma redondeada para el botón
+
                 Box(
                     modifier = Modifier
-                        .background(Color(0xFFF44336), shape = CircleShape) // Fondo rojo y forma circular
-                        .padding(3.dp) // Padding alrededor del icono
+                        .background(Color(0xFFF44336), shape = CircleShape)
+                        .padding(3.dp)
                 ) {
                     Icon(
                         Icons.Filled.Close,
                         contentDescription = "Eliminar",
-                        tint = Color.White // Hacer el icono blanco para contrastar con el fondo rojo
+                        tint = Color.White 
                     )
                 }
             }

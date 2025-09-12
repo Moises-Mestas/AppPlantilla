@@ -1,6 +1,6 @@
 package com.example.appfirst.ui.ingresos
 
-// imports
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import com.example.appfirst.ui.screens.home.NavDestination
@@ -41,8 +41,8 @@ import com.example.appfirst.ui.screens.ingreso.HistorialButton
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GastoScreen(
-    navController: NavController, // Recibe el navController
-    gastoId: Int? = null,                // <<< NUEVO
+    navController: NavController,
+    gastoId: Int? = null,
 
     navigateToCuentas: () -> Unit,
     navigateToHistorial: () -> Unit,
@@ -110,7 +110,7 @@ fun GastoScreen(
                         Icon(
                             Icons.Default.ArrowBack,
                             contentDescription = "Volver",
-                            tint = MaterialTheme.colorScheme.onPrimary // Cambiar el color del icono a blanco
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 }
@@ -123,7 +123,7 @@ fun GastoScreen(
                         selected = selectedItem == index,
                         onClick = {
                             selectedItem = index
-                            if (index == 3) navigateToCuentas() // Navegar a cuentas
+                            if (index == 3) navigateToCuentas()
                         },
                         icon = { Icon(destination.icon, contentDescription = destination.contentDescription) },
                         label = { Text(destination.label) }
@@ -139,7 +139,7 @@ fun GastoScreen(
         ) {
             GastoFormScreen(
                 viewModel = viewModel,
-                onSuccess = { navigateToCuentas() },  // Cambiar navigateBack() a navigateToCuentas()
+                onSuccess = { navigateToCuentas() },
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(30.dp)
@@ -151,8 +151,8 @@ fun GastoScreen(
                 open = open,
                 onOpenChange = { open = it },
                 navigateToGastos = navigateToCuentas,
-                navigateToHistorial = navigateToHistorial, // Pasamos la función de navegación
-                navigateToIngreso = navigateToIngreso2  // Aquí aseguramos que la función correcta es pasada
+                navigateToHistorial = navigateToHistorial,
+                navigateToIngreso = navigateToIngreso2
             )
             if (!open) {  // Mostrar HistorialButton solo si el popup está cerrado
                 HistorialButton2(navigateToHistorial = { navController.navigate("historial") })
@@ -295,7 +295,7 @@ fun GastoFormScreen(
 
         var expanded2 by remember { mutableStateOf(false) }
         ExposedDropdownMenuBox(expanded = expanded2, onExpandedChange = { expanded2 = !expanded2 }) {
-            val labelActual = form.notas.display() // Mostrar el nombre legible de TipoNota
+            val labelActual = form.notas.display()
             OutlinedTextField(
                 modifier = Modifier
                     .menuAnchor()
@@ -323,12 +323,12 @@ fun GastoFormScreen(
         Spacer(Modifier.height(24.dp))
 
         Button(onClick = {
-            viewModel.save(isGasto = true)  // Pasamos isGasto = true para Gasto
+            viewModel.save(isGasto = true)
         }, modifier = Modifier
-            .fillMaxWidth(0.6f)  // Ajusta el ancho, aquí 80% del ancho máximo
+            .fillMaxWidth(0.6f)
         ) {
             Text(        "Guardar Gasto",
-                fontSize = 20.sp,  // Aumenté el tamaño de la fuente
+                fontSize = 20.sp,
                 fontWeight = FontWeight.Bold)
         }
 
@@ -360,22 +360,22 @@ fun GastoFormScreen(
 
 @Composable
 fun AddFabWithSheet2(
-    sheetOffsetY: Dp = 80.dp,   // Ajusta la altura del sheet: +baja, -sube
+    sheetOffsetY: Dp = 80.dp,
     bottomPadding: Dp = 0.dp,
     open: Boolean,
     onOpenChange: (Boolean) -> Unit,
-    navigateToGastos: () -> Unit,  // Función de navegación a GastoScreen
+    navigateToGastos: () -> Unit,
     navigateToHistorial: () -> Unit,
 
-    navigateToIngreso: () -> Unit // Función de navegación a IngresoScreen2
+    navigateToIngreso: () -> Unit
 ) {
     Box(Modifier.fillMaxSize()) {
-        // FAB (botón +)
+
         FloatingActionButton(
             onClick = { onOpenChange(true) },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = -70.dp + bottomPadding), // Ajuste del FAB
+                .padding(end = 16.dp, bottom = -70.dp + bottomPadding),
             containerColor = MaterialTheme.colorScheme.primary
         ) {
             Icon(Icons.Filled.Add, contentDescription = "Agregar", tint = MaterialTheme.colorScheme.onPrimary)
@@ -388,15 +388,15 @@ fun AddFabWithSheet2(
 
 
         if (open) {
-            // Fondo oscuro
+
             Box(
                 Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f))
-                    .clickable { onOpenChange(false) } // Cerrar al hacer clic en el fondo oscuro
+                    .clickable { onOpenChange(false) }
             )
 
-            // Solo los botones (sin fondo)
+
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -404,18 +404,18 @@ fun AddFabWithSheet2(
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 8.dp + bottomPadding)
                     .offset(y = sheetOffsetY),
-                verticalArrangement = Arrangement.spacedBy(20.dp) // espacio entre botones
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                // BOTÓN GASTO
+
                 ElevatedButton(
                     onClick = {
-                        navigateToGastos() // Navegar a GastoScreen
-                        onOpenChange(false) // Cerrar la ventana emergente
+                        navigateToGastos()
+                        onOpenChange(false)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(90.dp),
-                    shape = RectangleShape, // cuadrado
+                    shape = RectangleShape,
                     contentPadding = PaddingValues(8.dp)
                 ) {
                     Column(horizontalAlignment = Alignment.Start) {
@@ -423,7 +423,7 @@ fun AddFabWithSheet2(
                             Icon(
                                 Icons.Outlined.ShoppingCart,
                                 contentDescription = null,
-                                modifier = Modifier.size(34.dp) // icono mediano
+                                modifier = Modifier.size(34.dp)
                             )
                             Spacer(Modifier.width(12.dp))
                             Text("Gasto", fontSize = 20.sp, fontWeight = FontWeight.Bold)
@@ -437,11 +437,11 @@ fun AddFabWithSheet2(
                     }
                 }
 
-                // BOTÓN INGRESO
+
                 ElevatedButton(
                     onClick = {
-                        navigateToIngreso() // Navegar a IngresoScreen2
-                        onOpenChange(false) // Cerrar la ventana emergente
+                        navigateToIngreso()
+                        onOpenChange(false)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
