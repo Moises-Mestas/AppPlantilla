@@ -40,9 +40,7 @@ android {
         compose = true
     }
 }
-
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -54,6 +52,7 @@ dependencies {
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.firebase.crashlytics.buildtools)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -63,16 +62,15 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation(libs.androidx.navigation.compose.v280)
-    implementation(libs.androidx.lifecycle.runtime.ktx.v284)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    // Room + KSP
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
-    // DataStore (onboarding)
+
+    // ✅ DataStore
     implementation(libs.androidx.datastore.preferences)
 
-    //librerias para el calendario
+    // ✅ Calendario / LiveData
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.gson)
 }

@@ -1,22 +1,11 @@
 package com.example.appfirst.core.navigation
 
-import android.app.Application
-import android.util.Log
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -27,8 +16,15 @@ import com.example.appfirst.ui.screens.home.RegistroScreen
 import com.example.appfirst.ui.screens.onboarding.OnboardingScreen
 import com.example.appfirst.data.datastore.UserPrefs
 import androidx.compose.ui.platform.LocalContext
+import com.example.appfirst.ui.screens.Agenda.AgendaScreen
+import com.example.appfirst.ui.screens.Agenda.FormExamenScreen
+import com.example.appfirst.ui.screens.Agenda.FormTareaScreen
+import com.example.appfirst.ui.screens.Agenda.RecordatorioScreen
+import com.example.appfirst.ui.screens.AsignaturaScreen
+import com.example.appfirst.ui.screens.calendar.NotaViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun NavigationWrapper() {
@@ -89,7 +85,7 @@ fun NavigationWrapper() {
         }
 
         composable("principal") {
-            PrincipalScreen()
+            PrincipalScreen(navigateTotarea = {navController.navigate("tarea")})
         }
 
         composable ("tarea" ){
@@ -97,7 +93,7 @@ fun NavigationWrapper() {
                 navigatetoAsignatura = {navController.navigate("Asignatura")},
                 navigateToFormTarea = {navController.navigate("FormTarea") } ,
                 navigateToExamen= {navController.navigate("Examen")},
-                        navigateToRecordatorio={navController.navigate("recordatorio")}
+                navigateToRecordatorio={navController.navigate("recordatorio")}
             )
         }
         composable ("FormTarea"){
