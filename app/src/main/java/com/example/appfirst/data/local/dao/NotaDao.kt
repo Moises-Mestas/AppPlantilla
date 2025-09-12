@@ -42,4 +42,7 @@ interface NotaDao {
 
     @Query("SELECT * FROM notas WHERE fecha = :fecha")
     suspend fun obtenerNotasPorFechaDirecto(fecha: String): List<Nota>
+
+    @Query("SELECT * FROM notas WHERE fecha = :fecha ORDER BY horaInicio ASC")
+    suspend fun obtenerNotasPorFechaSync(fecha: String): List<Nota>
 }

@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -34,11 +33,11 @@ import com.example.appfirst.data.local.entity.Nota
 import com.example.appfirst.ui.screens.calendar.AccionDiariaViewModel
 import com.example.appfirst.ui.screens.calendar.elementos.AccionDiariaViewModelFactory
 import com.example.appfirst.ui.screens.calendar.CalendarioScreen
-import com.example.appfirst.ui.screens.calendar.FormularioAccionDiariaScreen
-import com.example.appfirst.ui.screens.calendar.FormularioNotaScreen
+import com.example.appfirst.ui.screens.calendar.elementos.FormularioNotaScreen
 import com.example.appfirst.ui.screens.calendar.HorarioDiarioScreen
 import com.example.appfirst.ui.screens.calendar.NotaViewModel
 import com.example.appfirst.ui.screens.calendar.VistaDetallesDiaScreen
+import com.example.appfirst.ui.screens.calendar.elementos.FormularioAccionDiariaScreen
 import com.example.appfirst.ui.screens.calendar.elementos.NotaViewModelFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -46,6 +45,7 @@ import java.net.URLDecoder
 import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 
 
@@ -228,14 +228,27 @@ fun NavigationWrapper() {
             )
         }
 
-        composable("horario-diario") {
+        composable(route = "horario-diario") { navBackStackEntry ->
+            val viewModel: AccionDiariaViewModel = viewModel(
+                factory = AccionDiariaViewModelFactory(
+                    LocalContext.current.applicationContext as Application
+                )
+            )
+
             HorarioDiarioScreen(
                 onBack = { navController.popBackStack() },
                 onEditarAccion = { accion ->
                     val accionId = accion?.id ?: 0
-                    navController.navigate("editar-accion/$accionId")
+                    if (accionId > 0) {
+                        navController.navigate("editar-accion/$accionId")
+                    } else {
+                        navController.navigate("nueva-accion")
+                    }
                 },
-                //navController = navController
+                onAddNota = {
+                    val fechaHoy = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                    navController.navigate("formulario-nota/$fechaHoy?esNueva=true")
+                }
             )
         }
 
@@ -271,7 +284,7 @@ fun NavigationWrapper() {
                     CircularProgressIndicator()
                 }
             } else {
-                FormularioAccionDiariaScreen(
+                FormularioAccionDiariaScreen (
                     accionExistente = accionExistente,
                     onGuardar = { accion ->
                         if (accionExistente == null) {

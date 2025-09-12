@@ -41,4 +41,7 @@ interface AccionDiariaDao {
 
     @Query("SELECT * FROM acciones_diarias WHERE id = :id")
     suspend fun getAccionPorId(id: Int): AccionDiaria?
+
+    @Query("SELECT * FROM acciones_diarias ORDER BY horaInicio ASC")
+    suspend fun getTodasAccionesSync(): List<AccionDiaria>
 }

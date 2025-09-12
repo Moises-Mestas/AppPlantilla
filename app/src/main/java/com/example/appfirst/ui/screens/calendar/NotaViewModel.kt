@@ -10,9 +10,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.appfirst.data.local.AppDatabase
 import com.example.appfirst.data.repo.NotaRepository
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class NotaViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -25,44 +29,14 @@ class NotaViewModel(application: Application) : AndroidViewModel(application) {
         repository = NotaRepository(notaDao)
     }
 
-    fun obtenerNotasPorFecha(fecha: String) {
+    fun crearNota(nota: Nota) {
         viewModelScope.launch {
             try {
-                val notasList = repository.obtenerNotasPorFechaSync(fecha)
-                _notas.value = notasList
+                repository.crearNota(nota)
+                // Agregar la nueva nota a la lista local
+                _notas.value = _notas.value + nota
             } catch (e: Exception) {
-                _notas.value = emptyList()
-            }
-        }
-    }
-
-    fun eliminarNota(id: Int) {
-        viewModelScope.launch {
-            try {
-                repository.eliminarNotaPorId(id)
-                // Actualizar la lista local eliminando la nota
-                _notas.value = _notas.value.filter { it.id != id }
-            } catch (e: Exception) {
-                Log.e("NotaViewModel", "Error al eliminar nota: ${e.message}")
-            }
-        }
-    }
-
-    suspend fun obtenerNotaPorId(id: Int): Nota? {
-        return try {
-            repository.obtenerNotaPorId(id)
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    fun cargarNotasPorFecha(fecha: String) {
-        viewModelScope.launch {
-            try {
-                val notasList = repository.obtenerNotasPorFechaSync(fecha)
-                _notas.value = notasList
-            } catch (e: Exception) {
-                _notas.value = emptyList()
+                Log.e("NotaViewModel", "Error al crear nota: ${e.message}")
             }
         }
     }
@@ -79,15 +53,46 @@ class NotaViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun crearNota(nota: Nota) {
+    suspend fun obtenerNotaPorId(id: Int): Nota? {
+        return try {
+            repository.obtenerNotaPorId(id)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun eliminarNota(id: Int) {
         viewModelScope.launch {
             try {
-                repository.crearNota(nota)
-                // Agregar la nueva nota a la lista local
-                _notas.value = _notas.value + nota
+                repository.eliminarNotaPorId(id)
+                // Actualizar la lista local eliminando la nota
+                _notas.value = _notas.value.filter { it.id != id }
             } catch (e: Exception) {
-                Log.e("NotaViewModel", "Error al crear nota: ${e.message}")
+                Log.e("NotaViewModel", "Error al eliminar nota: ${e.message}")
             }
         }
     }
+
+    fun cargarNotasPorFecha(fecha: String) {
+        viewModelScope.launch {
+            try {
+                val notasList = repository.obtenerNotasPorFechaSync(fecha)
+                _notas.value = notasList
+            } catch (e: Exception) {
+                _notas.value = emptyList()
+            }
+        }
+    }
+
+//    fun obtenerNotasDeHoy(): Flow<List<Nota>> {
+//        val fechaHoy = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+//        return repository.obtenerNotasPorFecha(fechaHoy)
+//    }
+
+    suspend fun obtenerNotasDeHoySync(): List<Nota> {
+        val fechaHoy = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        return repository.obtenerNotasPorFechaSync(fechaHoy)
+    }
+
+
 }

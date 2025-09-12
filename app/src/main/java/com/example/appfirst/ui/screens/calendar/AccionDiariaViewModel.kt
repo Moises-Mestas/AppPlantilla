@@ -8,63 +8,130 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.appfirst.data.local.AppDatabase
 import com.example.appfirst.data.local.entity.AccionDiaria
+import com.example.appfirst.data.local.entity.Nota
 import com.example.appfirst.data.repo.AccionDiariaRepository
+import com.example.appfirst.data.repo.NotaRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-
+import java.util.Calendar
 class AccionDiariaViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository: AccionDiariaRepository
+    private val accionDiariaRepository: AccionDiariaRepository
+    private val notaRepository: NotaRepository
 
-    private val _filtroTexto = MutableLiveData("")
-    private val _filtroDia = MutableLiveData("Todos")
-    private val _filtroCategoria = MutableLiveData("Todas")
+    // Estado para el horario diario (acciones + notas)
+    private val _horarioEstado = MutableStateFlow(HorarioDiarioEstado())
+    val horarioEstado: StateFlow<HorarioDiarioEstado> = _horarioEstado.asStateFlow()
 
-    val accionesFiltradas: LiveData<List<AccionDiaria>>
+    // Estado para las acciones filtradas
+    private val _accionesFiltradas = MutableStateFlow<List<AccionDiaria>>(emptyList())
+    val accionesFiltradas: StateFlow<List<AccionDiaria>> = _accionesFiltradas.asStateFlow()
+
+    // Filtros
+    private var _filtroTexto = ""
+    private var _filtroDia = "Todos"
+    private var _filtroCategoria = "Todas"
 
     init {
-        val accionDao = AppDatabase.get(application).accionDiariaDao()
-        repository = AccionDiariaRepository(accionDao)
+        val database = AppDatabase.get(application)
+        accionDiariaRepository = AccionDiariaRepository(database.accionDiariaDao())
+        notaRepository = NotaRepository(database.notaDao())
 
-        accionesFiltradas = MediatorLiveData<List<AccionDiaria>>().apply {
-            fun update() {
-                val texto = _filtroTexto.value ?: ""
-                val dia = _filtroDia.value ?: "Todos"
-                val categoria = _filtroCategoria.value ?: "Todas"
-                val source = repository.getAccionesFiltradas(texto, dia, categoria)
-                removeSource(source)
-                addSource(source) { value = it }
-            }
-
-            addSource(_filtroTexto) { update() }
-            addSource(_filtroDia) { update() }
-            addSource(_filtroCategoria) { update() }
-        }
+        // Cargar datos iniciales
+        cargarHorarioDeHoy()
+        cargarAccionesFiltradas()
     }
 
     fun setFiltros(texto: String, dia: String, categoria: String) {
-        _filtroTexto.value = texto
-        _filtroDia.value = dia
-        _filtroCategoria.value = categoria
+        _filtroTexto = texto
+        _filtroDia = dia
+        _filtroCategoria = categoria
+        cargarAccionesFiltradas()
+    }
+
+    private fun cargarAccionesFiltradas() {
+        viewModelScope.launch {
+            try {
+                val acciones = accionDiariaRepository.getAccionesFiltradasSync(
+                    _filtroTexto, _filtroDia, _filtroCategoria
+                )
+                _accionesFiltradas.value = acciones
+            } catch (e: Exception) {
+                _accionesFiltradas.value = emptyList()
+            }
+        }
+    }
+
+    fun cargarHorarioDeHoy() {
+        viewModelScope.launch {
+            try {
+                val accionesHoy = accionDiariaRepository.obtenerAccionesDeHoy()
+                val notasHoy = notaRepository.obtenerNotasDeHoySync()
+
+                _horarioEstado.value = HorarioDiarioEstado(
+                    acciones = accionesHoy,
+                    notas = notasHoy,
+                    isLoading = false
+                )
+            } catch (e: Exception) {
+                _horarioEstado.value = HorarioDiarioEstado(
+                    error = "Error al cargar datos: ${e.message}",
+                    isLoading = false
+                )
+            }
+        }
     }
 
     suspend fun obtenerAccionPorId(id: Int): AccionDiaria? {
-        return repository.getAccionPorId(id)
+        return accionDiariaRepository.getAccionPorId(id)
     }
 
     fun insertarAccion(accion: AccionDiaria) {
         viewModelScope.launch {
-            repository.insert(accion)
+            accionDiariaRepository.insert(accion)
+            // Recargar después de insertar
+            cargarHorarioDeHoy()
+            cargarAccionesFiltradas()
         }
     }
 
     fun actualizarAccion(accion: AccionDiaria) {
         viewModelScope.launch {
-            repository.update(accion)
+            accionDiariaRepository.update(accion)
+            // Recargar después de actualizar
+            cargarHorarioDeHoy()
+            cargarAccionesFiltradas()
         }
     }
 
     fun eliminarAccion(accion: AccionDiaria) {
         viewModelScope.launch {
-            repository.delete(accion)
+            accionDiariaRepository.delete(accion)
+            // Recargar después de eliminar
+            cargarHorarioDeHoy()
+            cargarAccionesFiltradas()
+        }
+    }
+
+    fun obtenerDiaDeLaSemanaHoy(): String {
+        val calendar = Calendar.getInstance()
+        return when (calendar.get(Calendar.DAY_OF_WEEK)) {
+            Calendar.MONDAY -> "Lunes"
+            Calendar.TUESDAY -> "Martes"
+            Calendar.WEDNESDAY -> "Miércoles"
+            Calendar.THURSDAY -> "Jueves"
+            Calendar.FRIDAY -> "Viernes"
+            Calendar.SATURDAY -> "Sábado"
+            Calendar.SUNDAY -> "Domingo"
+            else -> ""
         }
     }
 }
+
+data class HorarioDiarioEstado(
+    val acciones: List<AccionDiaria> = emptyList(),
+    val notas: List<Nota> = emptyList(),
+    val isLoading: Boolean = true,
+    val error: String? = null
+)
