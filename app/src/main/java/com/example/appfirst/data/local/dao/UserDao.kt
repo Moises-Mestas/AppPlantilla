@@ -36,4 +36,17 @@ interface UserDao {
 
     @Query("SELECT COUNT(*) FROM users WHERE email = :email")
     suspend fun checkEmailExists(email: String): Int
+
+
+
+    @Delete
+    suspend fun delete(user: User): Int
+
+    @Query("SELECT * FROM users ORDER BY createdAt DESC")
+    fun getAllUsers(): Flow<List<User>>
+
+
+
+    @Query("SELECT id FROM users WHERE email = :email LIMIT 1")
+    suspend fun getUserIdByEmail(email: String): Long?
 }

@@ -15,6 +15,20 @@ object Registro
 @Serializable
 object Principal
 
+@Serializable
+object Agenda
+
+@Serializable
+object FormTarea
+
+@Serializable
+object Asignatura
+
+@Serializable
+object Examen
+
+@Serializable
+object  Recordatorio
 //seccion del calendario :v
 @Serializable object VistaCalendario
 @Serializable object DetallesFecha
