@@ -35,8 +35,6 @@ import kotlinx.coroutines.flow.first
 import com.example.appfirst.data.datastore.UserPrefs
 import com.example.appfirst.data.local.AppDatabase
 import com.example.appfirst.data.local.entity.TipoNota
-import com.example.appfirst.ui.screens.ingreso.AddFabWithSheet
-import com.example.appfirst.ui.screens.ingreso.HistorialButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

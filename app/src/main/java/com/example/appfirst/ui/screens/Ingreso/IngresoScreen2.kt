@@ -39,7 +39,6 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.navigation.NavController
 import com.example.appfirst.data.local.entity.TipoNota
-import com.example.appfirst.ui.screens.ingreso.AddFabWithSheet
 
 
 @OptIn(ExperimentalMaterial3Api::class)

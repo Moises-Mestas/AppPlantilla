@@ -18,20 +18,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 
-// --- Para el drawer ---
 data class NavItem(val label: String, val icon: ImageVector, val onClick: () -> Unit)
 
-// --- Para la bottom nav ---
+
 enum class NavDestination(
     val icon: ImageVector,
     val label: String,
     val contentDescription: String
 ) {
-    DATE(Icons.Default.DateRange, "Calendario", "Icono de calendario"),
-    SONGS(Icons.Default.AccountBox, "Amigos", "Icono de amigos"),
     HOME(Icons.Default.Home, "Inicio", "Icono de inicio"),
-    FAVORITES(Icons.Default.Face, "Ahorros", "Icono de ahorros"),
-    PROFILE(Icons.Default.Email, "Chat", "Icono de chat")
+    CALENDAR(Icons.Default.DateRange, "Calendario", "Icono de calendario"),
+    SCHEDULE(Icons.Default.List, "Horario", "Icono de horario"),
+    SAVINGS(Icons.Default.Face, "Ahorros", "Icono de ahorros"),
+    TASKS(Icons.Default.AccountBox, "Agenda", "Icono de agenda")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,28 +38,25 @@ enum class NavDestination(
 fun PrincipalScreen(
     modifier: Modifier = Modifier,
     navigateToInicio: () -> Unit = {},
-    navigateToAhorros: () -> Unit = {},
-    navigateTotarea: () -> Unit = {},
     navigateToCalendario: () -> Unit = {},
     navigateToHorarioDiario: () -> Unit = {},
-    navigateToAmigos: () -> Unit = {},
+    navigateToAhorros: () -> Unit = {},
+    navigateTotarea: () -> Unit = {},
     navigateToAjustes: () -> Unit = {},
     navigateToSalir: () -> Unit = {},
-    navigateToCuentas: () -> Unit = {}
+    navigateToCuentas:()-> Unit = {}
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    var selectedIndex by remember { mutableStateOf(0) }
     var selectedItem by rememberSaveable { mutableIntStateOf(0) }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
     val navItems = listOf(
         NavItem("Inicio", Icons.Default.Home, navigateToInicio),
-        NavItem("Ahorros", Icons.Default.Add, navigateToAhorros),
-        NavItem("Notas", Icons.Default.AccountBox, navigateTotarea),
         NavItem("Calendario", Icons.Default.DateRange, navigateToCalendario),
         NavItem("Horario Diario", Icons.Default.List, navigateToHorarioDiario),
-        NavItem("Amigos", Icons.Default.Face, navigateToAmigos)
+        NavItem("Ahorros", Icons.Default.Face, navigateToCuentas),
+        NavItem("Agenda", Icons.Default.AccountBox, navigateTotarea)
     )
 
     val drawerExtraItems = listOf(
@@ -80,9 +76,9 @@ fun PrincipalScreen(
                 navItems.forEachIndexed { index, item ->
                     NavigationDrawerItem(
                         label = { Text(item.label) },
-                        selected = selectedIndex == index,
+                        selected = selectedItem == index,
                         onClick = {
-                            selectedIndex = index
+                            selectedItem = index
                             scope.launch { drawerState.close() }
                             item.onClick()
                         },
@@ -128,7 +124,13 @@ fun PrincipalScreen(
                             selected = selectedItem == index,
                             onClick = {
                                 selectedItem = index
-                                if (index == 3) navigateToCuentas() // Ahorros
+                                when (destination) {
+                                    NavDestination.HOME -> navigateToInicio()
+                                    NavDestination.CALENDAR -> navigateToCalendario()
+                                    NavDestination.SCHEDULE -> navigateToHorarioDiario()
+                                    NavDestination.SAVINGS -> navigateToCuentas()
+                                    NavDestination.TASKS -> navigateTotarea()
+                                }
                             },
                             icon = {
                                 Icon(
@@ -148,7 +150,7 @@ fun PrincipalScreen(
                     .padding(innerPadding)
                     .verticalScroll(rememberScrollState())
             ) {
-                // Tarjeta de eventos
+
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -199,20 +201,6 @@ fun PrincipalScreen(
                     }
                 }
 
-                // Botón para tareas
-                Button(
-                    onClick = { navigateTotarea() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 24.dp)
-                ) {
-                    Text(
-                        text = "Tarea",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                
 
                 // Tarjeta de gastos
                 Card(

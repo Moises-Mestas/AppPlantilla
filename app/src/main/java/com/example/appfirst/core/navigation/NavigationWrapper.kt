@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.appfirst.core.navigation.CalendarioScreen
 import com.example.appfirst.data.datastore.UserPrefs
 import com.example.appfirst.data.local.entity.Nota
 import com.example.appfirst.ui.screens.home.InicioScreen
@@ -21,7 +22,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 // ✅ Screens Agenda
-import com.example.appfirst.ui.screens.Agenda.AgendaScreen
 import com.example.appfirst.ui.screens.Agenda.FormExamenScreen
 import com.example.appfirst.ui.screens.Agenda.FormTareaScreen
 import com.example.appfirst.ui.screens.Agenda.RecordatorioScreen
@@ -32,7 +32,7 @@ import com.example.appfirst.ui.screens.calendar.NotaViewModel
 import com.example.appfirst.ui.ingresos.GastoScreen
 import com.example.appfirst.ui.ingresos.HistorialScreen
 import com.example.appfirst.ui.ingresos.IngresoScreen2
-import com.example.appfirst.ui.screens.ingreso.CuentasScreen
+import com.example.appfirst.ui.screens.agenda.AgendaScreen
 
 // ✅ Screens Calendario
 import com.example.appfirst.ui.screens.calendar.AccionDiariaViewModel
@@ -43,6 +43,7 @@ import com.example.appfirst.ui.screens.calendar.elementos.AccionDiariaViewModelF
 import com.example.appfirst.ui.screens.calendar.elementos.FormularioAccionDiariaScreen
 import com.example.appfirst.ui.screens.calendar.elementos.FormularioNotaScreen
 import com.example.appfirst.ui.screens.calendar.elementos.NotaViewModelFactory
+import com.example.appfirst.ui.screens.cuentas.CuentasScreen
 
 @Composable
 fun NavigationWrapper() {
@@ -125,7 +126,11 @@ fun NavigationWrapper() {
                 navigatetoAsignatura = { navController.navigate("Asignatura") },
                 navigateToFormTarea = { navController.navigate("FormTarea") },
                 navigateToExamen = { navController.navigate("Examen") },
-                navigateToRecordatorio = { navController.navigate("recordatorio") }
+                navigateToRecordatorio = { navController.navigate("recordatorio") } ,
+                navigateTotarea = { navController.navigate("tarea") },
+                navigateToCuentas = { navController.navigate("cuentas") },
+                navigateToCalendario = { navController.navigate("CalendarioScreen") },
+                navigateToHorarioDiario = { navController.navigate("HorarioDiario") }
             )
         }
         composable("FormTarea") { FormTareaScreen() }
@@ -164,6 +169,10 @@ fun NavigationWrapper() {
                 navigateToHistorial = { navController.navigate("historial") },
                 navigateToIngreso2 = { navController.navigate("ingreso2") },
                 navigateToGastos = { navController.navigate("gastos") },
+                navigateTotarea = { navController.navigate("tarea") },
+                navigateToCuentas = { navController.navigate("cuentas") },
+                navigateToCalendario = { navController.navigate("CalendarioScreen") },
+                navigateToHorarioDiario = { navController.navigate("HorarioDiario") },
                 navigateBack = { navController.popBackStack() }
             )
         }

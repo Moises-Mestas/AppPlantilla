@@ -1,4 +1,4 @@
-package com.example.appfirst.ui.screens.Agenda
+package com.example.appfirst.ui.screens.agenda
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -22,6 +22,7 @@ import com.example.appfirst.data.local.entity.Tarea
 import com.example.appfirst.data.local.entity.Examen
 import com.example.appfirst.data.local.entity.Recordatorio
 import com.example.appfirst.ui.screens.home.NavItem
+import com.example.appfirst.ui.screens.home.NavDestination
 import com.example.appfirst.ui.tarea.rememberTareaVM
 import com.example.appfirst.ui.examen.rememberExamenVM
 import com.example.appfirst.ui.recordatorio.rememberRecordatorioVM
@@ -33,7 +34,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 // ---------- ITEMS SIMPLES ----------
-
 @Composable
 fun TareaItemSimpleAgenda(tarea: Tarea, esPasada: Boolean) {
     Card(
@@ -141,10 +141,10 @@ fun RecordatorioItemSimpleAgenda(recordatorio: Recordatorio, esPasado: Boolean) 
 @Composable
 fun AgendaScreen(
     navigateToInicio: () -> Unit = {},
-    navigateToAhorros: () -> Unit = {},
-    navigateTotarea: () -> Unit = {},
     navigateToCalendario: () -> Unit = {},
-    navigateToAmigos: () -> Unit = {},
+    navigateToHorarioDiario: () -> Unit = {},
+    navigateToCuentas: () -> Unit = {},
+    navigateTotarea: () -> Unit = {},
     navigateToAjustes: () -> Unit = {},
     navigateToSalir: () -> Unit = {},
     navigateToFormTarea: () -> Unit = {},
@@ -154,14 +154,14 @@ fun AgendaScreen(
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    var selectedIndex by remember { mutableStateOf(2) }
+    var selectedItem by remember { mutableIntStateOf(4) } // Agenda es el 5to item
 
     val navItems = listOf(
         NavItem("Inicio", Icons.Default.Home, navigateToInicio),
-        NavItem("Ahorros", Icons.Default.Add, navigateToAhorros),
-        NavItem("Notas", Icons.Default.AccountBox, navigateTotarea),
         NavItem("Calendario", Icons.Default.DateRange, navigateToCalendario),
-        NavItem("Amigos", Icons.Default.Face, navigateToAmigos)
+        NavItem("Horario Diario", Icons.Default.List, navigateToHorarioDiario),
+        NavItem("Ahorros", Icons.Default.Face, navigateToCuentas),
+        NavItem("Agenda", Icons.Default.AccountBox, navigateTotarea)
     )
 
     val drawerExtraItems = listOf(
@@ -171,10 +171,8 @@ fun AgendaScreen(
 
     val tareaVM = rememberTareaVM()
     val tareas by tareaVM.tareas.collectAsState()
-
     val examenVM = rememberExamenVM()
     val examenes by examenVM.examenes.collectAsState()
-
     val recordatorioVM = rememberRecordatorioVM()
     val recordatorios by recordatorioVM.recordatorios.collectAsState()
 
@@ -207,9 +205,9 @@ fun AgendaScreen(
                 navItems.forEachIndexed { index, item ->
                     NavigationDrawerItem(
                         label = { Text(item.label) },
-                        selected = selectedIndex == index,
+                        selected = selectedItem == index,
                         onClick = {
-                            selectedIndex = index
+                            selectedItem = index
                             scope.launch { drawerState.close() }
                             item.onClick()
                         },
@@ -236,7 +234,7 @@ fun AgendaScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Mis Tareas") },
+                    title = { Text("Agenda") },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = "Menú")
@@ -246,15 +244,21 @@ fun AgendaScreen(
             },
             bottomBar = {
                 NavigationBar {
-                    navItems.forEachIndexed { index, item ->
+                    NavDestination.entries.forEachIndexed { index, destination ->
                         NavigationBarItem(
-                            selected = selectedIndex == index,
+                            selected = selectedItem == index,
                             onClick = {
-                                selectedIndex = index
-                                item.onClick()
+                                selectedItem = index
+                                when (destination) {
+                                    NavDestination.HOME -> navigateToInicio()
+                                    NavDestination.CALENDAR -> navigateToCalendario()
+                                    NavDestination.SCHEDULE -> navigateToHorarioDiario()
+                                    NavDestination.SAVINGS -> navigateToCuentas()
+                                    NavDestination.TASKS -> navigateTotarea()
+                                }
                             },
-                            icon = { Icon(item.icon, contentDescription = item.label) },
-                            label = { Text(item.label) }
+                            icon = { Icon(destination.icon, contentDescription = destination.contentDescription) },
+                            label = { Text(destination.label) }
                         )
                     }
                 }
@@ -273,7 +277,6 @@ fun AgendaScreen(
                             ) {
                                 Icon(Icons.Default.Edit, contentDescription = "Nueva Tarea")
                             }
-
                             FloatingActionButton(
                                 onClick = { navigateToFormTarea(); fabExpanded = false },
                                 containerColor = MaterialTheme.colorScheme.primary
@@ -313,7 +316,7 @@ fun AgendaScreen(
                     .padding(innerPadding)
                     .padding(16.dp)
             ) {
-                // botones de navegación
+                // botones de navegación rápida
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -321,13 +324,13 @@ fun AgendaScreen(
                         .padding(bottom = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    ElevatedButton(onClick = { }) { Text("Horario", fontSize = 12.sp, maxLines = 1) }
+                    ElevatedButton(onClick = {navigateToCalendario() }) { Text("Horario", fontSize = 12.sp, maxLines = 1) }
                     ElevatedButton(onClick = { }) { Text("Agenda", fontSize = 12.sp, maxLines = 1) }
-                    ElevatedButton(onClick = { }) { Text("Calendario", fontSize = 12.sp, maxLines = 1) }
+                    ElevatedButton(onClick = { navigateToCalendario() }) { Text("Calendario", fontSize = 12.sp, maxLines = 1) }
                     ElevatedButton(onClick = { navigatetoAsignatura() }) { Text("Asignatura", fontSize = 12.sp, maxLines = 1) }
                 }
 
-                // --- scroll vertical semana ---
+                // --- lista por días ---
                 val dateFormat = remember { SimpleDateFormat("EEEE", Locale("es", "ES")) }
                 val dateFormatFull = remember { SimpleDateFormat("dd/MM/yyyy", Locale("es", "ES")) }
                 val dateFormatCompare = remember { SimpleDateFormat("yyyyMMdd", Locale("es", "ES")) }
