@@ -86,7 +86,7 @@ dependencies {
 
     // Otros
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.ads.mobile.sdk)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -96,8 +96,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation(libs.androidx.navigation.compose.v280)
-    implementation(libs.androidx.lifecycle.runtime.ktx.v284)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     // Room + KSP
     implementation(libs.androidx.room.ktx)

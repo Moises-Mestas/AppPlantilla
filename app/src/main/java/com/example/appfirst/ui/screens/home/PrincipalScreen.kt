@@ -42,7 +42,7 @@ fun PrincipalScreen(
     navigateToAhorros: () -> Unit = {},
     navigateTotarea: () -> Unit = {},
     navigateToCalendario: () -> Unit = {},
-    navigateToHorarioDiario: () -> Unit = {}, // de nelson
+    navigateToHorarioDiario: () -> Unit = {},
     navigateToAmigos: () -> Unit = {},
     navigateToAjustes: () -> Unit = {},
     navigateToSalir: () -> Unit = {},
@@ -59,7 +59,7 @@ fun PrincipalScreen(
         NavItem("Ahorros", Icons.Default.Add, navigateToAhorros),
         NavItem("Notas", Icons.Default.AccountBox, navigateTotarea),
         NavItem("Calendario", Icons.Default.DateRange, navigateToCalendario),
-        NavItem("Horario Diario", Icons.Default.List, navigateToHorarioDiario), // de nelson
+        NavItem("Horario Diario", Icons.Default.List, navigateToHorarioDiario),
         NavItem("Amigos", Icons.Default.Face, navigateToAmigos)
     )
 
@@ -212,6 +212,7 @@ fun PrincipalScreen(
                         fontWeight = FontWeight.Bold
                     )
                 }
+                
 
                 // Tarjeta de gastos
                 Card(
