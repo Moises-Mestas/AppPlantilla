@@ -17,4 +17,5 @@ class FileListConverter {
     fun fromList(list: List<String>): String {
         return gson.toJson(list)
     }
+
 }

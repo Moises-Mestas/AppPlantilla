@@ -25,6 +25,7 @@ data class UserFormState(
 class UserViewModel(app: Application) : AndroidViewModel(app) {
     private val repo = UserRepository(AppDatabase.get(app).userDao())
 
+    // Para búsqueda y lista de usuarios
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query
 

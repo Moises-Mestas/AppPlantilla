@@ -1,8 +1,28 @@
 package com.example.appfirst.ui.screens.home
 
+<<<<<<< HEAD
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+=======
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+>>>>>>> Moises
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -10,7 +30,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appfirst.ui.user.rememberUserVM
+<<<<<<< HEAD
 import kotlinx.coroutines.launch
+=======
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import androidx.compose.material3.ExperimentalMaterial3Api
+>>>>>>> Moises
 import com.example.appfirst.data.datastore.UserPrefs
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -21,14 +47,24 @@ fun InicioScreen(navigateToPrincipal: () -> Unit) {
     val passwordState = remember { mutableStateOf("") }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+<<<<<<< HEAD
     val context = LocalContext.current
+=======
+    val context = LocalContext.current 
+>>>>>>> Moises
 
     Scaffold(
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState) { data ->
                 Snackbar(
                     modifier = Modifier.padding(8.dp),
+<<<<<<< HEAD
                     content = { Text(text = data.visuals.message) }
+=======
+                    content = {
+                        Text(text = data.visuals.message)
+                    }
+>>>>>>> Moises
                 )
             }
         }
@@ -80,6 +116,7 @@ fun InicioScreen(navigateToPrincipal: () -> Unit) {
                         password = passwordState.value,
                         onSuccess = { user ->
                             scope.launch {
+<<<<<<< HEAD
                                 // 👇 Guardamos también el id
                                 UserPrefs.setLoggedIn(
                                     context = context,
@@ -90,12 +127,22 @@ fun InicioScreen(navigateToPrincipal: () -> Unit) {
                                 println("✅ Login exitoso: ${user.email}, id=${user.id}")
                             }
                             navigateToPrincipal()
+=======
+                                UserPrefs.setLoggedIn(context, true, user.email)
+                            }
+                            navigateToPrincipal()
+                            println("Login exitoso: ${user.email}")
+>>>>>>> Moises
                         },
                         onError = { errorMessage ->
                             scope.launch {
                                 snackbarHostState.showSnackbar("❌ $errorMessage")
                             }
+<<<<<<< HEAD
                             println("❌ Error de login: $errorMessage")
+=======
+                            println("Error de login: $errorMessage")
+>>>>>>> Moises
                         }
                     )
                 },
@@ -111,4 +158,8 @@ fun InicioScreen(navigateToPrincipal: () -> Unit) {
             }
         }
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> Moises
