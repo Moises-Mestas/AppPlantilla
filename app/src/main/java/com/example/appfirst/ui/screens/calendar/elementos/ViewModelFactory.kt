@@ -15,6 +15,7 @@ class NotaViewModelFactory(private val application: Application) : ViewModelProv
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
+
 class AccionDiariaViewModelFactory(private val application: Application) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AccionDiariaViewModel::class.java)) {

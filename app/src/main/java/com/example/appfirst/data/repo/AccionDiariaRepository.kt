@@ -30,6 +30,17 @@ class AccionDiariaRepository(private val dao: AccionDiariaDao) {
         }
     }
 
+    suspend fun deleteAccionPorId(id: Int) {
+        withContext(Dispatchers.IO) {
+            try {
+                dao.deleteAccionPorId(id)
+                Log.d("AccionDiariaRepo", "Acción eliminada por ID: $id")
+            } catch (e: Exception) {
+                Log.e("AccionDiariaRepo", "Error eliminando acción por ID: ${e.message}")
+            }
+        }
+    }
+
     suspend fun delete(accion: AccionDiaria) = dao.deleteAccion(accion)
     suspend fun update(accion: AccionDiaria) = dao.updateAccion(accion)
 
