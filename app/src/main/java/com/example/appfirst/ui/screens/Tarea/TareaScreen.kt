@@ -133,11 +133,21 @@ fun TareaItemSimple(tarea: Tarea) {
                 fontWeight = FontWeight.Bold,
                 textDecoration = if (tarea.completada) TextDecoration.LineThrough else TextDecoration.None
             )
+            // Igual que antes, simulamos lista. Lo ideal: traer de BD/DAO
+            val asignaturas = mapOf(
+                1L to "Matemáticas",
+                2L to "Historia",
+                3L to "Programación"
+            )
+
+            val asignaturaNombre = asignaturas[tarea.asignaturaId] ?: "Sin asignatura"
+
             Text(
-                text = "📚 ${tarea.asignatura}",
+                text = "📚 $asignaturaNombre",
                 fontSize = 14.sp,
                 modifier = Modifier.padding(top = 4.dp)
             )
+
             Text(
                 text = "📅 Entrega: ${formatFecha(tarea.fechaEntrega)}",
                 fontSize = 12.sp
@@ -234,14 +244,47 @@ fun TareaFormScreen(
         }
         form.errors["fechaRecordatorio"]?.let { Text(it, color = Color.Red) }
 
-        OutlinedTextField(
-            value = form.asignatura,
-            onValueChange = { viewModel.onFormChange(asignatura = it) },
-            label = { Text("Asignatura") },
-            isError = form.errors.containsKey("asignatura"),
-            modifier = Modifier.fillMaxWidth()
+// Lista de asignaturas simulada (ideal: traer de BD)
+        val asignaturas = listOf(
+            1L to "Matemáticas",
+            2L to "Historia",
+            3L to "Programación"
         )
-        form.errors["asignatura"]?.let { Text(it, color = Color.Red) }
+
+        var expanded by remember { mutableStateOf(false) }
+        val selectedName = asignaturas.firstOrNull { it.first == form.asignaturaId }?.second ?: ""
+
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded }
+        ) {
+            OutlinedTextField(
+                value = selectedName,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Asignatura") },
+                isError = form.errors.containsKey("asignaturaId"),
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                asignaturas.forEach { (id, nombre) ->
+                    DropdownMenuItem(
+                        text = { Text(nombre) },
+                        onClick = {
+                            viewModel.onFormChange(asignaturaId = id)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+        form.errors["asignaturaId"]?.let { Text(it, color = Color.Red) }
 
         OutlinedTextField(
             value = form.nota,

@@ -119,9 +119,7 @@ fun NavigationWrapper() {
         // =========================
         // 📌 Moises: Finanzas / Ingresos / Gastos / Cuentas
         // =========================
-        composable("tareas") {
-            TareasScreen()
-        }
+
 
         composable("ingreso2") {
             IngresoScreen2(

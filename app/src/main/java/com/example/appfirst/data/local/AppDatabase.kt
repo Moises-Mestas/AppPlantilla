@@ -28,7 +28,7 @@ import com.example.appfirst.data.local.converters.*
 @TypeConverters(
     FileListConverter::class,
     DateConverter::class,
-    MedioPagoConverter::class   // 👈 añadido desde la rama Moises
+    MedioPagoConverter::class
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
