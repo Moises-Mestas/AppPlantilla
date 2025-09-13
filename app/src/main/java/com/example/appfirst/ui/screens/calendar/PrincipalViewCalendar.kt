@@ -1,6 +1,5 @@
 package com.example.appfirst.ui.screens.calendar
 
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,17 +22,17 @@ import java.util.*
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import java.text.SimpleDateFormat
-
+import androidx.navigation.NavController
+import com.example.appfirst.core.navigation.DetallesFecha
+import com.example.appfirst.core.navigation.FormularioNota
 
 @Composable
 fun CalendarioScreen(
+    navController: NavController,
     onNavigateToInicio: () -> Unit,
-    onNavigateToDetalles: (String) -> Unit,
-    onNavigateToNota: (String) -> Unit  // Cambiado para recibir fecha
 ) {
     var selectedDate by rememberSaveable { mutableStateOf("") }
     val calendar = remember { Calendar.getInstance() }
@@ -50,23 +49,20 @@ fun CalendarioScreen(
         )
     }
 
-    // Inicializar con fecha actual si no hay selección
     if (selectedDate.isEmpty()) {
         selectedDate = fechaActual
     }
 
-    // Función para navegar a detalles con la fecha seleccionada
-    fun navigateToDetails() {
-        onNavigateToDetalles(selectedDate)
+    fun navigateToDetails(fecha: String) {
+        navController.navigate("detalles-dia/$fecha")
     }
 
-    // Función para añadir nota con fecha seleccionada
-    fun navigateToAddNota() {
-        onNavigateToNota(selectedDate)
+    fun navigateToAddNota(fecha: String) {
+        navController.navigate("nueva-nota/$fecha")
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Header mejorado (similar a HorarioDiarioScreen)
+        // Header mejorado
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -247,7 +243,7 @@ fun CalendarioScreen(
                     ) {
                         // Botón para ver detalles
                         Button(
-                            onClick = { navigateToDetails() },
+                            onClick = { navigateToDetails(selectedDate) },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary
@@ -266,7 +262,7 @@ fun CalendarioScreen(
 
                         // Botón para añadir nota
                         Button(
-                            onClick = { navigateToAddNota() },
+                            onClick = { navigateToAddNota(selectedDate) },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.secondary
@@ -287,6 +283,7 @@ fun CalendarioScreen(
     }
 }
 
+// Funciones auxiliares (mantenemos las mismas)
 fun formatearFechaLegible(fecha: String): String {
     return try {
         val formatoEntrada = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -296,13 +293,6 @@ fun formatearFechaLegible(fecha: String): String {
     } catch (e: Exception) {
         fecha
     }
-}
-
-fun isHoy(dia: Int, mes: Int, año: Int): Boolean {
-    val calendar = Calendar.getInstance()
-    return dia == calendar.get(Calendar.DAY_OF_MONTH) &&
-            mes == calendar.get(Calendar.MONTH) &&
-            año == calendar.get(Calendar.YEAR)
 }
 
 fun formatearFechaParaBD(dia: Int, mes: Int, año: Int): String {

@@ -40,10 +40,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.appfirst.data.local.entity.Nota
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Card
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
 
 @Composable
 fun FormularioNotaScreen(
+    navController: NavController,
     fecha: String,
     notaExistente: Nota? = null,
     onCancel: () -> Unit,
@@ -106,16 +115,12 @@ fun FormularioNotaScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Campos del formulario
         OutlinedTextField(
             value = titulo,
             onValueChange = { titulo = it },
             label = { Text("Título del evento *") },
             modifier = Modifier.fillMaxWidth(),
-//            colors = outlinedTextFieldColors(
-//                focusedBorderColor = MaterialTheme.colorScheme.primary,
-//                unfocusedBorderColor = MaterialTheme.colorScheme.outline
-//            )
+
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -126,10 +131,6 @@ fun FormularioNotaScreen(
             label = { Text("Descripción") },
             modifier = Modifier.fillMaxWidth(),
             maxLines = 3,
-//            colors = TextFieldDefaults.outlinedTextFieldColors(
-//                focusedBorderColor = MaterialTheme.colorScheme.primary,
-//                unfocusedBorderColor = MaterialTheme.colorScheme.outline
-//            )
         )
 
         Spacer(modifier = Modifier.height(24.dp))

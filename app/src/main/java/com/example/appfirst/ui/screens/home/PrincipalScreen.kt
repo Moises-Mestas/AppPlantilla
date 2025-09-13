@@ -1,6 +1,5 @@
 package com.example.appfirst.ui.screens.home
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -43,6 +42,7 @@ fun PrincipalScreen(
     navigateToAhorros: () -> Unit = {},
     navigateTotarea: () -> Unit = {},
     navigateToCalendario: () -> Unit = {},
+    navigateToHorarioDiario: () -> Unit = {}, // de nelson
     navigateToAmigos: () -> Unit = {},
     navigateToAjustes: () -> Unit = {},
     navigateToSalir: () -> Unit = {},
@@ -59,6 +59,7 @@ fun PrincipalScreen(
         NavItem("Ahorros", Icons.Default.Add, navigateToAhorros),
         NavItem("Notas", Icons.Default.AccountBox, navigateTotarea),
         NavItem("Calendario", Icons.Default.DateRange, navigateToCalendario),
+        NavItem("Horario Diario", Icons.Default.List, navigateToHorarioDiario), // de nelson
         NavItem("Amigos", Icons.Default.Face, navigateToAmigos)
     )
 

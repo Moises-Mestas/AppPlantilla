@@ -14,7 +14,9 @@ object Registro
 @Serializable
 object Principal
 
-// 📌 De la rama HEAD (Agenda, Examen, etc.)
+// ----------------------
+// 📌 De la rama HEAD
+// ----------------------
 @Serializable
 object Agenda
 
@@ -40,6 +42,32 @@ object DetallesFecha
 @Serializable
 object VistaNotas
 
-// 📌 De la rama Moises (Tarea)
 @Serializable
 object Tarea
+
+// ----------------------
+// 📌 De la rama Nelson
+// ----------------------
+@Serializable
+object CalendarioScreen
+
+@Serializable
+data class DetallesFechaNelson(val fecha: String)
+
+@Serializable
+data class FormularioNota(val fecha: String)
+
+@Serializable
+data class EditarNota(val notaId: Int)
+
+@Serializable
+object HorarioDiario
+
+@Serializable
+data class EditarAccion(val accionId: Int)
+
+@Serializable
+object NuevaAccion
+
+@Serializable
+data class FormularioAccion(val accionId: Int = 0)

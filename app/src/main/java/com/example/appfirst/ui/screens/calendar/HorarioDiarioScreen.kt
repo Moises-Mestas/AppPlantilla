@@ -47,36 +47,56 @@ import com.example.appfirst.data.local.entity.AccionDiaria
 import com.example.appfirst.ui.screens.calendar.elementos.AccionDiariaViewModelFactory
 import com.example.appfirst.ui.screens.calendar.elementos.TarjetaNotaHorario
 import androidx.compose.runtime.collectAsState
+import androidx.navigation.NavController
+import com.example.appfirst.core.navigation.EditarAccion
+import com.example.appfirst.core.navigation.FormularioNota
+import com.example.appfirst.core.navigation.NuevaAccion
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HorarioDiarioScreen(
+    navController: NavController,
     onBack: () -> Unit,
-    onEditarAccion: (AccionDiaria?) -> Unit,
-    onAddNota: () -> Unit
 ) {
+    val application = LocalContext.current.applicationContext as Application
     val viewModel: AccionDiariaViewModel = viewModel(
-        factory = AccionDiariaViewModelFactory(
-            LocalContext.current.applicationContext as Application
-        )
+        factory = AccionDiariaViewModelFactory(application)
     )
 
-    // Estados para los filtros (solo afectan a acciones)
     var textoBusqueda by remember { mutableStateOf("") }
     var filtroDia by remember { mutableStateOf("Todos") }
     var filtroCategoria by remember { mutableStateOf("Todas") }
 
-    // Estados del ViewModel
     val accionesFiltradas by viewModel.accionesFiltradas.collectAsState()
     val horarioEstado by viewModel.horarioEstado.collectAsState()
     val diaHoy = viewModel.obtenerDiaDeLaSemanaHoy()
+    val acciones by viewModel.accionesFiltradas.collectAsState(emptyList())
 
-    // Aplicar filtros cuando cambien
+    fun navigateToEditarAccion(accion: AccionDiaria) {
+        val accionId = accion.id
+        if (accionId > 0) {
+            navController.navigate("editar-accion/$accionId")
+        } else {
+            navController.navigate("nueva-accion")
+        }
+    }
+
+    fun navigateToAddNota() {
+        val fechaHoy = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        navController.navigate(FormularioNota(fechaHoy))
+    }
+
+    fun navigateToNuevaAccion() {
+        navController.navigate("nueva-accion")
+    }
+
     LaunchedEffect(textoBusqueda, filtroDia, filtroCategoria) {
         viewModel.setFiltros(textoBusqueda, filtroDia, filtroCategoria)
     }
 
-    // Cargar horario cuando se abre la pantalla
     LaunchedEffect(Unit) {
         viewModel.cargarHorarioDeHoy()
     }
@@ -106,15 +126,14 @@ fun HorarioDiarioScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { onEditarAccion(null) }) {
+                    IconButton(onClick = { navController.navigate("nueva-accion") }) {
                         Icon(Icons.Default.Add, contentDescription = "Añadir acción")
                     }
-                    IconButton(onClick = onAddNota) {
+                    IconButton(onClick = { navigateToAddNota() }) {
                         Icon(Icons.Default.MailOutline, contentDescription = "Añadir nota")
                     }
                     IconButton(onClick = {
                         viewModel.cargarHorarioDeHoy()
-                        // Resetear filtros al actualizar
                         textoBusqueda = ""
                         filtroDia = "Todos"
                         filtroCategoria = "Todas"
@@ -287,7 +306,7 @@ fun HorarioDiarioScreen(
                             items(accionesFiltradas) { accion ->
                                 TarjetaAccionDiaria(
                                     accion = accion,
-                                    onEditar = { onEditarAccion(accion) },
+                                    onEditar = { navigateToEditarAccion(accion) }, // ✅ Usa la nueva función
                                     onEliminar = { viewModel.eliminarAccion(accion) }
                                 )
                             }

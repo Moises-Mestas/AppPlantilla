@@ -38,7 +38,6 @@ class AccionDiariaViewModel(application: Application) : AndroidViewModel(applica
         accionDiariaRepository = AccionDiariaRepository(database.accionDiariaDao())
         notaRepository = NotaRepository(database.notaDao())
 
-        // Cargar datos iniciales
         cargarHorarioDeHoy()
         cargarAccionesFiltradas()
     }
@@ -48,6 +47,14 @@ class AccionDiariaViewModel(application: Application) : AndroidViewModel(applica
         _filtroDia = dia
         _filtroCategoria = categoria
         cargarAccionesFiltradas()
+    }
+
+    fun eliminarAccion(accion: AccionDiaria) {
+        viewModelScope.launch {
+            accionDiariaRepository.delete(accion)
+            cargarHorarioDeHoy()
+            cargarAccionesFiltradas()
+        }
     }
 
     private fun cargarAccionesFiltradas() {
@@ -96,19 +103,17 @@ class AccionDiariaViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
-    fun actualizarAccion(accion: AccionDiaria) {
+    fun editarAccion(accion: AccionDiaria) {
         viewModelScope.launch {
             accionDiariaRepository.update(accion)
-            // Recargar después de actualizar
             cargarHorarioDeHoy()
             cargarAccionesFiltradas()
         }
     }
 
-    fun eliminarAccion(accion: AccionDiaria) {
+    fun eliminarAccionPorId(accionId: Int) {
         viewModelScope.launch {
-            accionDiariaRepository.delete(accion)
-            // Recargar después de eliminar
+            accionDiariaRepository.deleteAccionPorId(accionId)
             cargarHorarioDeHoy()
             cargarAccionesFiltradas()
         }

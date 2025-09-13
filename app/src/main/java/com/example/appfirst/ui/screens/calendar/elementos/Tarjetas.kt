@@ -1,6 +1,8 @@
 package com.example.appfirst.ui.screens.calendar.elementos
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Arrangement
@@ -17,19 +19,26 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appfirst.data.local.entity.AccionDiaria
@@ -39,17 +48,24 @@ import java.util.Calendar
 @Composable
 fun TarjetaNota(
     nota: Nota,
-    onEditar: (Nota) -> Unit = {},
-    onEliminar: (Nota) -> Unit = {}
+    onEditar: () -> Unit,
+    onEliminar: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .clickable { onEditar() },
+        colors = CardDefaults.cardColors(
+            containerColor = Color(nota.color).copy(alpha = 0.1f)
+        )
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Header con título y botones de acción
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            // Header con título y acciones
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -59,91 +75,72 @@ fun TarjetaNota(
                     text = nota.titulo,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color(nota.color),
-                    modifier = Modifier.weight(1f)
+                    color = Color(nota.color)
                 )
 
-                // Botones de acción
                 Row {
                     IconButton(
-                        onClick = { onEditar(nota) },
-                        modifier = Modifier.size(36.dp)
+                        onClick = onEditar,
+                        modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = "Editar",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
+                            tint = Color(nota.color),
+                            modifier = Modifier.size(18.dp)
                         )
                     }
-
                     IconButton(
-                        onClick = { onEliminar(nota) },
-                        modifier = Modifier.size(36.dp)
+                        onClick = onEliminar,
+                        modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = "Eliminar",
                             tint = Color.Red,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
             }
 
+            Spacer(modifier = Modifier.height(8.dp))
+
             // Descripción
             if (nota.descripcion.isNotBlank()) {
-                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = nota.descripcion,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Información adicional
+            // Información de horario y tipo
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column {
-                    Text(
-                        text = "${nota.horaInicio} - ${nota.horaFin}",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = nota.categoria,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
-                }
+                Text(
+                    text = "${nota.horaInicio} - ${nota.horaFin}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
 
-                // Badge de prioridad
-                Box(
-                    modifier = Modifier
-                        .background(
-                            when (nota.prioridad) {
-                                1 -> Color.Green.copy(alpha = 0.2f)
-                                2 -> Color.Blue.copy(alpha = 0.2f)
-                                3 -> Color.Yellow.copy(alpha = 0.2f)
-                                4 -> Color.White.copy(alpha = 0.2f)
-                                5 -> Color.Red.copy(alpha = 0.2f)
-                                else -> Color.Gray.copy(alpha = 0.2f)
-                            },
-                            CircleShape
-                        )
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = "P${nota.prioridad}",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                Text(
+                    text = "${nota.tipo} • ${nota.categoria}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+            }
+
+            // Prioridad
+            if (nota.prioridad > 0) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Prioridad: ${"★".repeat(nota.prioridad)}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
             }
         }
     }
@@ -155,106 +152,95 @@ fun TarjetaAccionDiaria(
     onEditar: () -> Unit,
     onEliminar: () -> Unit
 ) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    // Diálogo de confirmación para eliminar
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Eliminar acción") },
+            text = { Text("¿Estás seguro de que quieres eliminar esta acción?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        onEliminar()
+                    }
+                ) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDeleteDialog = false }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .clickable { onEditar() }
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Header con título
-            Text(
-                text = accion.titulo,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color(accion.color)
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Descripción
-            if (accion.descripcion.isNotBlank()) {
-                Text(
-                    text = accion.descripcion,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-
-            // Información de tiempo y días
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = "⏰ ${accion.horaInicio} - ${accion.horaFin}",
-                    style = MaterialTheme.typography.bodySmall
-                )
-
-                Text(
-                    text = if (accion.diasSemana == "Todos") "Todos los días"
-                    else accion.diasSemana.split(",").joinToString(", "),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
-            }
-
-            // Categoría y prioridad
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "📁 ${accion.categoria}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
-
-                Text(
-                    text = "⭐".repeat(accion.prioridad),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Yellow
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Botones de acción VISIBLES
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                // Botón Editar
-                Button(
-                    onClick = onEditar,
-                    modifier = Modifier.padding(end = 8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
+                Column(
+                    modifier = Modifier.weight(1f)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Editar",
-                        modifier = Modifier.size(16.dp)
+                    Text(
+                        text = accion.titulo,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Editar", fontSize = 12.sp)
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = "Hora: ${accion.horaInicio}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    if (accion.descripcion.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = accion.descripcion,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                 }
 
-                // Botón Eliminar
-                Button (
-                    onClick = onEliminar,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Red
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Eliminar",
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Eliminar", fontSize = 12.sp)
+                // Botones de acción
+                Row {
+                    IconButton(
+                        onClick = onEditar,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Editar",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    IconButton(
+                        onClick = { showDeleteDialog = true },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Eliminar",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
         }

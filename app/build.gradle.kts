@@ -41,9 +41,11 @@ android {
         compose = true
     }
 }
-
 dependencies {
-    // Compose BOM y UI
+
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation("androidx.compose.material:material-icons-core")
     implementation("androidx.compose.material:material-icons-extended")
@@ -84,14 +86,8 @@ dependencies {
 
     // Otros
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.protolite.well.known.types)
-    implementation(libs.generativeai)
+    implementation(libs.ads.mobile.sdk)
 
-    // Core Android
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.activity.compose)
-
-    // Tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -99,4 +95,17 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    implementation(libs.androidx.navigation.compose.v280)
+    implementation(libs.androidx.lifecycle.runtime.ktx.v284)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    // Room + KSP
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+    // DataStore (onboarding)
+    implementation(libs.androidx.datastore.preferences)
+
+    //librerias para el calendario
+    implementation(libs.androidx.lifecycle.livedata.ktx)
+    implementation(libs.androidx.runtime.livedata)
 }

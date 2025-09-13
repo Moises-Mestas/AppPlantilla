@@ -20,7 +20,7 @@ import com.example.appfirst.data.local.converters.*
         Recordatorio::class,
         Examen::class,
         Tarea::class,
-        Ingreso::class
+        Ingreso::class   // ✅ lo traemos de HEAD
     ],
     version = 4,
     exportSchema = false
@@ -28,7 +28,7 @@ import com.example.appfirst.data.local.converters.*
 @TypeConverters(
     FileListConverter::class,
     DateConverter::class,
-    MedioPagoConverter::class
+    MedioPagoConverter::class   // ✅ también de HEAD
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -38,7 +38,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun examenDao(): ExamenDao
     abstract fun tareaDao(): TareaDao
     abstract fun asignaturaDao(): AsignaturaDao
-    abstract fun ingresoDao(): IngresoDao
+    abstract fun ingresoDao(): IngresoDao   // ✅ traído de HEAD
 
     companion object {
         @Volatile
@@ -60,7 +60,7 @@ abstract class AppDatabase : RoomDatabase() {
     }
 }
 
-// Migración de la versión 3 a la 4 (ejemplo de HEAD)
+// Migración de la versión 3 a la 4
 val MIGRATION_3_4 = object : Migration(3, 4) {
     override fun migrate(database: SupportSQLiteDatabase) {
         // Crear tabla acciones_diarias

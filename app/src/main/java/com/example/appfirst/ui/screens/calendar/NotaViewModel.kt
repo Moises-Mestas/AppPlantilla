@@ -10,89 +10,73 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.appfirst.data.local.AppDatabase
 import com.example.appfirst.data.repo.NotaRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 class NotaViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val repository: NotaRepository
-    private val _notas = MutableStateFlow<List<Nota>>(emptyList())
-    val notas: StateFlow<List<Nota>> = _notas.asStateFlow()
+    private val notaRepository: NotaRepository
+    private val _notasState = MutableStateFlow<List<Nota>>(emptyList())
+    val notasState: StateFlow<List<Nota>> = _notasState.asStateFlow()
 
     init {
-        val notaDao = AppDatabase.get(application).notaDao()
-        repository = NotaRepository(notaDao)
+        val database = AppDatabase.get(application)
+        notaRepository = NotaRepository(database.notaDao())
     }
 
-    fun crearNota(nota: Nota) {
-        viewModelScope.launch {
+    fun cargarNotasPorFecha(fecha: String) {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-                repository.crearNota(nota)
-                // Agregar la nueva nota a la lista local
-                _notas.value = _notas.value + nota
+                val notas = notaRepository.obtenerNotasPorFechaSync(fecha)
+                withContext(Dispatchers.Main) {
+                    _notasState.value = notas
+                }
             } catch (e: Exception) {
-                Log.e("NotaViewModel", "Error al crear nota: ${e.message}")
-            }
-        }
-    }
-
-    fun actualizarNota(nota: Nota) {
-        viewModelScope.launch {
-            try {
-                repository.actualizarNota(nota)
-                // Actualizar la lista local reemplazando la nota
-                _notas.value = _notas.value.map { if (it.id == nota.id) nota else it }
-            } catch (e: Exception) {
-                Log.e("NotaViewModel", "Error al actualizar nota: ${e.message}")
+                Log.e("NotaViewModel", "Error cargando notas: ${e.message}")
+                withContext(Dispatchers.Main) {
+                    _notasState.value = emptyList()
+                }
             }
         }
     }
 
     suspend fun obtenerNotaPorId(id: Int): Nota? {
-        return try {
-            repository.obtenerNotaPorId(id)
-        } catch (e: Exception) {
-            null
+        return withContext(Dispatchers.IO) {
+            notaRepository.obtenerNotaPorId(id)
+        }
+    }
+
+    fun insertarNota(nota: Nota) {
+        viewModelScope.launch(Dispatchers.IO) {
+            notaRepository.crearNota(nota)
+            // Recargar después de insertar
+            cargarNotasPorFecha(nota.fecha)
+        }
+    }
+
+    fun actualizarNota(nota: Nota) {
+        viewModelScope.launch(Dispatchers.IO) {
+            notaRepository.actualizarNota(nota)
+            // Recargar después de actualizar
+            cargarNotasPorFecha(nota.fecha)
         }
     }
 
     fun eliminarNota(id: Int) {
-        viewModelScope.launch {
-            try {
-                repository.eliminarNotaPorId(id)
-                // Actualizar la lista local eliminando la nota
-                _notas.value = _notas.value.filter { it.id != id }
-            } catch (e: Exception) {
-                Log.e("NotaViewModel", "Error al eliminar nota: ${e.message}")
+        viewModelScope.launch(Dispatchers.IO) {
+            // Primero obtener la nota para saber la fecha
+            val nota = notaRepository.obtenerNotaPorId(id)
+            nota?.let {
+                notaRepository.eliminarNotaPorId(id)
+                // Recargar después de eliminar
+                cargarNotasPorFecha(it.fecha)
             }
         }
     }
-
-    fun cargarNotasPorFecha(fecha: String) {
-        viewModelScope.launch {
-            try {
-                val notasList = repository.obtenerNotasPorFechaSync(fecha)
-                _notas.value = notasList
-            } catch (e: Exception) {
-                _notas.value = emptyList()
-            }
-        }
-    }
-
-//    fun obtenerNotasDeHoy(): Flow<List<Nota>> {
-//        val fechaHoy = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-//        return repository.obtenerNotasPorFecha(fechaHoy)
-//    }
-
-    suspend fun obtenerNotasDeHoySync(): List<Nota> {
-        val fechaHoy = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-        return repository.obtenerNotasPorFechaSync(fechaHoy)
-    }
-
-
 }

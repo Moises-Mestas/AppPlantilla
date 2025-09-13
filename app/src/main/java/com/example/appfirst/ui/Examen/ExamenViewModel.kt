@@ -279,4 +279,5 @@ class ExamenViewModel(app: Application) : AndroidViewModel(app) {
             else -> "📚"
         }
     }
+
 }
