@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.appfirst.ui.ingreso.rememberIngresoVM
 import kotlinx.coroutines.launch
 
 data class NavItem(val label: String, val icon: ImageVector, val onClick: () -> Unit)
@@ -46,6 +47,11 @@ fun PrincipalScreen(
     navigateToSalir: () -> Unit = {},
     navigateToCuentas:()-> Unit = {}
 ) {
+    val viewModel = rememberIngresoVM()
+    val montoTotal by viewModel.montoTotal.collectAsState()
+    val montoTotalTarjeta by viewModel.montoTotalTarjeta.collectAsState()
+    val montoTotalEfectivo by viewModel.montoTotalEfectivo.collectAsState()
+    val montoTotalYape by viewModel.montoTotalYape.collectAsState()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var selectedItem by rememberSaveable { mutableIntStateOf(0) }
@@ -203,6 +209,7 @@ fun PrincipalScreen(
 
 
                 // Tarjeta de gastos
+// Tarjeta de gastos
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -213,62 +220,97 @@ fun PrincipalScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "Gastos de hoy",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
+                        // Título: Monedero: con el monto
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Start
+                        ) {
+                            Text(
+                                text = "Monedero:",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+                        }
 
+                        // Estructura de las columnas
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            horizontalArrangement = Arrangement.Start // Alineamos todo a la izquierda
                         ) {
-                            Text("Producto", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                            Text("Monto", fontWeight = FontWeight.Bold, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
-                            Text("Tipo", fontWeight = FontWeight.Bold, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
+                            Text("Cuentas", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                            Text("Total", fontWeight = FontWeight.Bold, textAlign = TextAlign.Start, modifier = Modifier.weight(1f))
+                            Text("Ingreso", fontWeight = FontWeight.Bold, textAlign = TextAlign.Start, modifier = Modifier.weight(1f))
+                            Text("Egreso", fontWeight = FontWeight.Bold, textAlign = TextAlign.Start, modifier = Modifier.weight(1f))
                         }
 
                         Divider(Modifier.padding(vertical = 8.dp))
+
+                        // Datos de ejemplo (puedes ajustarlo a tu lógica de datos)
+                        // Filas para "Tarjeta", "Efectivo", "Yape"
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.Start // Alineamos todo a la izquierda
+                        ) {
+                            Text("Tarjeta", modifier = Modifier.weight(1f))
+                            Text("S/ ${"%.2f".format(montoTotalTarjeta)}", textAlign = TextAlign.Start, modifier = Modifier.weight(1f))
+                            Text("S/ ${"%.2f".format(montoTotalTarjeta)}", color = MaterialTheme.colorScheme.primary, textAlign = TextAlign.Start, modifier = Modifier.weight(1f))
+                            Text("S/ 0.00", textAlign = TextAlign.Start, modifier = Modifier.weight(1f))
+                        }
 
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            horizontalArrangement = Arrangement.Start // Alineamos todo a la izquierda
                         ) {
-                            Text("Galletas", modifier = Modifier.weight(1f))
-                            Text("S/ 1.50", textAlign = TextAlign.End, modifier = Modifier.weight(1f))
-                            Text("Yape", color = MaterialTheme.colorScheme.primary, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
+                            Text("Efectivo", modifier = Modifier.weight(1f))
+                            Text("S/ ${"%.2f".format(montoTotalEfectivo)}", textAlign = TextAlign.Start, modifier = Modifier.weight(1f))
+                            Text("S/ ${"%.2f".format(montoTotalEfectivo)}", color = MaterialTheme.colorScheme.primary, textAlign = TextAlign.Start, modifier = Modifier.weight(1f))
+                            Text("S/ 0.00", textAlign = TextAlign.Start, modifier = Modifier.weight(1f))
                         }
 
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            horizontalArrangement = Arrangement.Start // Alineamos todo a la izquierda
                         ) {
-                            Text("Pasajes", modifier = Modifier.weight(1f))
-                            Text("S/ 5.00", textAlign = TextAlign.End, modifier = Modifier.weight(1f))
-                            Text("Efectivo", color = MaterialTheme.colorScheme.primary, textAlign = TextAlign.End, modifier = Modifier.weight(1f))
+                            Text("Yape", modifier = Modifier.weight(1f))
+                            Text("S/ ${"%.2f".format(montoTotalYape)}", textAlign = TextAlign.Start, modifier = Modifier.weight(1f))
+                            Text("S/ ${"%.2f".format(montoTotalYape)}", color = MaterialTheme.colorScheme.primary, textAlign = TextAlign.Start, modifier = Modifier.weight(1f))
+                            Text("S/ 0.00", textAlign = TextAlign.Start, modifier = Modifier.weight(1f))
                         }
 
                         Divider(Modifier.padding(vertical = 8.dp))
 
+                        // Total de los ingresos y egresos (alineado con la fila anterior)
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            horizontalArrangement = Arrangement.Start // Alineamos a la izquierda
                         ) {
                             Text("Total:", fontWeight = FontWeight.Bold)
-                            Text("S/ 6.50", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+
+                            // Agregar Spacer para controlar la distancia
+                            Spacer(modifier = Modifier.width(50.dp)) // Ajusta este valor a la distancia que deseas
+
+                            Text(
+                                text = "S/ ${"%.2f".format(montoTotal)}",
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
                 }
+
+
             }
         }
     }

@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 fun CuentasScreen(
     modifier: Modifier = Modifier,
     navigateToInicio: () -> Unit = {},
+
     navigateToCalendario: () -> Unit = {},
     navigateToHorarioDiario: () -> Unit = {},
     navigateToCuentas: () -> Unit = {},
