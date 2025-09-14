@@ -23,6 +23,23 @@ data class IngresoFormState(
 )
 
 class IngresoViewModel(app: Application) : AndroidViewModel(app) {
+    private val _ingresosTarjeta = MutableStateFlow(0.0)
+    val ingresosTarjeta: StateFlow<Double> = _ingresosTarjeta
+
+    private val _gastosTarjeta = MutableStateFlow(0.0)
+    val gastosTarjeta: StateFlow<Double> = _gastosTarjeta
+
+    private val _ingresosEfectivo = MutableStateFlow(0.0)
+    val ingresosEfectivo: StateFlow<Double> = _ingresosEfectivo
+
+    private val _gastosEfectivo = MutableStateFlow(0.0)
+    val gastosEfectivo: StateFlow<Double> = _gastosEfectivo
+
+    private val _ingresosYape = MutableStateFlow(0.0)
+    val ingresosYape: StateFlow<Double> = _ingresosYape
+
+    private val _gastosYape = MutableStateFlow(0.0)
+    val gastosYape: StateFlow<Double> = _gastosYape
 
 
     // Agregar variable para total de ingresos
@@ -56,6 +73,27 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
     }
 
 
+    suspend fun updateIngresosYGastos(userId: Long) {
+        // Obtener los ingresos y gastos por tipo de cuenta (Tarjeta, Yape, Efectivo)
+        val ingresosTarjeta = repo.getIngresosByDeposito(userId, MedioPago.TARJETA).first().sumOf { it.monto }
+        val gastosTarjeta = repo.getGastosByDeposito(userId, MedioPago.TARJETA).first().sumOf { it.monto }
+
+        val ingresosEfectivo = repo.getIngresosByDeposito(userId, MedioPago.EFECTIVO).first().sumOf { it.monto }
+        val gastosEfectivo = repo.getGastosByDeposito(userId, MedioPago.EFECTIVO).first().sumOf { it.monto }
+
+        val ingresosYape = repo.getIngresosByDeposito(userId, MedioPago.YAPE).first().sumOf { it.monto }
+        val gastosYape = repo.getGastosByDeposito(userId, MedioPago.YAPE).first().sumOf { it.monto }
+
+        // Actualizar los valores en el ViewModel
+        _ingresosTarjeta.value = ingresosTarjeta
+        _gastosTarjeta.value = gastosTarjeta
+
+        _ingresosEfectivo.value = ingresosEfectivo
+        _gastosEfectivo.value = gastosEfectivo
+
+        _ingresosYape.value = ingresosYape
+        _gastosYape.value = gastosYape
+    }
 
 
 
@@ -130,6 +168,8 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
                 if (userId != null) {
                     _userId.value = userId
                     updateMontoTotal()
+                    updateIngresosYGastos(userId)
+
                 }
             } catch (e: Exception) {
                 _message.value = "Error al cargar el usuario: ${e.message}"

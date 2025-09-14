@@ -42,6 +42,8 @@ interface IngresoDao {
     fun getIngresosByNotas(userId: Long, notas: TipoNota): Flow<List<Ingreso>>
 
 
+    @Query("SELECT * FROM ingresos WHERE userId = :userId AND depositado_en = :depositadoEn AND monto < 0 ORDER BY fecha DESC")
+    fun getGastosByDeposito(userId: Long, depositadoEn: MedioPago): Flow<List<Ingreso>>
 
 }
 

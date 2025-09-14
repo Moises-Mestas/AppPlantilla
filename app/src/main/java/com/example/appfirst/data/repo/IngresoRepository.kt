@@ -113,4 +113,7 @@ class IngresoRepository(private val dao: IngresoDao) {
         return dao.getIngresosByDateRange(userId, hoy, manana)
     }
 
+    fun getGastosByDeposito(userId: Long, depositadoEn: MedioPago): Flow<List<Ingreso>> =
+        dao.getGastosByDeposito(userId, depositadoEn)
+
 }
