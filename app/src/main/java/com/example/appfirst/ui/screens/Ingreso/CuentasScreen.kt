@@ -148,7 +148,8 @@ fun CuentasScreen(
             ) {
                 // CABECERA
                 Text(
-                    text = "Cuentas",
+                    text = "Cuentas:",
+                    fontWeight = FontWeight.Bold,
                     fontSize = 32.sp,
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.primary,

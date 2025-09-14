@@ -62,6 +62,8 @@ fun HistorialScreen(
     val montoTotalTarjeta by viewModel.montoTotalTarjeta.collectAsState()
     val montoTotalEfectivo by viewModel.montoTotalEfectivo.collectAsState()
     val montoTotalYape by viewModel.montoTotalYape.collectAsState()
+    val totalTransactions = viewModel.getTotalTransactionsCount()
+
 
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -175,9 +177,10 @@ fun HistorialScreen(
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
+                    modifier = Modifier.padding(top = 10.dp, bottom = 4.dp)
                 )
             }
+
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Text(
                     "BALANCE",
@@ -243,14 +246,27 @@ fun HistorialScreen(
                 isFilteredByAmount = false
                 isAscending = true
             }
-            Spacer(Modifier.height(8.dp))
-            Text(
-                "Transacciones recientes:",
-                fontSize = 25.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.align(Alignment.Start)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start, // Alineación a la izquierda
+                verticalAlignment = Alignment.CenterVertically // Alineación vertical al centro
+            ) {
+                Text(
+                    text = "Transacciones recientes: ",
+                    fontSize = 25.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Spacer(Modifier.width(8.dp)) // Espacio entre el texto y el número de transacciones
+
+                Text(
+                    text = "$totalTransactions T",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
             Divider(Modifier.padding(top = 4.dp))
             // Lista
             when {
@@ -461,7 +477,11 @@ fun RestablecerButton(onReset: () -> Unit) {
             .height(48.dp),
         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
     ) {
-        Text("Restablecer", color = MaterialTheme.colorScheme.onSecondary)
+        Text(
+            text = "Restablecer",
+            color = MaterialTheme.colorScheme.onSecondary,
+            fontSize = 20.sp
+        )
     }
 }
 
@@ -616,7 +636,7 @@ fun MovableArrowButtons(
         Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(end = 30.dp, top = 315.dp)
+                .padding(end = 20.dp, top = 315.dp)
         ) {
 
             Column(

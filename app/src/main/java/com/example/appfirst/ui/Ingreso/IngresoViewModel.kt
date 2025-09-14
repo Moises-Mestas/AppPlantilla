@@ -23,12 +23,11 @@ data class IngresoFormState(
 )
 
 class IngresoViewModel(app: Application) : AndroidViewModel(app) {
+
+
     // Agregar variable para total de ingresos
     private val _montoTotal = MutableStateFlow(0.0)
     val montoTotal: StateFlow<Double> = _montoTotal
-
-
-
     private val _montoTotalTarjeta = MutableStateFlow(0.0)
     val montoTotalTarjeta: StateFlow<Double> = _montoTotalTarjeta
 
@@ -60,9 +59,9 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
 
 
 
-
-
-
+    fun getTotalTransactionsCount(): Int {
+        return ingresos.value.size  // Contamos la cantidad de ingresos y gastos que tenemos
+    }
 
     private val repo = IngresoRepository(AppDatabase.get(app).ingresoDao())
 
