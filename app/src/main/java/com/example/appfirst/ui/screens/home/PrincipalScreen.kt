@@ -222,7 +222,6 @@ fun PrincipalScreen(
 
 
                 // Tarjeta de gastos
-// Tarjeta de gastos
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -236,16 +235,61 @@ fun PrincipalScreen(
                         // Título: Monedero con el monto
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Start
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically // Alineamos las caras con el texto
                         ) {
+                            // Texto "Monedero:"
                             Text(
                                 text = "Monedero:",
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(bottom = 16.dp)
+                                modifier = Modifier.padding(end = 16.dp) // Espacio entre el texto y los íconos
                             )
+
+                            // Calculamos el total y porcentaje de gastos
+                            val totalIngresos = ingresosTarjeta + ingresosEfectivo + ingresosYape
+                            val totalGastos = gastosTarjeta + gastosEfectivo + gastosYape
+                            val totalFinal = totalIngresos - totalGastos
+
+                            // El porcentaje de los gastos en relación con el total final
+                            val percentage = if (totalFinal != 0.0) (totalGastos / totalFinal) * 100 else 0.0
+
+                            // Caras de los íconos
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(24.dp),
+                                modifier = Modifier.padding(start = 24.dp) // 👈 mueve las caritas un poco a la derecha
+                            )  {
+                                // Cara Alegre (Verde) si el porcentaje es del -0% al -50%
+                                Icon(
+                                    imageVector = Icons.Default.SentimentVerySatisfied,  // Icono de cara alegre
+                                    contentDescription = "Cara Alegre",
+                                    tint = if (percentage in -50f..0f) Color(0xFF4CAF50) else Color(0xFF4CAF50), // Verde si está entre -0% y -50%
+                                    modifier = Modifier.size(if (percentage in -50f..0f) 48.dp else 32.dp) // Más grande si el porcentaje es bajo
+                                )
+
+                                // Cara Seria (Amarilla) si el porcentaje es del -51% al -80%
+                                Icon(
+                                    imageVector = Icons.Default.SentimentNeutral,  // Icono de cara seria
+                                    contentDescription = "Cara Seria",  //Color(0xFFBDBDBD) esto es gris por si no quieres colorsito xd xdxdxdx
+                                    tint = if (percentage in -80f..-51f) Color(0xFFFFA000) else Color(0xFFFFA000), // Amarillo oscuro si está entre -51% y -80%
+                                    modifier = Modifier.size(if (percentage in -80f..-51f) 48.dp else 32.dp) // Más grande si el porcentaje es medio
+                                )
+
+                                // Cara Triste (Roja) si el porcentaje es del -81% a -100%
+                                Icon(
+                                    imageVector = Icons.Default.SentimentVeryDissatisfied,
+                                    contentDescription = "Cara Triste",
+                                    tint = if (percentage <= -81.0) Color(0xFFFF0000) else Color(0xFFFF0000),
+                                    modifier = Modifier.size(if (percentage <= -81.0) 48.dp else 32.dp)
+                                )
+                            }
                         }
+
+
+
+
+                        Divider(Modifier.padding(vertical = 8.dp))
 
                         // Estructura de las columnas
                         Row(
@@ -266,7 +310,7 @@ fun PrincipalScreen(
                                 modifier = Modifier.weight(1f)
                             )
                             Text(
-                                "Egreso",
+                                "Gasto",
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f)
@@ -280,6 +324,10 @@ fun PrincipalScreen(
                         }
 
                         Divider(Modifier.padding(vertical = 8.dp))
+
+
+
+
 
                         // Filas para "Tarjeta", "Efectivo", "Yape"
 
@@ -306,7 +354,7 @@ fun PrincipalScreen(
 
                             ) // Solo egresos
                             Text(
-                                "S/ ${"%.2f".format(ingresosTarjeta)}",
+                                "S/ ${"%.2f".format(montoTotalTarjeta)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
                                 color = MaterialTheme.colorScheme.primary,
@@ -335,7 +383,7 @@ fun PrincipalScreen(
                                 color = Color(0xFFFF0000)
                             ) // Solo egresos
                             Text(
-                                "S/ ${"%.2f".format(ingresosEfectivo)}",
+                                "S/ ${"%.2f".format(montoTotalEfectivo)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
                                 color = MaterialTheme.colorScheme.primary,
@@ -365,7 +413,7 @@ fun PrincipalScreen(
                                 )
 
                             Text(
-                                "S/ ${"%.2f".format(ingresosYape)}",
+                                "S/ ${"%.2f".format(montoTotalYape)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
                                 color = MaterialTheme.colorScheme.primary,
@@ -418,12 +466,29 @@ fun PrincipalScreen(
 
                             // Total de Ingresos
                             Text(
-                                text = "S/ ${"%.2f".format(ingresosTarjeta + ingresosEfectivo + ingresosYape)}", // Total de Ingresos
+                                text = "S/ ${"%.2f".format(montoTotal)}", // Total de Ingresos
                                 fontWeight = FontWeight(900),
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.align(Alignment.CenterVertically) // Alineamos verticalmente con "TOTAL:"
                             )
                         }
+
+
+
+                        Button(
+                            onClick = {
+                                // Reiniciar los valores a cero
+                                viewModel.resetMonthlyData() // Llama a la función para reiniciar
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        ) {
+                            Text("Reiniciar Ingresos/Gastos")
+                        }
+
+
 
                     }
                 }

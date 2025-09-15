@@ -15,21 +15,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.appfirst.ui.ingreso.rememberIngresoVM
 import com.example.appfirst.ui.screens.home.NavDestination
 import com.example.appfirst.ui.screens.home.NavItem
-import com.example.appfirst.ui.ingreso.rememberIngresoVM
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CuentasScreen(
     modifier: Modifier = Modifier,
-    navController: NavHostController, // Cambiar aquí
-
+    navController: NavHostController,
 
     navigateToCalendario: () -> Unit = {},
     navigateToHorarioDiario: () -> Unit = {},
@@ -146,7 +146,8 @@ fun CuentasScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp) // 👈 separa los cuadros
             ) {
                 // CABECERA
                 Text(
@@ -159,23 +160,36 @@ fun CuentasScreen(
                 )
 
                 Text(
-                    text = "Monto Total: S/ ${"%.2f".format(montoTotal)}",
-                    fontSize = 22.sp,
+                    text = "Monto Total:  S/ ${"%.2f".format(montoTotal)}",
+                    fontSize = 25.sp,
                     fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(bottom = 16.dp)
                 )
 
-                // Tarjetas de categorías
-                CuentaCard("TARJETA", montoTotalTarjeta)
-                CuentaCard("EFECTIVO", montoTotalEfectivo)
-                CuentaCard("YAPE", montoTotalYape)
+                // Tarjetas de categorías (texto a la izquierda y monto a la derecha)
+                CuentaCard(
+                    leftTitle = "Tarjeta",
+                    leftSubtitle = "Compras y pagos con tarjeta.",
+                    monto = montoTotalTarjeta
+                )
+                CuentaCard(
+                    leftTitle = "Efectivo",
+                    leftSubtitle = "Billetes y monedas disponibles.",
+                    monto = montoTotalEfectivo
+                )
+                CuentaCard(
+                    leftTitle = "Yape",
+                    leftSubtitle = "Saldo disponible en Yape.",
+                    monto = montoTotalYape
+                )
             }
 
-            // FAB y extras
+            // FAB y extras (asumiendo que ya los tienes definidos)
             AddFabWithSheet(
-                sheetOffsetY = -30.dp,
+                sheetOffsetY = (-30).dp,
                 bottomPadding = innerPadding.calculateBottomPadding(),
                 open = open,
                 onOpenChange = { open = it },
@@ -193,18 +207,59 @@ fun CuentasScreen(
 }
 
 @Composable
-fun CuentaCard(title: String, monto: Double) {
+fun CuentaCard(
+    leftTitle: String,
+    leftSubtitle: String,
+    monto: Double,
+    modifier: Modifier = Modifier
+) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(Modifier.padding(16.dp)) {
-            Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-            Spacer(Modifier.height(8.dp))
-            Text("S/ ${"%.2f".format(monto)}", fontSize = 20.sp, fontWeight = FontWeight.Medium)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Izquierda: textos
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = leftTitle,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 22.sp,
+
+                    )
+                Text(
+                    text = leftSubtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 15.sp,
+
+                    )
+            }
+
+            // Derecha: monto
+            Text(
+                text = "S/ ${"%.2f".format(monto)}",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.End,
+                modifier = Modifier.widthIn(min = 140.dp) // asegura buen alineado a la derecha
+            )
         }
     }
 }
@@ -236,7 +291,7 @@ fun AddFabWithSheet(
                 Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f))
-                    .clickable { onOpenChange(false) }
+                    .clickable{ onOpenChange(false) }
             )
 
             Column(
