@@ -1,4 +1,4 @@
-package com.example.appfirst.ui.screens.agenda
+package com.example.appfirst.ui.screens.Agenda
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*

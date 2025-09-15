@@ -1,5 +1,7 @@
 package com.example.appfirst.ui.screens.Agenda
 
+import androidx.compose.runtime.Composable
+
 import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

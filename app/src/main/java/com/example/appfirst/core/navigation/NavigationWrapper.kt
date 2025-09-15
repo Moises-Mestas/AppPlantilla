@@ -10,7 +10,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.appfirst.core.navigation.CalendarioScreen
 import com.example.appfirst.data.datastore.UserPrefs
 import com.example.appfirst.data.local.entity.Nota
 import com.example.appfirst.ui.screens.home.InicioScreen
@@ -21,20 +20,20 @@ import com.example.appfirst.ui.screens.onboarding.OnboardingScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-// ✅ Screens Agenda
+//  Screens Agenda
 import com.example.appfirst.ui.screens.Agenda.FormExamenScreen
 import com.example.appfirst.ui.screens.Agenda.FormTareaScreen
 import com.example.appfirst.ui.screens.Agenda.RecordatorioScreen
 import com.example.appfirst.ui.screens.AsignaturaScreen
 import com.example.appfirst.ui.screens.calendar.NotaViewModel
 
-// ✅ Screens Finanzas
+// creens Finanzas
 import com.example.appfirst.ui.ingresos.GastoScreen
 import com.example.appfirst.ui.ingresos.HistorialScreen
 import com.example.appfirst.ui.ingresos.IngresoScreen2
-import com.example.appfirst.ui.screens.agenda.AgendaScreen
+import com.example.appfirst.ui.screens.Agenda.AgendaScreen
 
-// ✅ Screens Calendario
+// Screens Calendario
 import com.example.appfirst.ui.screens.calendar.AccionDiariaViewModel
 import com.example.appfirst.ui.screens.calendar.CalendarioScreen
 import com.example.appfirst.ui.screens.calendar.HorarioDiarioScreen
@@ -122,7 +121,7 @@ fun NavigationWrapper() {
         // 📌 Agenda
         // =========================
         composable("tarea") {
-            AgendaScreen(
+            AgendaScreen (
                 navigatetoAsignatura = { navController.navigate("Asignatura") },
                 navigateToFormTarea = { navController.navigate("FormTarea") },
                 navigateToExamen = { navController.navigate("Examen") },
@@ -166,13 +165,13 @@ fun NavigationWrapper() {
         composable("cuentas") {
             CuentasScreen(
                 navController = navController,
-                navigateToHistorial = { navController.navigate("historial") },
-                navigateToIngreso2 = { navController.navigate("ingreso2") },
-                navigateToGastos = { navController.navigate("gastos") },
-                navigateTotarea = { navController.navigate("tarea") },
-                navigateToCuentas = { navController.navigate("cuentas") },
                 navigateToCalendario = { navController.navigate("CalendarioScreen") },
                 navigateToHorarioDiario = { navController.navigate("HorarioDiario") },
+                navigateToCuentas = { navController.navigate("cuentas") },
+                navigateTotarea = { navController.navigate("tarea") },
+                navigateToHistorial = { navController.navigate("historial") },
+                navigateToGastos = { navController.navigate("gastos") },
+                navigateToIngreso2 = { navController.navigate("ingreso2") },
                 navigateBack = { navController.popBackStack() }
             )
         }

@@ -28,7 +28,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun CuentasScreen(
     modifier: Modifier = Modifier,
-    navigateToInicio: () -> Unit = {},
+    navController: NavHostController, // Cambiar aquí
+
 
     navigateToCalendario: () -> Unit = {},
     navigateToHorarioDiario: () -> Unit = {},
@@ -40,8 +41,8 @@ fun CuentasScreen(
     navigateToIngreso: () -> Unit = {},
     navigateToGastos: () -> Unit = {},
     navigateToIngreso2: () -> Unit = {},
-    navigateBack : () -> Unit = {},
-    navController: NavHostController,
+    navigateBack: () -> Unit = {},
+    navigateToInicio: () -> Unit = { navController.navigate("principal") },
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
