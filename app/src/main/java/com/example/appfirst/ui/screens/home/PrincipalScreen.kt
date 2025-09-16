@@ -354,7 +354,7 @@ fun PrincipalScreen(
 
                             ) // Solo egresos
                             Text(
-                                "S/ ${"%.2f".format(montoTotalTarjeta)}",
+                                "S/ ${"%.2f".format(ingresosTarjeta)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
                                 color = MaterialTheme.colorScheme.primary,
@@ -383,7 +383,7 @@ fun PrincipalScreen(
                                 color = Color(0xFFFF0000)
                             ) // Solo egresos
                             Text(
-                                "S/ ${"%.2f".format(montoTotalEfectivo)}",
+                                "S/ ${"%.2f".format(ingresosEfectivo)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
                                 color = MaterialTheme.colorScheme.primary,
@@ -413,7 +413,7 @@ fun PrincipalScreen(
                                 )
 
                             Text(
-                                "S/ ${"%.2f".format(montoTotalYape)}",
+                                "S/ ${"%.2f".format(ingresosYape)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
                                 color = MaterialTheme.colorScheme.primary,
@@ -466,29 +466,12 @@ fun PrincipalScreen(
 
                             // Total de Ingresos
                             Text(
-                                text = "S/ ${"%.2f".format(montoTotal)}", // Total de Ingresos
+                                text = "S/ ${"%.2f".format(ingresosTarjeta + ingresosEfectivo + ingresosYape)}", // Total de Ingresos
                                 fontWeight = FontWeight(900),
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.align(Alignment.CenterVertically) // Alineamos verticalmente con "TOTAL:"
                             )
                         }
-
-
-
-                        Button(
-                            onClick = {
-                                // Reiniciar los valores a cero
-                                viewModel.resetMonthlyData() // Llama a la función para reiniciar
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                        ) {
-                            Text("Reiniciar Ingresos/Gastos")
-                        }
-
-
 
                     }
                 }

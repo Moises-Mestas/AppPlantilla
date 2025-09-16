@@ -111,7 +111,7 @@ fun CuentasScreen(
             modifier = modifier,
             topBar = {
                 TopAppBar(
-                    title = { Text("Vista Cuentas", fontSize = 22.sp) },
+                    title = { Text("VISTA CUENTAS", fontSize = 24.sp) },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = "Menú")

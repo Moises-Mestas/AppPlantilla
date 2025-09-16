@@ -96,15 +96,7 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
     }
 
 
-    fun resetMonthlyData() {
-        // Reiniciar los valores de ingresos y gastos
-        _ingresosTarjeta.value = 0.0
-        _gastosTarjeta.value = 0.0
-        _ingresosEfectivo.value = 0.0
-        _gastosEfectivo.value = 0.0
-        _ingresosYape.value = 0.0
-        _gastosYape.value = 0.0
-    }
+
 
     fun getTotalTransactionsCount(): Int {
         return ingresos.value.size  // Contamos la cantidad de ingresos y gastos que tenemos

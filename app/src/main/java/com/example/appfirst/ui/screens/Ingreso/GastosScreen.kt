@@ -17,6 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -97,18 +98,18 @@ fun GastoScreen(
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = Color.White, // Fondo blanco
+                    titleContentColor = Color.Black, // Título negro
                 ),
                 title = {
-                    Text("--- GASTO ---", fontWeight = FontWeight.Bold)
+                    Text("--- GASTO ---", fontSize = 24.sp)
                 },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
                         Icon(
                             Icons.Default.ArrowBack,
                             contentDescription = "Volver",
-                            tint = MaterialTheme.colorScheme.onPrimary
+                            tint = Color.Black // Flecha negra
                         )
                     }
                 }
