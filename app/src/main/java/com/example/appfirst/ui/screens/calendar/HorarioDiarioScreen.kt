@@ -48,9 +48,7 @@ import com.example.appfirst.ui.screens.calendar.elementos.AccionDiariaViewModelF
 import com.example.appfirst.ui.screens.calendar.elementos.TarjetaNotaHorario
 import androidx.compose.runtime.collectAsState
 import androidx.navigation.NavController
-import com.example.appfirst.core.navigation.EditarAccion
 import com.example.appfirst.core.navigation.FormularioNota
-import com.example.appfirst.core.navigation.NuevaAccion
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

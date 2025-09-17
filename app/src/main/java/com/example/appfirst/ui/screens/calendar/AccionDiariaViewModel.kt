@@ -2,9 +2,6 @@ package com.example.appfirst.ui.screens.calendar
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.appfirst.data.local.AppDatabase
 import com.example.appfirst.data.local.entity.AccionDiaria
@@ -20,11 +17,9 @@ class AccionDiariaViewModel(application: Application) : AndroidViewModel(applica
     private val accionDiariaRepository: AccionDiariaRepository
     private val notaRepository: NotaRepository
 
-    // Estado para el horario diario (acciones + notas)
     private val _horarioEstado = MutableStateFlow(HorarioDiarioEstado())
     val horarioEstado: StateFlow<HorarioDiarioEstado> = _horarioEstado.asStateFlow()
 
-    // Estado para las acciones filtradas
     private val _accionesFiltradas = MutableStateFlow<List<AccionDiaria>>(emptyList())
     val accionesFiltradas: StateFlow<List<AccionDiaria>> = _accionesFiltradas.asStateFlow()
 

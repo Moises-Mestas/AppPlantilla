@@ -13,8 +13,9 @@ data class Nota(
     val horaFin: String,
     val color: Int, // código de color (0xFF2196F3)
     val tipo: String = "General", // "Evento", "Tarea", "Recordatorio"
-    val horaRecordatorio: String? = null, // Nullable para eventos sin recordatorio
-    val repeticion: String = "Ninguno", //"Diario", "Semanal", "Mensual", "Anual",
+    val horaRecordatorio: String? = null, // Hora específica para el recordatorio
+    val minutosAntes: Int? = null, // Minutos antes del evento    val repeticion: String = "Ninguno", //"Diario", "Semanal", "Mensual", "Anual",
+    val repeticion: String = "Ninguno",
     val categoria: String = "Personal", // "Trabajo", "Personal", "Salud", etc.
     val prioridad: Int = 3 // 1-5 para prioridad
 

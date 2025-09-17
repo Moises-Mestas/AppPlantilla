@@ -26,8 +26,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import java.text.SimpleDateFormat
 import androidx.navigation.NavController
-import com.example.appfirst.core.navigation.DetallesFecha
-import com.example.appfirst.core.navigation.FormularioNota
 
 @Composable
 fun CalendarioScreen(
@@ -160,7 +158,6 @@ fun CalendarioScreen(
             val daysInMonth = calendar.apply { set(currentYear, currentMonth, 1) }.getActualMaximum(Calendar.DAY_OF_MONTH)
             val firstDayOfMonth = calendar.apply { set(currentYear, currentMonth, 1) }.get(Calendar.DAY_OF_WEEK)
 
-            // Ajustar para que la semana comience en lunes
             val offset = if (firstDayOfMonth == Calendar.SUNDAY) 6 else firstDayOfMonth - Calendar.MONDAY
 
             LazyVerticalGrid(

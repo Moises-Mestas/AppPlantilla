@@ -42,13 +42,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.appfirst.data.local.entity.Nota
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
+import androidx.compose.ui.platform.LocalContext
+import com.example.appfirst.utils.AlarmHelper
 
 @Composable
 fun FormularioNotaScreen(
@@ -67,6 +64,13 @@ fun FormularioNotaScreen(
     var tipo by remember { mutableStateOf(notaExistente?.tipo ?: "Evento") }
     var categoria by remember { mutableStateOf(notaExistente?.categoria ?: "Personal") }
     var prioridad by remember { mutableStateOf(notaExistente?.prioridad ?: 3) }
+    val context = LocalContext.current
+
+    var recordatorioActivado by remember { mutableStateOf(notaExistente?.horaRecordatorio != null) }
+    var minutosAntes by remember { mutableStateOf(notaExistente?.minutosAntes ?: 15) }
+
+    var mostrarTimePickerInicio by remember { mutableStateOf(false) }
+    var mostrarTimePickerFin by remember { mutableStateOf(false) }
 
     val colores = listOf(
         0xFF2196F3.toInt(), 0xFF4CAF50.toInt(), 0xFFFFC107.toInt(),
@@ -75,6 +79,28 @@ fun FormularioNotaScreen(
 
     val tipos = listOf("Evento", "Tarea", "Recordatorio")
     val categoriasList = listOf("Trabajo", "Estudio", "Ejercicio", "Personal", "Salud", "Otros")
+
+    if (mostrarTimePickerInicio) {
+        TimePickerDialog(
+            horaActual = horaInicio,
+            onHoraSeleccionada = {
+                horaInicio = it
+                mostrarTimePickerInicio = false
+            },
+            onDismiss = { mostrarTimePickerInicio = false }
+        )
+    }
+
+    if (mostrarTimePickerFin) {
+        TimePickerDialog(
+            horaActual = horaFin,
+            onHoraSeleccionada = {
+                horaFin = it
+                mostrarTimePickerFin = false
+            },
+            onDismiss = { mostrarTimePickerFin = false }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -148,24 +174,64 @@ fun FormularioNotaScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            // Selector de hora inicio
             Column(modifier = Modifier.weight(1f)) {
                 Text("Hora inicio:", style = MaterialTheme.typography.bodyMedium)
-                OutlinedTextField(
-                    value = horaInicio,
-                    onValueChange = { horaInicio = it },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant,
+                            MaterialTheme.shapes.small
+                        )
+                        .clickable { mostrarTimePickerInicio = true }
+                        .border(
+                            1.dp,
+                            MaterialTheme.colorScheme.outline,
+                            MaterialTheme.shapes.small
+                        )
+                        .padding(horizontal = 16.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        text = horaInicio,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
+            // Selector de hora fin
             Column(modifier = Modifier.weight(1f)) {
                 Text("Hora fin:", style = MaterialTheme.typography.bodyMedium)
-                OutlinedTextField(
-                    value = horaFin,
-                    onValueChange = { horaFin = it },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant,
+                            MaterialTheme.shapes.small
+                        )
+                        .clickable { mostrarTimePickerFin = true }
+                        .border(
+                            1.dp,
+                            MaterialTheme.colorScheme.outline,
+                            MaterialTheme.shapes.small
+                        )
+                        .padding(horizontal = 16.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        text = horaFin,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
 
@@ -265,6 +331,40 @@ fun FormularioNotaScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Recordatorio:",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.weight(1f)
+            )
+
+            Switch(
+                checked = recordatorioActivado,
+                onCheckedChange = { recordatorioActivado = it }
+            )
+        }
+
+        if (recordatorioActivado) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Minutos antes:",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Slider(
+                value = minutosAntes.toFloat(),
+                onValueChange = { minutosAntes = it.toInt() },
+                valueRange = 0f..60f,
+                steps = 11
+            )
+            Text(
+                text = "$minutosAntes minutos antes",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
         // Botones de acción
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -285,6 +385,21 @@ fun FormularioNotaScreen(
 
             Button(
                 onClick = {
+                    val horaRecordatorio = if (recordatorioActivado) {
+                        // Calcular la hora del recordatorio (horaInicio - minutosAntes)
+                        val partesHora = horaInicio.split(":")
+                        val hora = partesHora[0].toInt()
+                        val minuto = partesHora[1].toInt()
+
+                        val totalMinutos = hora * 60 + minuto - minutosAntes
+                        val horaRecordatorioH = (totalMinutos / 60).coerceAtLeast(0)
+                        val horaRecordatorioM = (totalMinutos % 60).coerceAtLeast(0)
+
+                        "${horaRecordatorioH.toString().padStart(2, '0')}:${horaRecordatorioM.toString().padStart(2, '0')}"
+                    } else {
+                        null
+                    }
+
                     val nota = Nota(
                         id = notaExistente?.id ?: 0,
                         titulo = titulo,
@@ -294,12 +409,18 @@ fun FormularioNotaScreen(
                         horaFin = horaFin,
                         color = color.toInt(),
                         tipo = tipo,
-                        horaRecordatorio = if (tipo == "Recordatorio") horaInicio else null,
+                        horaRecordatorio = horaRecordatorio,
+                        minutosAntes = if (recordatorioActivado) minutosAntes else null,
                         repeticion = "Ninguno",
                         categoria = categoria,
                         prioridad = prioridad
                     )
+
                     onSave(nota)
+
+                    // Programar la alarma después de guardar
+                    val alarmHelper = AlarmHelper(context)
+                    alarmHelper.programarAlarma(nota)
                 },
                 enabled = titulo.isNotBlank(),
                 modifier = Modifier.weight(1f)
