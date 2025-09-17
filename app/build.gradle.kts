@@ -108,4 +108,8 @@ dependencies {
     //librerias para el calendario
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.runtime.livedata)
+
+    //injeccion
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
 }

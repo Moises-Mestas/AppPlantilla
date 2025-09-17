@@ -45,5 +45,16 @@ interface IngresoDao {
     @Query("SELECT * FROM ingresos WHERE userId = :userId AND depositado_en = :depositadoEn AND monto < 0 ORDER BY fecha DESC")
     fun getGastosByDeposito(userId: Long, depositadoEn: MedioPago): Flow<List<Ingreso>>
 
+    //para la vista de calendario
+    @Query("""
+        SELECT * FROM ingresos 
+        WHERE userId = :userId 
+        AND date(fecha/1000, 'unixepoch') = :fecha
+        ORDER BY fecha DESC
+    """)
+    suspend fun getIngresosByUserAndDate(userId: Long, fecha: String): List<Ingreso>
+
+    @Query("SELECT * FROM ingresos WHERE userId = :userId ORDER BY fecha DESC")
+    fun getIngresosByUserId(userId: Long): Flow<List<Ingreso>>
 }
 

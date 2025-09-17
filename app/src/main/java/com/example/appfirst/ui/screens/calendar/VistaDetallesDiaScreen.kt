@@ -20,8 +20,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.appfirst.ui.screens.calendar.elementos.CalendarViewModel
+import com.example.appfirst.ui.screens.calendar.elementos.CalendarViewModelFactory
+import com.example.appfirst.ui.screens.calendar.elementos.NotaViewModel
 import com.example.appfirst.ui.screens.calendar.elementos.NotaViewModelFactory
 import com.example.appfirst.ui.screens.calendar.elementos.TarjetaNota
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -32,11 +38,30 @@ fun VistaDetallesDiaScreen(
     navController: NavController,
     onBackToCalendario: () -> Unit,
 ) {
+    //val calendarViewModel: CalendarViewModel = hiltViewModel()
+    val calendarViewModel: CalendarViewModel = viewModel(
+        factory = CalendarViewModelFactory(
+            LocalContext.current.applicationContext as Application
+        )
+    )
+    val context = LocalContext.current
     val viewModel: NotaViewModel = viewModel(
         factory = NotaViewModelFactory(LocalContext.current.applicationContext as Application)
     )
-
     val notasState by viewModel.notasState.collectAsState()
+
+    // Cargar movimientos al iniciar
+    LaunchedEffect(Unit) {
+        val userId = withContext(Dispatchers.IO) {
+            val userEmail = com.example.appfirst.data.datastore.UserPrefs.getLoggedUserEmail(context)
+            val userDao = com.example.appfirst.data.local.AppDatabase.get(context).userDao()
+            val users = userDao.getAllUsers().first()
+            users.firstOrNull { it.email == userEmail }?.id ?: 0L
+        }
+        if (userId != 0L) {
+            calendarViewModel.cargarMovimientos(userId)
+        }
+    }
 
     LaunchedEffect(fecha) {
         if (fecha.isNotEmpty()) {
@@ -234,9 +259,8 @@ fun VistaDetallesDiaScreen(
                         }
                     }
                 }
-
                 "Movimientos" -> {
-                    SeccionMovimientosDemo()
+                    SeccionMovimientos(fecha = fecha, viewModel = calendarViewModel)
                 }
             }
         }
@@ -247,69 +271,136 @@ fun formatearFechaDetalles(fecha: String): String {
     return try {
         val formatoEntrada = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val date = formatoEntrada.parse(fecha)
-        val formatoSalida = SimpleDateFormat("EEEE, d 'de' MMMM 'de' yyyy", Locale.getDefault())
-        formatoSalida.format(date ?: return fecha)
+        val localeEspanol = Locale("es", "ES")
+        val formatoSalida = SimpleDateFormat("EEEE, d 'de' MMMM 'de' yyyy", localeEspanol)
+        val fechaFormateada = formatoSalida.format(date ?: return fecha)
+        fechaFormateada.split(" ").joinToString(" ") { palabra ->
+            palabra.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(localeEspanol) else it.toString()
+            }
+        }
     } catch (e: Exception) {
         fecha
     }
 }
 
 @Composable
-fun SeccionMovimientosDemo() {
-    val movimientosTextoPlano = listOf(
-        "+ S/ 50.00 (Ingreso - Salario)",
-        "- S/ 20.00 (Gasto - Comida)",
-        "- S/ 5.00 (Gasto - Transporte)"
-    )
-    val balance = 25.00
+fun SeccionMovimientos(
+    fecha: String,
+    viewModel: CalendarViewModel
+) {
+    var movimientosDelDia by remember { mutableStateOf<List<com.example.appfirst.data.local.entity.Ingreso>>(emptyList()) }
+    var balance by remember { mutableStateOf(0.0) }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+
+    LaunchedEffect(fecha) {
+        isLoading = true
+        errorMessage = null
+        try {
+            val userId = withContext(Dispatchers.IO) {
+                val userEmail = com.example.appfirst.data.datastore.UserPrefs.getLoggedUserEmail(context)
+                val userDao = com.example.appfirst.data.local.AppDatabase.get(context).userDao()
+                val users = userDao.getAllUsers().first()
+                users.firstOrNull { it.email == userEmail }?.id ?: 0L
+            }
+
+            if (userId != 0L) {
+                movimientosDelDia = viewModel.getMovimientosDelDia(userId, fecha)
+                balance = viewModel.getBalanceDelDia(userId, fecha)
+            } else {
+                errorMessage = "Usuario no encontrado"
+            }
+        } catch (e: Exception) {
+            errorMessage = "Error al cargar movimientos: ${e.message}"
+        } finally {
+            isLoading = false
+        }
+    }
 
     Column {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+        if (errorMessage != null) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+            ) {
                 Text(
-                    text = "Balance del día: S/ ${String.format("%.2f", balance)}",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = if (balance >= 0) Color(0xFF4CAF50) else Color(0xFFF44336)
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Modo demostración - Datos de ejemplo",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.Gray
+                    text = errorMessage ?: "Error desconocido",
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.padding(16.dp)
                 )
             }
-        }
+        } else if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Balance del día: S/ ${String.format("%.2f", balance)}",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (balance >= 0) Color(0xFF4CAF50) else Color(0xFFF44336)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "${movimientosDelDia.size} movimiento(s)",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.Gray
+                    )
+                }
+            }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            "Movimientos del día:",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(horizontal = 8.dp)
-        )
+            Text(
+                "Movimientos del día:",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        ) {
-            movimientosTextoPlano.forEach { movimiento ->
+            if (movimientosDelDia.isEmpty()) {
                 Text(
-                    movimiento,
-                    modifier = Modifier.padding(vertical = 4.dp),
-                    color = when {
-                        movimiento.startsWith("+") -> Color(0xFF4CAF50) // Verde
-                        movimiento.startsWith("-") -> Color(0xFFF44336) // Rojo
-                        else -> MaterialTheme.colorScheme.onBackground
-                    }
+                    "No hay movimientos para este día",
+                    modifier = Modifier.padding(16.dp),
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center
                 )
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                ) {
+                    movimientosDelDia.forEach { movimiento ->
+                        val esIngreso = movimiento.monto >= 0
+                        val signo = if (esIngreso) "+" else "-"
+                        val color = if (esIngreso) Color(0xFF4CAF50) else Color(0xFFF44336)
+                        val tipo = if (esIngreso) "Ingreso" else "Gasto"
+
+                        Text(
+                            "$signo S/ ${"%.2f".format(kotlin.math.abs(movimiento.monto))} " +
+                                    "($tipo - ${movimiento.descripcion}) - ${movimiento.depositadoEn}",
+                            modifier = Modifier.padding(vertical = 4.dp),
+                            color = color
+                        )
+                    }
+                }
             }
         }
     }

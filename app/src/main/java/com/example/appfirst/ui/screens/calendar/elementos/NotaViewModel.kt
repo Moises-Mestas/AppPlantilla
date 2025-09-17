@@ -1,24 +1,18 @@
-package com.example.appfirst.ui.screens.calendar
+package com.example.appfirst.ui.screens.calendar.elementos
 
 import android.app.Application
 import android.util.Log
-import androidx.lifecycle.viewModelScope
-import com.example.appfirst.data.local.entity.Nota
-import kotlinx.coroutines.launch
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.example.appfirst.data.local.AppDatabase
+import com.example.appfirst.data.local.entity.Nota
 import com.example.appfirst.data.repo.NotaRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 class NotaViewModel(application: Application) : AndroidViewModel(application) {
     private val notaRepository: NotaRepository
@@ -26,7 +20,7 @@ class NotaViewModel(application: Application) : AndroidViewModel(application) {
     val notasState: StateFlow<List<Nota>> = _notasState.asStateFlow()
 
     init {
-        val database = AppDatabase.get(application)
+        val database = AppDatabase.Companion.get(application)
         notaRepository = NotaRepository(database.notaDao())
     }
 

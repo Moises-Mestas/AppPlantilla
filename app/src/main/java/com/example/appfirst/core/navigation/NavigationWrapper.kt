@@ -25,7 +25,7 @@ import com.example.appfirst.ui.screens.Agenda.FormExamenScreen
 import com.example.appfirst.ui.screens.Agenda.FormTareaScreen
 import com.example.appfirst.ui.screens.Agenda.RecordatorioScreen
 import com.example.appfirst.ui.screens.AsignaturaScreen
-import com.example.appfirst.ui.screens.calendar.NotaViewModel
+import com.example.appfirst.ui.screens.calendar.elementos.NotaViewModel
 
 // creens Finanzas
 import com.example.appfirst.ui.ingresos.GastoScreen

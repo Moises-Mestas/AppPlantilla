@@ -1,10 +1,11 @@
-package com.example.appfirst.ui.screens.calendar
+package com.example.appfirst.ui.screens.calendar.elementos
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.appfirst.data.repo.AccionDiariaRepository
 import com.example.appfirst.data.repo.NotaRepository
+import com.example.appfirst.ui.screens.calendar.HorarioDiarioEstado
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
