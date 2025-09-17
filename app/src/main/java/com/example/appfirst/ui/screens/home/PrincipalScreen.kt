@@ -13,12 +13,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewModelScope
+import com.example.appfirst.data.datastore.UserPrefs
+import com.example.appfirst.data.local.AppDatabase
 import com.example.appfirst.ui.ingreso.rememberIngresoVM
+import com.example.appfirst.ui.ingresos.FechaSeleccionadaSection1
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 data class NavItem(val label: String, val icon: ImageVector, val onClick: () -> Unit)
 
@@ -49,6 +57,11 @@ fun PrincipalScreen(
     navigateToCuentas:()-> Unit = {}
 ) {
     val viewModel = rememberIngresoVM()
+    val fechaInicio by viewModel.fechaInicio.collectAsState()
+    val fechaFin by viewModel.fechaFin.collectAsState()
+    val context = LocalContext.current
+    val userId = viewModel.userId
+
     val montoTotal by viewModel.montoTotal.collectAsState()
     val montoTotalTarjeta by viewModel.montoTotalTarjeta.collectAsState()
     val montoTotalEfectivo by viewModel.montoTotalEfectivo.collectAsState()
@@ -57,7 +70,9 @@ fun PrincipalScreen(
     val scope = rememberCoroutineScope()
     var selectedItem by rememberSaveable { mutableIntStateOf(0) }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    var isLoading by remember { mutableStateOf(true) }
 
 
     val ingresosTarjeta by viewModel.ingresosTarjeta.collectAsState()
@@ -82,7 +97,21 @@ fun PrincipalScreen(
         NavItem("Ajustes", Icons.Default.Settings, navigateToAjustes),
         NavItem("Salir", Icons.Default.ExitToApp, navigateToSalir)
     )
-
+    LaunchedEffect(Unit) {
+        try {
+            val userDao = AppDatabase.get(context ).userDao()
+            val userId = withContext(Dispatchers.IO) {
+                val userEmail = UserPrefs.getLoggedUserEmail(context)
+                val users = userDao.getAllUsers().first()
+                users.firstOrNull { it.email == userEmail }?.id
+            }
+            if (userId != null) viewModel.setUserId(userId) else errorMessage = "Usuario no encontrado"
+        } catch (e: Exception) {
+            errorMessage = "Error: ${e.message}"
+        } finally {
+            isLoading = false
+        }
+    }
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -220,6 +249,42 @@ fun PrincipalScreen(
                     }
                 }
 
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text("Filtrar por fechas", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+
+                    // Fecha de inicio
+                    FechaSeleccionadaSection1(
+                        fecha = fechaInicio ?: System.currentTimeMillis(),
+                        onFechaChange = { nuevaFecha -> viewModel.updateFechaInicio(nuevaFecha) } // Usar un método del ViewModel
+                    )
+
+                    FechaSeleccionadaSection1(
+                        fecha = fechaFin ?: System.currentTimeMillis(),
+                        onFechaChange = { nuevaFecha -> viewModel.updateFechaFin(nuevaFecha) } // Usar un método del ViewModel
+                    )
+
+
+
+                    // Botón para aplicar el filtro
+                    Button(
+                        onClick = {
+                            val userId = viewModel.userId // Accede al userId a través del getter
+                            if (userId != null) {
+                                viewModel.viewModelScope.launch {
+                                    viewModel.updateIngresosYGastosPorFechas(userId, fechaInicio, fechaFin)
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                    ) {
+                        Text("Aplicar filtro")
+                    }
+
+}
 
                 // Tarjeta de gastos
                 Card(
@@ -354,12 +419,12 @@ fun PrincipalScreen(
 
                             ) // Solo egresos
                             Text(
-                                "S/ ${"%.2f".format(montoTotalTarjeta)}",
+                                "S/ ${"%.2f".format(ingresosTarjeta)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight(900)
-                                )
+                            )
                         }
 
                         // Efectivo
@@ -383,7 +448,7 @@ fun PrincipalScreen(
                                 color = Color(0xFFFF0000)
                             ) // Solo egresos
                             Text(
-                                "S/ ${"%.2f".format(montoTotalEfectivo)}",
+                                "S/ ${"%.2f".format(ingresosEfectivo)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
                                 color = MaterialTheme.colorScheme.primary,
@@ -410,10 +475,10 @@ fun PrincipalScreen(
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
                                 color = Color(0xFFFF0000)
-                                )
+                            )
 
                             Text(
-                                "S/ ${"%.2f".format(montoTotalYape)}",
+                                "S/ ${"%.2f".format(ingresosYape)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
                                 color = MaterialTheme.colorScheme.primary,
@@ -466,29 +531,12 @@ fun PrincipalScreen(
 
                             // Total de Ingresos
                             Text(
-                                text = "S/ ${"%.2f".format(montoTotal)}", // Total de Ingresos
+                                text = "S/ ${"%.2f".format(ingresosTarjeta + ingresosEfectivo + ingresosYape)}", // Total de Ingresos
                                 fontWeight = FontWeight(900),
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.align(Alignment.CenterVertically) // Alineamos verticalmente con "TOTAL:"
                             )
                         }
-
-
-
-                        Button(
-                            onClick = {
-                                // Reiniciar los valores a cero
-                                viewModel.resetMonthlyData() // Llama a la función para reiniciar
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                        ) {
-                            Text("Reiniciar Ingresos/Gastos")
-                        }
-
-
 
                     }
                 }

@@ -36,6 +36,7 @@ import com.example.appfirst.data.local.AppDatabase
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.navigation.NavController
 import com.example.appfirst.data.local.entity.TipoNota
@@ -106,18 +107,18 @@ fun IngresoScreen2(
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = Color.White, // Fondo blanco
+                    titleContentColor = Color.Black, // Título negro
                 ),
                 title = {
-                    Text("+++ INGRESO +++", fontWeight = FontWeight.Bold)
+                    Text("+++ INGRESO +++", fontSize = 24.sp)
                 },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
                         Icon(
                             Icons.Default.ArrowBack,
                             contentDescription = "Volver",
-                            tint = MaterialTheme.colorScheme.onPrimary
+                            tint = Color.Black // Flecha negra
                         )
                     }
                 }

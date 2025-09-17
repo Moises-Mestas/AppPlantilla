@@ -23,11 +23,23 @@ data class IngresoFormState(
 )
 
 class IngresoViewModel(app: Application) : AndroidViewModel(app) {
+
+    private val _fechaInicio = MutableStateFlow<Long?>(null)
+    private val _fechaFin = MutableStateFlow<Long?>(null)
+
+
+    // Exponemos las propiedades para acceder a ellas
+    val fechaInicio: StateFlow<Long?> = _fechaInicio
+    val fechaFin: StateFlow<Long?> = _fechaFin
+
+
+
     private val _ingresosTarjeta = MutableStateFlow(0.0)
     val ingresosTarjeta: StateFlow<Double> = _ingresosTarjeta
 
     private val _gastosTarjeta = MutableStateFlow(0.0)
     val gastosTarjeta: StateFlow<Double> = _gastosTarjeta
+    val userId: Long? get() = _userId.value
 
     private val _ingresosEfectivo = MutableStateFlow(0.0)
     val ingresosEfectivo: StateFlow<Double> = _ingresosEfectivo
@@ -73,18 +85,45 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
     }
 
 
-    suspend fun updateIngresosYGastos(userId: Long) {
-        // Obtener los ingresos y gastos por tipo de cuenta (Tarjeta, Yape, Efectivo)
-        val ingresosTarjeta = repo.getIngresosByDeposito(userId, MedioPago.TARJETA).first().sumOf { it.monto }
-        val gastosTarjeta = repo.getGastosByDeposito(userId, MedioPago.TARJETA).first().sumOf { it.monto }
+    suspend fun updateIngresosYGastosPorFechas(userId: Long, fechaInicio: Long?, fechaFin: Long?) {
+        // Si las fechas están nulas, simplemente obtiene los totales generales
+        if (fechaInicio == null || fechaFin == null) {
+            updateIngresosYGastos(userId)  // Llama al método general si no hay filtro de fechas
+            return
+        }
 
-        val ingresosEfectivo = repo.getIngresosByDeposito(userId, MedioPago.EFECTIVO).first().sumOf { it.monto }
-        val gastosEfectivo = repo.getGastosByDeposito(userId, MedioPago.EFECTIVO).first().sumOf { it.monto }
+        // Filtra los ingresos y gastos por tipo de cuenta (Tarjeta, Efectivo, Yape) y por fechas
+        val ingresosTarjeta = repo.getIngresosByDeposito(userId, MedioPago.TARJETA)
+            .first()
+            .filter { it.fecha in fechaInicio..fechaFin }
+            .sumOf { it.monto }
 
-        val ingresosYape = repo.getIngresosByDeposito(userId, MedioPago.YAPE).first().sumOf { it.monto }
-        val gastosYape = repo.getGastosByDeposito(userId, MedioPago.YAPE).first().sumOf { it.monto }
+        val gastosTarjeta = repo.getGastosByDeposito(userId, MedioPago.TARJETA)
+            .first()
+            .filter { it.fecha in fechaInicio..fechaFin }
+            .sumOf { it.monto }
 
-        // Actualizar los valores en el ViewModel
+        val ingresosEfectivo = repo.getIngresosByDeposito(userId, MedioPago.EFECTIVO)
+            .first()
+            .filter { it.fecha in fechaInicio..fechaFin }
+            .sumOf { it.monto }
+
+        val gastosEfectivo = repo.getGastosByDeposito(userId, MedioPago.EFECTIVO)
+            .first()
+            .filter { it.fecha in fechaInicio..fechaFin }
+            .sumOf { it.monto }
+
+        val ingresosYape = repo.getIngresosByDeposito(userId, MedioPago.YAPE)
+            .first()
+            .filter { it.fecha in fechaInicio..fechaFin }
+            .sumOf { it.monto }
+
+        val gastosYape = repo.getGastosByDeposito(userId, MedioPago.YAPE)
+            .first()
+            .filter { it.fecha in fechaInicio..fechaFin }
+            .sumOf { it.monto }
+
+        // Actualizamos las variables de estado
         _ingresosTarjeta.value = ingresosTarjeta
         _gastosTarjeta.value = gastosTarjeta
 
@@ -95,6 +134,50 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
         _gastosYape.value = gastosYape
     }
 
+    suspend fun updateIngresosYGastos(userId: Long) {
+        // Aquí, si no se especifican fechas, solo obtenemos todos los datos
+        val ingresosTarjeta = repo.getIngresosByDeposito(userId, MedioPago.TARJETA)
+            .first()
+            .sumOf { it.monto }
+
+        val gastosTarjeta = repo.getGastosByDeposito(userId, MedioPago.TARJETA)
+            .first()
+            .sumOf { it.monto }
+
+        val ingresosEfectivo = repo.getIngresosByDeposito(userId, MedioPago.EFECTIVO)
+            .first()
+            .sumOf { it.monto }
+
+        val gastosEfectivo = repo.getGastosByDeposito(userId, MedioPago.EFECTIVO)
+            .first()
+            .sumOf { it.monto }
+
+        val ingresosYape = repo.getIngresosByDeposito(userId, MedioPago.YAPE)
+            .first()
+            .sumOf { it.monto }
+
+        val gastosYape = repo.getGastosByDeposito(userId, MedioPago.YAPE)
+            .first()
+            .sumOf { it.monto }
+
+        // Actualizamos las variables de estado
+        _ingresosTarjeta.value = ingresosTarjeta
+        _gastosTarjeta.value = gastosTarjeta
+
+        _ingresosEfectivo.value = ingresosEfectivo
+        _gastosEfectivo.value = gastosEfectivo
+
+        _ingresosYape.value = ingresosYape
+        _gastosYape.value = gastosYape
+    }
+
+    fun updateFechaInicio(nuevaFecha: Long) {
+        _fechaInicio.value = nuevaFecha
+    }
+
+    fun updateFechaFin(nuevaFecha: Long) {
+        _fechaFin.value = nuevaFecha
+    }
 
     fun resetMonthlyData() {
         // Reiniciar los valores de ingresos y gastos
