@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -13,6 +14,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -111,7 +114,7 @@ fun CuentasScreen(
             modifier = modifier,
             topBar = {
                 TopAppBar(
-                    title = { Text("VISTA CUENTAS", fontSize = 24.sp) },
+                    title = { Text("Monedero", fontWeight = FontWeight.Bold) },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = "Menú")
@@ -177,7 +180,7 @@ fun CuentasScreen(
                 )
                 CuentaCard(
                     leftTitle = "Efectivo",
-                    leftSubtitle = "Billetes y monedas disponibles.",
+                    leftSubtitle = "Billetes / Monedas.",
                     monto = montoTotalEfectivo
                 )
                 CuentaCard(
@@ -263,7 +266,6 @@ fun CuentaCard(
         }
     }
 }
-
 @Composable
 fun AddFabWithSheet(
     sheetOffsetY: Dp = 80.dp,
@@ -302,10 +304,13 @@ fun AddFabWithSheet(
                     .offset(y = sheetOffsetY),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
+                // Botón de "Gasto" con nuevo diseño
                 SheetButton("Gasto", "Registra una compra o pago", Icons.Outlined.ShoppingCart) {
                     navigateToGastos()
                     onOpenChange(false)
                 }
+
+                // Botón de "Ingreso" con nuevo diseño
                 SheetButton("Ingreso", "Registra un salario o ingreso", Icons.Filled.AttachMoney) {
                     navigateToIngreso2()
                     onOpenChange(false)
@@ -321,21 +326,39 @@ fun SheetButton(title: String, subtitle: String, icon: androidx.compose.ui.graph
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(90.dp),
-        shape = RectangleShape,
-        contentPadding = PaddingValues(8.dp)
+            .height(90.dp)
+            .clip(RoundedCornerShape(16.dp)) // Bordes redondeados
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)) // Fondo semitransparente
+            .shadow(8.dp, shape = RoundedCornerShape(16.dp), ambientColor = MaterialTheme.colorScheme.primary), // Sombra añadida aquí
+        shape = RoundedCornerShape(16.dp), // Bordes redondeados
+        contentPadding = PaddingValues(12.dp)
     ) {
-        Column(horizontalAlignment = Alignment.Start) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(icon, contentDescription = null, modifier = Modifier.size(34.dp))
-                Spacer(Modifier.width(12.dp))
-                Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // Icono con un tamaño ajustado y color
+            Icon(icon, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary) // Aumentado tamaño del ícono
+            Spacer(Modifier.width(16.dp))
+            // Título en negrita y subtítulo con color adecuado
+            Column {
+                Text(
+                    title,
+                    fontSize = 20.sp, // Aumentado tamaño de texto
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface // Aseguramos que el color del texto sea legible
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    subtitle,
+                    fontSize = 16.sp, // Aumentado tamaño de texto
+                    color = MaterialTheme.colorScheme.onSurfaceVariant // Texto de subtítulo más suave
+                )
             }
-            Spacer(Modifier.height(4.dp))
-            Text(subtitle, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
+
+
+
+
 
 @Composable
 fun HistorialButton(navigateToHistorial: () -> Unit) {

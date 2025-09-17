@@ -83,7 +83,14 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
 
 
     }
+    suspend fun resetFilters() {
+        // Restablecer las fechas a null o valores predeterminados
+        _fechaInicio.value = null
+        _fechaFin.value = null
 
+        // Llamar a la función que actualiza los ingresos y gastos a los valores predeterminados (sin filtros)
+        updateIngresosYGastos(_userId.value ?: return)  // Asegúrate de que _userId tenga un valor válido
+    }
 
     suspend fun updateIngresosYGastosPorFechas(userId: Long, fechaInicio: Long?, fechaFin: Long?) {
         // Si las fechas están nulas, simplemente obtiene los totales generales
@@ -240,7 +247,7 @@ class IngresoViewModel(app: Application) : AndroidViewModel(app) {
             ingresosList.filter { ingreso ->
                 ingreso.descripcion.contains(q, ignoreCase = true) ||
                         ingreso.notas.display().contains(q, ignoreCase = true)
-                        ingreso.depositadoEn.name.contains(q, ignoreCase = true)
+                ingreso.depositadoEn.name.contains(q, ignoreCase = true)
             }
         }
     }

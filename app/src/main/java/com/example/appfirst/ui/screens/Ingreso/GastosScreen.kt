@@ -7,6 +7,7 @@ import com.example.appfirst.ui.screens.home.NavDestination
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
@@ -17,6 +18,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
@@ -102,7 +105,7 @@ fun GastoScreen(
                     titleContentColor = Color.Black, // Título negro
                 ),
                 title = {
-                    Text("--- GASTO ---", fontSize = 24.sp)
+                    Text("--- Gasto ---", fontWeight = FontWeight.Bold,fontSize = 25.sp)
                 },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
@@ -356,7 +359,6 @@ fun GastoFormScreen(
         )
     }
 }
-
 @Composable
 fun AddFabWithSheet2(
     sheetOffsetY: Dp = 80.dp,
@@ -364,112 +366,92 @@ fun AddFabWithSheet2(
     open: Boolean,
     onOpenChange: (Boolean) -> Unit,
     navigateToGastos: () -> Unit,
+
     navigateToHistorial: () -> Unit,
 
     navigateToIngreso: () -> Unit
+
 ) {
     Box(Modifier.fillMaxSize()) {
-
         FloatingActionButton(
             onClick = { onOpenChange(true) },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = -70.dp + bottomPadding),
+                .padding(end = 16.dp, bottom = -75.dp + bottomPadding),
             containerColor = MaterialTheme.colorScheme.primary
         ) {
             Icon(Icons.Filled.Add, contentDescription = "Agregar", tint = MaterialTheme.colorScheme.onPrimary)
         }
 
-
-
-
-
-
-
         if (open) {
-
             Box(
                 Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f))
-                    .clickable { onOpenChange(false) }
+                    .clickable{ onOpenChange(false) }
             )
-
 
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .padding(bottom = 8.dp + bottomPadding)
+                    .padding(horizontal = 16.dp, vertical = 8.dp + bottomPadding)
                     .offset(y = sheetOffsetY),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-
-                ElevatedButton(
-                    onClick = {
-                        navigateToGastos()
-                        onOpenChange(false)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(90.dp),
-                    shape = RectangleShape,
-                    contentPadding = PaddingValues(8.dp)
-                ) {
-                    Column(horizontalAlignment = Alignment.Start) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Outlined.ShoppingCart,
-                                contentDescription = null,
-                                modifier = Modifier.size(34.dp)
-                            )
-                            Spacer(Modifier.width(12.dp))
-                            Text("Gasto", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            "Registra una compra o un pago/gasto que hiciste en tu día.",
-                            fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                // Botón de "Gasto" con nuevo diseño
+                SheetButton("Gasto", "Registra una compra o pago", Icons.Outlined.ShoppingCart) {
+                    navigateToGastos()
+                    onOpenChange(false)
                 }
 
-
-                ElevatedButton(
-                    onClick = {
-                        navigateToIngreso()
-                        onOpenChange(false)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(90.dp),
-                    shape = RectangleShape,
-                    contentPadding = PaddingValues(8.dp)
-                ) {
-                    Column(horizontalAlignment = Alignment.Start) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Filled.AttachMoney,
-                                contentDescription = null,
-                                modifier = Modifier.size(34.dp)
-                            )
-                            Spacer(Modifier.width(12.dp))
-                            Text("Ingreso", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            "Registra tu salario, bonos o algún ingreso obtenido en tu día.",
-                            fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                // Botón de "Ingreso" con nuevo diseño
+                SheetButton("Ingreso", "Registra un salario o ingreso", Icons.Filled.AttachMoney) {
+                    navigateToIngreso()
+                    onOpenChange(false)
                 }
             }
         }
     }
 }
+
+@Composable
+fun SheetButton(title: String, subtitle: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
+    ElevatedButton(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(90.dp)
+            .clip(RoundedCornerShape(16.dp)) // Bordes redondeados
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)) // Fondo semitransparente
+            .shadow(8.dp, shape = RoundedCornerShape(16.dp), ambientColor = MaterialTheme.colorScheme.primary), // Sombra añadida aquí
+        shape = RoundedCornerShape(16.dp), // Bordes redondeados
+        contentPadding = PaddingValues(12.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // Icono con un tamaño ajustado y color
+            Icon(icon, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary) // Aumentado tamaño del ícono
+            Spacer(Modifier.width(16.dp))
+            // Título en negrita y subtítulo con color adecuado
+            Column {
+                Text(
+                    title,
+                    fontSize = 20.sp, // Aumentado tamaño de texto
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface // Aseguramos que el color del texto sea legible
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    subtitle,
+                    fontSize = 16.sp, // Aumentado tamaño de texto
+                    color = MaterialTheme.colorScheme.onSurfaceVariant // Texto de subtítulo más suave
+                )
+            }
+        }
+    }
+}
+
+
 @Composable
 fun HistorialButton2(
     navigateToHistorial: () -> Unit

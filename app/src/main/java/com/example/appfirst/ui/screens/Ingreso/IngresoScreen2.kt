@@ -111,7 +111,7 @@ fun IngresoScreen2(
                     titleContentColor = Color.Black, // Título negro
                 ),
                 title = {
-                    Text("+++ INGRESO +++", fontSize = 24.sp)
+                    Text("+++ Ingreso +++", fontWeight = FontWeight.Bold,fontSize = 25.sp)
                 },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {

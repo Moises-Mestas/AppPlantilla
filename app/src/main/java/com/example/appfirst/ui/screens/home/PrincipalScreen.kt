@@ -249,42 +249,6 @@ fun PrincipalScreen(
                     }
                 }
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Text("Filtrar por fechas", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-
-                    // Fecha de inicio
-                    FechaSeleccionadaSection1(
-                        fecha = fechaInicio ?: System.currentTimeMillis(),
-                        onFechaChange = { nuevaFecha -> viewModel.updateFechaInicio(nuevaFecha) } // Usar un método del ViewModel
-                    )
-
-                    FechaSeleccionadaSection1(
-                        fecha = fechaFin ?: System.currentTimeMillis(),
-                        onFechaChange = { nuevaFecha -> viewModel.updateFechaFin(nuevaFecha) } // Usar un método del ViewModel
-                    )
-
-
-
-                    // Botón para aplicar el filtro
-                    Button(
-                        onClick = {
-                            val userId = viewModel.userId // Accede al userId a través del getter
-                            if (userId != null) {
-                                viewModel.viewModelScope.launch {
-                                    viewModel.updateIngresosYGastosPorFechas(userId, fechaInicio, fechaFin)
-                                }
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
-                    ) {
-                        Text("Aplicar filtro")
-                    }
-
-}
 
                 // Tarjeta de gastos
                 Card(
@@ -536,6 +500,89 @@ fun PrincipalScreen(
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.align(Alignment.CenterVertically) // Alineamos verticalmente con "TOTAL:"
                             )
+                        }
+                        Divider(Modifier.padding(vertical = 8.dp))
+
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(4.dp)
+                        ) {
+                            Text(
+                                "Filtrar por fechas",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            // Fecha de inicio
+                            FechaSeleccionadaSection1(
+                                fecha = fechaInicio ?: System.currentTimeMillis(),
+                                onFechaChange = { nuevaFecha ->
+                                    viewModel.updateFechaInicio(
+                                        nuevaFecha
+                                    )
+                                } // Usar un método del ViewModel
+                            )
+
+                            FechaSeleccionadaSection1(
+                                fecha = fechaFin ?: System.currentTimeMillis(),
+                                onFechaChange = { nuevaFecha -> viewModel.updateFechaFin(nuevaFecha) } // Usar un método del ViewModel
+                            )
+
+                            Divider(Modifier.padding(vertical = 8.dp))
+
+                            // Fila con los dos botones (Aplicar filtro y Restablecer)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 8.dp), // Reducir el padding superior
+                                horizontalArrangement = Arrangement.spacedBy(8.dp) // Reducir espacio entre los botones
+                            ) {
+                                // Botón Aplicar filtro
+                                Button(
+                                    onClick = {
+                                        val userId =
+                                            viewModel.userId // Accede al userId a través del getter
+                                        if (userId != null) {
+                                            viewModel.viewModelScope.launch {
+                                                viewModel.updateIngresosYGastosPorFechas(
+                                                    userId,
+                                                    fechaInicio,
+                                                    fechaFin
+                                                )
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .weight(1f) // Hace que ocupe el 50% del espacio
+                                        .height(40.dp), // Ajustar la altura del botón
+                                ) {
+                                    Text(
+                                        "Aplicar filtro",
+                                        fontSize = 14.sp
+                                    ) // Reducir el tamaño de la fuente
+                                }
+
+                                // Botón Restablecer
+                                Button(
+                                    onClick = {
+                                        // Restablecer los valores de las fechas y otros filtros
+                                        viewModel.viewModelScope.launch {
+                                            viewModel.resetFilters() // Llamar a la función suspendida
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .weight(1f) // Hace que ocupe el 50% del espacio
+                                        .height(40.dp), // Ajustar la altura del botón
+                                ) {
+                                    Text(
+                                        "Restablecer",
+                                        fontSize = 14.sp
+                                    ) // Reducir el tamaño de la fuente
+                                }
+                            }
+
                         }
 
                     }

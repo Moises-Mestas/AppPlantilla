@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -22,6 +23,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -138,7 +141,7 @@ fun HistorialScreen(
                     titleContentColor = Color.Black, // Título negro
                 ),
                 title = {
-                    Text("-+-+ HISTORIAL +-+-", fontSize = 24.sp) // Texto más pequeño
+                    Text("-+-+ Historial +-+-", fontWeight = FontWeight.Bold,fontSize = 25.sp) // Texto más pequeño
                 },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
@@ -171,7 +174,7 @@ fun HistorialScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp)
+                .padding(8.dp)
         ) {
             // Títulos
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -180,19 +183,10 @@ fun HistorialScreen(
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(top = 10.dp, bottom = 4.dp)
+                    modifier = Modifier.padding(top = 1.dp, bottom = 4.dp)
                 )
             }
 
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text(
-                    "BALANCE",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-            }
             Text(
                 text = "S/ ${"%.2f".format(totalMonto)}",
                 fontSize = 24.sp,
@@ -234,14 +228,74 @@ fun HistorialScreen(
             }
 
             // Filtros por fecha: desde / hasta
-            FechaSeleccionadaSection1(
-                fecha = fechaSeleccionada ?: System.currentTimeMillis(),
-                onFechaChange = { nueva -> fechaSeleccionada = nueva }
-            )
-            FechaSeleccionadaSection1(
-                fecha = fechaSeleccionada2 ?: System.currentTimeMillis(),
-                onFechaChange = { nueva -> fechaSeleccionada2 = nueva }
-            )
+// Filtros por fecha: desde / hasta
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween, // Alinea los elementos de los extremos
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Columna de filtros por fecha (izquierda)
+                Column(
+                    modifier = Modifier.weight(1f), // Hace que ocupe el espacio disponible
+                    verticalArrangement = Arrangement.spacedBy(8.dp), // Espacio entre los filtros
+                    horizontalAlignment = Alignment.Start // Alinea los filtros a la izquierda
+                ) {
+                    // Filtro de fecha desde
+                    FechaSeleccionadaSection1(
+                        fecha = fechaSeleccionada ?: System.currentTimeMillis(),
+                        onFechaChange = { nueva -> fechaSeleccionada = nueva },
+                        modifier = Modifier.padding(start = 8.dp) // Mover un poco la fecha hacia la derecha
+                    )
+
+                    // Filtro de fecha hasta
+                    FechaSeleccionadaSection1(
+                        fecha = fechaSeleccionada2 ?: System.currentTimeMillis(),
+                        onFechaChange = { nueva -> fechaSeleccionada2 = nueva },
+                        modifier = Modifier.padding(start = 8.dp) // Mover un poco la fecha hacia la derecha
+                    )
+                }
+
+                // Columna de iconos (derecha)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(end = 20.dp) // Añadir padding a la derecha para separarlos
+
+                ) {
+                    SmallFloatingActionButton(
+                        onClick = {
+                            isFilteredByAmount = true
+                            isAscending = false
+                        },
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(45.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.ArrowUpward,
+                            contentDescription = "Subir",
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+
+                    SmallFloatingActionButton(
+                        onClick = {
+                            isFilteredByAmount = true
+                            isAscending = true
+                        },
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(45.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.ArrowDownward,
+                            contentDescription = "Bajar",
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+
+
+                }
+            }
+
 
             RestablecerButton {
                 fechaSeleccionada = null
@@ -249,6 +303,7 @@ fun HistorialScreen(
                 isFilteredByAmount = false
                 isAscending = true
             }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Start, // Alineación a la izquierda
@@ -256,7 +311,7 @@ fun HistorialScreen(
             ) {
                 Text(
                     text = "Transacciones recientes: ",
-                    fontSize = 25.sp,
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -265,7 +320,7 @@ fun HistorialScreen(
 
                 Text(
                     text = "$totalTransactions T",
-                    fontSize = 24.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -396,10 +451,18 @@ fun IngresoItemSimple(
                         fontWeight = FontWeight.Bold, // Negrita
                         color = androidx.compose.ui.graphics.Color.Black
                     )
+
+
                     Spacer(Modifier.height(8.dp))
 
+
+                    val truncatedDescription = if (ingreso.descripcion.length > 10) {
+                        "${ingreso.descripcion.take(10)}..."
+                    } else {
+                        ingreso.descripcion
+                    }
                     Text(
-                        text = "Descripción: ${ingreso.descripcion}",
+                        text = "Descripción: $truncatedDescription",
                         fontSize = 16.sp,
 
                         color = androidx.compose.ui.graphics.Color.Black
@@ -434,7 +497,7 @@ fun IngresoItemSimple(
                 ) {
                     Text(
                         text = "S/ ${"%.2f".format(ingreso.monto)}",
-                        fontSize = 20.sp,
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = androidx.compose.ui.graphics.Color.Black,
                         modifier = Modifier.fillMaxWidth()
@@ -475,15 +538,15 @@ fun RestablecerButton(onReset: () -> Unit) {
     Button(
         onClick = onReset,
         modifier = Modifier
-            .padding(top = 8.dp)
+            .padding(top = 6.dp)
             .fillMaxWidth()
-            .height(48.dp),
+            .height(35.dp),
         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
     ) {
         Text(
-            text = "Restablecer",
+            text = "RESTABLECER",
             color = MaterialTheme.colorScheme.onSecondary,
-            fontSize = 20.sp
+            fontSize = 18.sp
         )
     }
 }
@@ -491,16 +554,18 @@ fun RestablecerButton(onReset: () -> Unit) {
 @Composable
 fun FechaSeleccionadaSection1(
     fecha: Long,
-    onFechaChange: (Long) -> Unit
+    onFechaChange: (Long) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     val formattedFecha = formatFecha(fecha)
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = modifier // Usar el modifier que recibe la función
     ) {
-        Text("Fecha: $formattedFecha", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        Text("Fecha: $formattedFecha", fontSize = 14.sp, fontWeight = FontWeight.Medium)
         OutlinedButton(
             onClick = { showDatePicker = true },
             modifier = Modifier
@@ -528,6 +593,7 @@ fun FechaSeleccionadaSection1(
         )
     }
 }
+
 
 fun formatFecha(timestamp: Long): String = try {
     android.text.format.DateFormat.format("dd/MM/yy HH:mm", Date(timestamp)).toString()
@@ -588,107 +654,101 @@ fun AddFabWithSheet3(
                     .offset(y = sheetOffsetY),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
+                // Botón de "Gasto"
                 ElevatedButton(
                     onClick = { navigateToGastos(); onOpenChange(false) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(90.dp),
+                        .height(90.dp)
+                        .shadow(8.dp, shape = RoundedCornerShape(16.dp)) // Sombra añadida aquí
+                        .clip(RoundedCornerShape(16.dp)),
                     shape = RectangleShape,
-                    contentPadding = PaddingValues(8.dp)
+                    contentPadding = PaddingValues(12.dp)
                 ) {
-                    Column(horizontalAlignment = Alignment.Start) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Outlined.ShoppingCart, contentDescription = null, modifier = Modifier.size(34.dp))
-                            Spacer(Modifier.width(12.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Icono de Gasto
+                        Icon(Icons.Outlined.ShoppingCart, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
+                        Spacer(Modifier.width(16.dp))
+                        // Texto
+                        Column {
                             Text("Gasto", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            Spacer(Modifier.height(4.dp))
+                            Text("Registra una compra o pago.", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        Spacer(Modifier.height(4.dp))
-                        Text("Registra una compra o un pago/gasto que hiciste en tu día.", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
 
+                // Botón de "Ingreso"
                 ElevatedButton(
                     onClick = { navigateToIngreso(); onOpenChange(false) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(90.dp),
+                        .height(90.dp)
+                        .shadow(8.dp, shape = RoundedCornerShape(16.dp)) // Sombra añadida aquí
+                        .clip(RoundedCornerShape(16.dp)),
                     shape = RectangleShape,
-                    contentPadding = PaddingValues(8.dp)
+                    contentPadding = PaddingValues(12.dp)
                 ) {
-                    Column(horizontalAlignment = Alignment.Start) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Filled.AttachMoney, contentDescription = null, modifier = Modifier.size(34.dp))
-                            Spacer(Modifier.width(12.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Icono de Ingreso
+                        Icon(Icons.Filled.AttachMoney, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
+                        Spacer(Modifier.width(16.dp))
+                        // Texto
+                        Column {
                             Text("Ingreso", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            Spacer(Modifier.height(4.dp))
+                            Text("Registra un salario o ingreso", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        Spacer(Modifier.height(4.dp))
-                        Text("Registra tu salario, bonos o algún ingreso obtenido en tu día.", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
         }
     }
 }
+
 @Composable
 fun MovableArrowButtons(
     onArrowUpClick: () -> Unit,
     onArrowDownClick: () -> Unit,
     onMoneyIconClick: () -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(end = 20.dp, top = 315.dp)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth() // Aseguramos que ocupe el ancho completo
+            .padding(8.dp), // Espaciado alrededor de los botones
+        horizontalArrangement = Arrangement.End, // Coloca los elementos al final de la fila
+        verticalAlignment = Alignment.CenterVertically // Centra verticalmente los elementos
+    ) {
+        // Flecha hacia arriba
+        SmallFloatingActionButton(
+            onClick = onArrowUpClick,
+            containerColor = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(45.dp)
         ) {
-
-            Column(
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .padding(end = 8.dp)
-            ) {
-
-                SmallFloatingActionButton(
-                    onClick = onArrowUpClick,
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(35.dp)
-                ) {
-                    Icon(
-                        Icons.Filled.ArrowUpward,
-                        contentDescription = "Subir",
-                        modifier = Modifier.size(30.dp)
-                    )
-                }
-
-
-                SmallFloatingActionButton(
-                    onClick = onArrowDownClick,
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.size(35.dp)
-                ) {
-                    Icon(
-                        Icons.Filled.ArrowDownward,
-                        contentDescription = "Bajar",
-                        modifier = Modifier.size(30.dp)
-                    )
-                }
-            }
-
-
-            SmallFloatingActionButton(
-                onClick = onMoneyIconClick,
-                containerColor = androidx.compose.ui.graphics.Color.Green,
-                modifier = Modifier
-                    .size(35.dp)
-                    .align(Alignment.CenterVertically)
-            ) {
-                Icon(
-                    Icons.Filled.AttachMoney,
-                    contentDescription = "Dinero",
-                    modifier = Modifier.size(30.dp)
-                )
-            }
+            Icon(
+                Icons.Filled.ArrowUpward,
+                contentDescription = "Subir",
+                modifier = Modifier.size(40.dp)
+            )
         }
+
+        Spacer(modifier = Modifier.width(8.dp)) // Espaciado entre las flechas
+
+        // Flecha hacia abajo
+        SmallFloatingActionButton(
+            onClick = onArrowDownClick,
+            containerColor = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.size(45.dp)
+        ) {
+            Icon(
+                Icons.Filled.ArrowDownward,
+                contentDescription = "Bajar",
+                modifier = Modifier.size(40.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(8.dp)) // Espaciado entre las flechas y el ícono de dinero
+
+
     }
 }
-
