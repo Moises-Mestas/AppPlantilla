@@ -427,6 +427,7 @@ fun FormularioNotaScreen(
             ) {
                 Text(if (notaExistente == null) "Crear" else "Actualizar")
             }
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
