@@ -457,88 +457,85 @@ fun IngresoItemSimple(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .height(115.dp) // Reducir la altura del card
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = backgroundColor) // 👈 aquí se aplica
+        colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
         Box(Modifier.fillMaxWidth()) {
 
             Row(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(14.dp) // Reducir el padding general
             ) {
 
                 Column(modifier = Modifier.weight(0.8f)) {
                     Text(
                         text = "Fecha: ${formatFecha(ingreso.fecha)}",
-                        fontSize = 18.sp,  // Aumento del tamaño de la fuente de la fecha
-                        fontWeight = FontWeight.Bold, // Negrita
-                        color = androidx.compose.ui.graphics.Color.Black
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = androidx.compose.ui.graphics.Color.Black,
+                        modifier = Modifier.padding(bottom = 4.dp)
                     )
 
-
-                    Spacer(Modifier.height(8.dp))
-
-
-                    val truncatedDescription = if (ingreso.descripcion.length > 10) {
+                    val truncatedDescription = if (ingreso.descripcion.length > 8) {
                         "${ingreso.descripcion.take(10)}..."
                     } else {
                         ingreso.descripcion
                     }
                     Text(
                         text = "Descripción: $truncatedDescription",
-                        fontSize = 16.sp,
-
-                        color = androidx.compose.ui.graphics.Color.Black
+                        fontSize = 14.sp,
+                        color = androidx.compose.ui.graphics.Color.Black,
+                        modifier = Modifier.padding(bottom = 4.dp)
                     )
-                    Spacer(Modifier.height(8.dp))
 
                     Text(
                         text = "Depositado en: ${ingreso.depositadoEn}",
-                        fontSize = 16.sp,
-
-                        color = androidx.compose.ui.graphics.Color.Black
+                        fontSize = 14.sp,
+                        color = androidx.compose.ui.graphics.Color.Black,
+                        modifier = Modifier.padding(bottom = 4.dp)
                     )
-                    Spacer(Modifier.height(8.dp))
 
                     Text(
                         text = "Categoría: ${ingreso.notas.display()}",
-                        fontSize = 16.sp,
-
-                        color = androidx.compose.ui.graphics.Color.Black
+                        fontSize = 14.sp,
+                        color = androidx.compose.ui.graphics.Color.Black,
+                        modifier = Modifier.padding(bottom = 4.dp)
                     )
                 }
 
-
                 Spacer(Modifier.width(20.dp))
 
-
+                // Alineamos la columna del monto a la izquierda
                 Column(
                     modifier = Modifier
-                        .weight(0.5f)
+                        .weight(0.65f)
                         .fillMaxHeight()
-                        .padding(top = 40.dp)
+                        .padding(top = 32.dp)
+                        .wrapContentWidth(Alignment.Start) // Alinea el contenido de la columna a la izquierda
                 ) {
                     Text(
                         text = "S/ ${"%.2f".format(ingreso.monto)}",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Black,
                         color = androidx.compose.ui.graphics.Color.Black,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
 
+            // Botón de eliminación
             IconButton(
                 onClick = onDelete,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(8.dp)
+                    .padding(4.dp)
             ) {
 
                 Box(
                     modifier = Modifier
                         .background(Color(0xFFF44336), shape = CircleShape)
-                        .padding(3.dp)
+                        .padding(1.dp)
                 ) {
                     Icon(
                         Icons.Filled.Close,
@@ -551,6 +548,7 @@ fun IngresoItemSimple(
         }
     }
 }
+
 
 
 

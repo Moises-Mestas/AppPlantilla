@@ -409,7 +409,7 @@ fun GastoFormScreen(
         ) {
             Text(
                 "Guardar",
-                fontSize = 20.sp,
+                fontSize = 30.sp,
                 fontWeight = FontWeight.Bold
             )
         }

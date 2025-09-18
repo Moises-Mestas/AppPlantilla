@@ -398,7 +398,7 @@ fun IngresoFormScreen(
             .fillMaxWidth(0.6f)
         ) {
             Text(        "Guardar",
-                fontSize = 20.sp,
+                fontSize = 25.sp,
                 fontWeight = FontWeight.Bold)
         }
 
