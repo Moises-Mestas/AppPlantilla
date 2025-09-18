@@ -280,4 +280,11 @@ class ExamenViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    fun onFormError(field: String, message: String) {
+        val newErrors = _form.value.errors.toMutableMap()
+        newErrors[field] = message
+        _form.value = _form.value.copy(errors = newErrors)
+    }
+
+
 }

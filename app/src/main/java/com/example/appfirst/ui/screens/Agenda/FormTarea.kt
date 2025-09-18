@@ -1,9 +1,7 @@
 package com.example.appfirst.ui.screens.Agenda
 
-import androidx.compose.runtime.Composable
-
-
-
+import android.app.TimePickerDialog
+import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -31,7 +29,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun FormTareaScreen(
     onBack: () -> Unit = {},
@@ -47,11 +45,11 @@ fun FormTareaScreen(
     val query by tareaVM.query.collectAsStateWithLifecycle()
     val form by tareaVM.form.collectAsState()
 
-    // Asignaturas del usuario
+    // Asignaturas
     var userId by remember { mutableStateOf<Long?>(null) }
     val asignaturas = remember { mutableStateListOf<Asignatura>() }
+    var filtroAsignaturaId by remember { mutableStateOf<Long?>(null) }
 
-    // ✅ cargar userId y asignaturas
     LaunchedEffect(Unit) {
         val id = UserPrefs.getLoggedUserId(context)
         if (id != null) {
@@ -65,33 +63,27 @@ fun FormTareaScreen(
                     asignaturas.clear()
                     asignaturas.addAll(lista)
                 }
-        } else {
-            Log.e("FormTareaScreen", "⚠️ No se encontró un userId")
         }
     }
 
     val dateFormatter = remember { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) }
 
-    // Estados de diálogos
     var showEntregaPicker by remember { mutableStateOf(false) }
     var showRecordatorioPicker by remember { mutableStateOf(false) }
+    var showEntregaTimePicker by remember { mutableStateOf(false) }
+    var showRecordatorioTimePicker by remember { mutableStateOf(false) }
     val entregaPickerState = rememberDatePickerState()
     val recordatorioPickerState = rememberDatePickerState()
 
-    // 👉 Document Picker
-    val archivoUris = remember { mutableStateListOf<String>() }
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenMultipleDocuments(),
-        onResult = { uris: List<Uri> ->
-            if (uris.isNotEmpty()) {
-                archivoUris.clear()
-                archivoUris.addAll(uris.map { it.toString() })
-                tareaVM.onFormChange(archivos = archivoUris.toList())
+    val documentPickerLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
+            uri?.let {
+                val actual = form.archivos.toMutableList()
+                actual.add(it.toString())
+                tareaVM.onFormChange(archivos = actual)
             }
         }
-    )
 
-    // --- Modal Bottom Sheet (Formulario) ---
     if (showBottomSheet) {
         ModalBottomSheet(
             onDismissRequest = {
@@ -110,7 +102,6 @@ fun FormTareaScreen(
                 )
                 Spacer(Modifier.height(20.dp))
 
-                // ---------- Título ----------
                 OutlinedTextField(
                     value = form.titulo,
                     onValueChange = { tareaVM.onFormChange(titulo = it) },
@@ -122,7 +113,6 @@ fun FormTareaScreen(
 
                 Spacer(Modifier.height(12.dp))
 
-                // ---------- Fecha de entrega ----------
                 OutlinedTextField(
                     value = form.fechaEntrega.takeIf { it.isNotBlank() }?.let {
                         dateFormatter.format(Date(it.toLong()))
@@ -131,8 +121,13 @@ fun FormTareaScreen(
                     readOnly = true,
                     label = { Text("Fecha entrega") },
                     trailingIcon = {
-                        IconButton(onClick = { showEntregaPicker = true }) {
-                            Icon(Icons.Default.DateRange, contentDescription = "Seleccionar fecha")
+                        Row {
+                            IconButton(onClick = { showEntregaPicker = true }) {
+                                Icon(Icons.Default.DateRange, contentDescription = "Seleccionar fecha")
+                            }
+                            IconButton(onClick = { showEntregaTimePicker = true }) {
+                                Icon(Icons.Default.AccessTime, contentDescription = "Seleccionar hora")
+                            }
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -142,7 +137,6 @@ fun FormTareaScreen(
 
                 Spacer(Modifier.height(12.dp))
 
-                // ---------- Fecha de recordatorio ----------
                 OutlinedTextField(
                     value = form.fechaRecordatorio.takeIf { it.isNotBlank() }?.let {
                         dateFormatter.format(Date(it.toLong()))
@@ -151,8 +145,13 @@ fun FormTareaScreen(
                     readOnly = true,
                     label = { Text("Fecha recordatorio") },
                     trailingIcon = {
-                        IconButton(onClick = { showRecordatorioPicker = true }) {
-                            Icon(Icons.Default.DateRange, contentDescription = "Seleccionar fecha")
+                        Row {
+                            IconButton(onClick = { showRecordatorioPicker = true }) {
+                                Icon(Icons.Default.DateRange, contentDescription = "Seleccionar fecha")
+                            }
+                            IconButton(onClick = { showRecordatorioTimePicker = true }) {
+                                Icon(Icons.Default.AccessTime, contentDescription = "Seleccionar hora")
+                            }
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -162,7 +161,6 @@ fun FormTareaScreen(
 
                 Spacer(Modifier.height(12.dp))
 
-                // ---------- Asignatura ----------
                 var expanded by remember { mutableStateOf(false) }
                 ExposedDropdownMenuBox(
                     expanded = expanded,
@@ -192,7 +190,6 @@ fun FormTareaScreen(
 
                 Spacer(Modifier.height(12.dp))
 
-                // ---------- Nota ----------
                 OutlinedTextField(
                     value = form.nota,
                     onValueChange = { tareaVM.onFormChange(nota = it) },
@@ -202,23 +199,44 @@ fun FormTareaScreen(
 
                 Spacer(Modifier.height(12.dp))
 
-                // ---------- Archivos ----------
-                Text("Archivos adjuntos:")
-                archivoUris.forEach { uri ->
-                    Text(text = "- $uri", style = MaterialTheme.typography.bodySmall)
+                Text("Archivos adjuntos")
+                Spacer(Modifier.height(6.dp))
+
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    form.archivos.forEach { archivo ->
+                        AssistChip(
+                            onClick = { /* abrir archivo */ },
+                            label = { Text(archivo.substringAfterLast("/")) },
+                            trailingIcon = {
+                                IconButton(onClick = {
+                                    val actual = form.archivos.toMutableList()
+                                    actual.remove(archivo)
+                                    tareaVM.onFormChange(archivos = actual)
+                                }) {
+                                    Icon(Icons.Default.Close, contentDescription = "Quitar archivo")
+                                }
+                            }
+                        )
+                    }
                 }
+
                 Spacer(Modifier.height(8.dp))
-                Button(onClick = {
-                    launcher.launch(arrayOf("*/*")) // 📂 permite elegir cualquier archivo
-                }) {
-                    Icon(Icons.Default.Add, contentDescription = null)
-                    Spacer(Modifier.width(6.dp))
-                    Text("Adjuntar archivos")
+
+                Button(
+                    onClick = { documentPickerLauncher.launch(arrayOf("*/*")) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.Share, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Seleccionar archivo")
                 }
 
                 Spacer(Modifier.height(12.dp))
 
-                // ---------- Completada ----------
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(
                         checked = form.completada,
@@ -229,7 +247,6 @@ fun FormTareaScreen(
 
                 Spacer(Modifier.height(20.dp))
 
-                // Botones Guardar / Cancelar
                 Button(
                     onClick = {
                         scope.launch { tareaVM.save() }
@@ -255,7 +272,6 @@ fun FormTareaScreen(
         }
     }
 
-    // ---------- Diálogos de fecha ----------
     if (showEntregaPicker) {
         DatePickerDialog(
             onDismissRequest = { showEntregaPicker = false },
@@ -283,7 +299,12 @@ fun FormTareaScreen(
                 TextButton(onClick = {
                     val millis = recordatorioPickerState.selectedDateMillis
                     if (millis != null) {
-                        tareaVM.onFormChange(fechaRecordatorio = millis.toString())
+                        val entregaMillis = form.fechaEntrega.toLongOrNull()
+                        if (entregaMillis != null && millis >= entregaMillis) {
+                            tareaVM.onFormError("fechaRecordatorio", "Debe ser antes de la fecha de entrega")
+                        } else {
+                            tareaVM.onFormChange(fechaRecordatorio = millis.toString())
+                        }
                     }
                     showRecordatorioPicker = false
                 }) { Text("OK") }
@@ -296,7 +317,46 @@ fun FormTareaScreen(
         }
     }
 
-    // ---------- Pantalla principal con lista ----------
+    if (showEntregaTimePicker) {
+        val calendar = Calendar.getInstance()
+        val currentMillis = form.fechaEntrega.toLongOrNull()
+        if (currentMillis != null) calendar.timeInMillis = currentMillis
+
+        TimePickerDialog(
+            context,
+            { _, hour, minute ->
+                calendar.set(Calendar.HOUR_OF_DAY, hour)
+                calendar.set(Calendar.MINUTE, minute)
+                tareaVM.onFormChange(fechaEntrega = calendar.timeInMillis.toString())
+                showEntregaTimePicker = false
+            },
+            calendar.get(Calendar.HOUR_OF_DAY),
+            calendar.get(Calendar.MINUTE),
+            true
+        ).show()
+        showEntregaTimePicker = false
+    }
+
+    if (showRecordatorioTimePicker) {
+        val calendar = Calendar.getInstance()
+        val currentMillis = form.fechaRecordatorio.toLongOrNull()
+        if (currentMillis != null) calendar.timeInMillis = currentMillis
+
+        TimePickerDialog(
+            context,
+            { _, hour, minute ->
+                calendar.set(Calendar.HOUR_OF_DAY, hour)
+                calendar.set(Calendar.MINUTE, minute)
+                tareaVM.onFormChange(fechaRecordatorio = calendar.timeInMillis.toString())
+                showRecordatorioTimePicker = false
+            },
+            calendar.get(Calendar.HOUR_OF_DAY),
+            calendar.get(Calendar.MINUTE),
+            true
+        ).show()
+        showRecordatorioTimePicker = false
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -332,11 +392,51 @@ fun FormTareaScreen(
 
             Spacer(Modifier.height(12.dp))
 
+            var expandedFiltro by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = expandedFiltro,
+                onExpandedChange = { expandedFiltro = !expandedFiltro }
+            ) {
+                OutlinedTextField(
+                    value = asignaturas.firstOrNull { it.id == filtroAsignaturaId }?.nombre ?: "Todas",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Filtrar por asignatura") },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                )
+                ExposedDropdownMenu(expanded = expandedFiltro, onDismissRequest = { expandedFiltro = false }) {
+                    DropdownMenuItem(
+                        text = { Text("Todas") },
+                        onClick = {
+                            filtroAsignaturaId = null
+                            expandedFiltro = false
+                        }
+                    )
+                    asignaturas.forEach { asig ->
+                        DropdownMenuItem(
+                            text = { Text(asig.nombre) },
+                            onClick = {
+                                filtroAsignaturaId = asig.id
+                                expandedFiltro = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(tareas) { tarea ->
+                val tareasFiltradas = if (filtroAsignaturaId != null) {
+                    tareas.filter { it.asignaturaId == filtroAsignaturaId }
+                } else tareas
+
+                items(tareasFiltradas) { tarea ->
                     TareaCard(
                         tarea = tarea,
                         asignaturaNombre = asignaturas.firstOrNull { it.id == tarea.asignaturaId }?.nombre,
@@ -354,6 +454,7 @@ fun FormTareaScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TareaCard(
     tarea: Tarea,
@@ -362,31 +463,84 @@ fun TareaCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val context = LocalContext.current
+
+    val diasRestantes = remember {
+        val hoy = Date().time
+        val diffMillis = tarea.fechaEntrega - hoy
+        (diffMillis / (1000 * 60 * 60 * 24)).toInt()
+    }
+
+    val fechaFormato = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()) }
+    val horaFormato = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        shape = MaterialTheme.shapes.large
     ) {
-        Column(Modifier.padding(16.dp)) {
-            Text(text = tarea.titulo, style = MaterialTheme.typography.titleMedium)
-            Text(text = "Asignatura: ${asignaturaNombre ?: "Sin asignar"}")
-            Text(text = "Entrega: ${dateFormatter.format(Date(tarea.fechaEntrega))}")
+        Column(
+            modifier = Modifier.padding(16.dp).fillMaxWidth()
+        ) {
+            Text(text = tarea.titulo, style = MaterialTheme.typography.titleLarge)
+
+            Spacer(Modifier.height(6.dp))
+
+            Text("📘 Asignatura: ${asignaturaNombre ?: "Sin asignar"}")
+            Spacer(Modifier.height(4.dp))
+            Text("📅 Fecha: ${fechaFormato.format(Date(tarea.fechaEntrega))}")
+            Text("⏰ Hora: ${horaFormato.format(Date(tarea.fechaEntrega))}")
+
+            Spacer(Modifier.height(8.dp))
+
+            Text(
+                text = "⏳ Faltan $diasRestantes días",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    color = if (diasRestantes < 3) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                )
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            tarea.nota?.let { Text("⭐ Nota: $it") }
 
             if (tarea.archivos.isNotEmpty()) {
-                Text("Archivos adjuntos:", style = MaterialTheme.typography.bodySmall)
-                tarea.archivos.forEach { file ->
-                    Text("- $file", style = MaterialTheme.typography.bodySmall)
+                Spacer(Modifier.height(8.dp))
+                Text("📂 Archivos:")
+
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    tarea.archivos.forEach { archivo ->
+                        AssistChip(
+                            onClick = {
+                                try {
+                                    val uri = Uri.parse(archivo)
+                                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                                        data = uri
+                                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                    }
+                                    context.startActivity(intent)
+                                } catch (e: Exception) {
+                                    Log.e("TareaCard", "Error abriendo archivo: $archivo", e)
+                                }
+                            },
+                            label = { Text(archivo.substringAfterLast("/")) }
+                        )
+                    }
                 }
             }
 
             Spacer(Modifier.height(8.dp))
+
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                IconButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, contentDescription = "Editar")
-                }
-                IconButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, contentDescription = "Eliminar")
-                }
+                IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, contentDescription = "Editar") }
+                IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, contentDescription = "Eliminar") }
             }
         }
     }
 }
+

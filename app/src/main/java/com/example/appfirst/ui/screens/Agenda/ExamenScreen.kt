@@ -1,6 +1,7 @@
 package com.example.appfirst.ui.screens.Agenda
 
-import androidx.compose.runtime.Composable
+import android.app.TimePickerDialog
+import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -48,7 +49,6 @@ fun FormExamenScreen(
     val asignaturas = remember { mutableStateListOf<Asignatura>() }
     var filtroAsignaturaId by remember { mutableStateOf<Long?>(null) }
 
-    // ✅ cargar userId y asignaturas
     LaunchedEffect(Unit) {
         val id = UserPrefs.getLoggedUserId(context)
         if (id != null) {
@@ -62,8 +62,6 @@ fun FormExamenScreen(
                     asignaturas.clear()
                     asignaturas.addAll(lista)
                 }
-        } else {
-            Log.e("FormExamenScreen", "⚠️ No se encontró un userId")
         }
     }
 
@@ -72,10 +70,11 @@ fun FormExamenScreen(
     // Estados de diálogos
     var showExamenPicker by remember { mutableStateOf(false) }
     var showRecordatorioPicker by remember { mutableStateOf(false) }
+    var showExamenTimePicker by remember { mutableStateOf(false) }
+    var showRecordatorioTimePicker by remember { mutableStateOf(false) }
     val examenPickerState = rememberDatePickerState()
     val recordatorioPickerState = rememberDatePickerState()
 
-    // ✅ Document picker
     val documentPickerLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
             uri?.let {
@@ -85,7 +84,6 @@ fun FormExamenScreen(
             }
         }
 
-    // --- Modal Bottom Sheet (Formulario) ---
     if (showBottomSheet) {
         ModalBottomSheet(
             onDismissRequest = {
@@ -104,7 +102,6 @@ fun FormExamenScreen(
                 )
                 Spacer(Modifier.height(20.dp))
 
-                // ---------- Título ----------
                 OutlinedTextField(
                     value = form.titulo,
                     onValueChange = { examenVM.onFormChange(titulo = it) },
@@ -116,7 +113,6 @@ fun FormExamenScreen(
 
                 Spacer(Modifier.height(12.dp))
 
-                // ---------- Fecha de examen ----------
                 OutlinedTextField(
                     value = form.fechaExamen.takeIf { it.isNotBlank() }?.let {
                         dateFormatter.format(Date(it.toLong()))
@@ -125,8 +121,13 @@ fun FormExamenScreen(
                     readOnly = true,
                     label = { Text("Fecha examen") },
                     trailingIcon = {
-                        IconButton(onClick = { showExamenPicker = true }) {
-                            Icon(Icons.Default.DateRange, contentDescription = "Seleccionar fecha")
+                        Row {
+                            IconButton(onClick = { showExamenPicker = true }) {
+                                Icon(Icons.Default.DateRange, contentDescription = "Seleccionar fecha")
+                            }
+                            IconButton(onClick = { showExamenTimePicker = true }) {
+                                Icon(Icons.Default.AccessTime, contentDescription = "Seleccionar hora")
+                            }
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -136,7 +137,6 @@ fun FormExamenScreen(
 
                 Spacer(Modifier.height(12.dp))
 
-                // ---------- Fecha de recordatorio ----------
                 OutlinedTextField(
                     value = form.fechaRecordatorio.takeIf { it.isNotBlank() }?.let {
                         dateFormatter.format(Date(it.toLong()))
@@ -145,8 +145,13 @@ fun FormExamenScreen(
                     readOnly = true,
                     label = { Text("Fecha recordatorio") },
                     trailingIcon = {
-                        IconButton(onClick = { showRecordatorioPicker = true }) {
-                            Icon(Icons.Default.DateRange, contentDescription = "Seleccionar fecha")
+                        Row {
+                            IconButton(onClick = { showRecordatorioPicker = true }) {
+                                Icon(Icons.Default.DateRange, contentDescription = "Seleccionar fecha")
+                            }
+                            IconButton(onClick = { showRecordatorioTimePicker = true }) {
+                                Icon(Icons.Default.AccessTime, contentDescription = "Seleccionar hora")
+                            }
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -156,7 +161,6 @@ fun FormExamenScreen(
 
                 Spacer(Modifier.height(12.dp))
 
-                // ---------- Asignatura ----------
                 var expanded by remember { mutableStateOf(false) }
                 ExposedDropdownMenuBox(
                     expanded = expanded,
@@ -186,7 +190,6 @@ fun FormExamenScreen(
 
                 Spacer(Modifier.height(12.dp))
 
-                // ---------- Categoría ----------
                 var expandedCategoria by remember { mutableStateOf(false) }
                 val categorias = listOf("oral", "escrito", "práctico")
 
@@ -221,7 +224,6 @@ fun FormExamenScreen(
 
                 Spacer(Modifier.height(12.dp))
 
-                // ---------- Nota ----------
                 OutlinedTextField(
                     value = form.nota,
                     onValueChange = { examenVM.onFormChange(nota = it) },
@@ -231,7 +233,6 @@ fun FormExamenScreen(
 
                 Spacer(Modifier.height(12.dp))
 
-                // ---------- Archivos con picker ----------
                 Text("Archivos adjuntos")
                 Spacer(Modifier.height(6.dp))
 
@@ -242,7 +243,7 @@ fun FormExamenScreen(
                 ) {
                     form.archivos.forEach { archivo ->
                         AssistChip(
-                            onClick = { /* podrías abrir el archivo */ },
+                            onClick = { /* abrir archivo */ },
                             label = { Text(archivo.substringAfterLast("/")) },
                             trailingIcon = {
                                 IconButton(onClick = {
@@ -270,7 +271,6 @@ fun FormExamenScreen(
 
                 Spacer(Modifier.height(20.dp))
 
-                // Botones Guardar / Cancelar
                 Button(
                     onClick = {
                         scope.launch { examenVM.save() }
@@ -296,7 +296,6 @@ fun FormExamenScreen(
         }
     }
 
-    // ---------- Diálogos de fecha ----------
     if (showExamenPicker) {
         DatePickerDialog(
             onDismissRequest = { showExamenPicker = false },
@@ -324,7 +323,12 @@ fun FormExamenScreen(
                 TextButton(onClick = {
                     val millis = recordatorioPickerState.selectedDateMillis
                     if (millis != null) {
-                        examenVM.onFormChange(fechaRecordatorio = millis.toString())
+                        val examenMillis = form.fechaExamen.toLongOrNull()
+                        if (examenMillis != null && millis >= examenMillis) {
+                            examenVM.onFormError("fechaRecordatorio", "Debe ser antes de la fecha de examen")
+                        } else {
+                            examenVM.onFormChange(fechaRecordatorio = millis.toString())
+                        }
                     }
                     showRecordatorioPicker = false
                 }) { Text("OK") }
@@ -337,7 +341,46 @@ fun FormExamenScreen(
         }
     }
 
-    // ---------- Pantalla principal con lista ----------
+    if (showExamenTimePicker) {
+        val calendar = Calendar.getInstance()
+        val currentMillis = form.fechaExamen.toLongOrNull()
+        if (currentMillis != null) calendar.timeInMillis = currentMillis
+
+        TimePickerDialog(
+            context,
+            { _, hour: Int, minute: Int ->
+                calendar.set(Calendar.HOUR_OF_DAY, hour)
+                calendar.set(Calendar.MINUTE, minute)
+                examenVM.onFormChange(fechaExamen = calendar.timeInMillis.toString())
+                showExamenTimePicker = false
+            },
+            calendar.get(Calendar.HOUR_OF_DAY),
+            calendar.get(Calendar.MINUTE),
+            true
+        ).show()
+        showExamenTimePicker = false
+    }
+
+    if (showRecordatorioTimePicker) {
+        val calendar = Calendar.getInstance()
+        val currentMillis = form.fechaRecordatorio.toLongOrNull()
+        if (currentMillis != null) calendar.timeInMillis = currentMillis
+
+        TimePickerDialog(
+            context,
+            { _, hour: Int, minute: Int ->
+                calendar.set(Calendar.HOUR_OF_DAY, hour)
+                calendar.set(Calendar.MINUTE, minute)
+                examenVM.onFormChange(fechaRecordatorio = calendar.timeInMillis.toString())
+                showRecordatorioTimePicker = false
+            },
+            calendar.get(Calendar.HOUR_OF_DAY),
+            calendar.get(Calendar.MINUTE),
+            true
+        ).show()
+        showRecordatorioTimePicker = false
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -373,7 +416,6 @@ fun FormExamenScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // 🔎 Filtro por asignatura
             var expandedFiltro by remember { mutableStateOf(false) }
             ExposedDropdownMenuBox(
                 expanded = expandedFiltro,
@@ -436,6 +478,8 @@ fun FormExamenScreen(
     }
 }
 
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ExamenCard(
     examen: Examen,
@@ -444,23 +488,97 @@ fun ExamenCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val context = LocalContext.current
+
+    val diasRestantes = remember {
+        val hoy = Date().time
+        val diffMillis = examen.fechaExamen - hoy
+        (diffMillis / (1000 * 60 * 60 * 24)).toInt()
+    }
+
+    val fechaFormato = remember {
+        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    }
+    val horaFormato = remember {
+        SimpleDateFormat("HH:mm", Locale.getDefault())
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        shape = MaterialTheme.shapes.large
     ) {
-        Column(Modifier.padding(16.dp)) {
-            Text(text = examen.titulo, style = MaterialTheme.typography.titleMedium)
-            Text(text = "Asignatura: ${asignaturaNombre ?: "Sin asignar"}")
-            Text(text = "Categoría: ${examen.categoria}")
-            Text(text = "Fecha examen: ${dateFormatter.format(Date(examen.fechaExamen))}")
-            examen.nota?.let { Text("Nota: $it") }
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = examen.titulo,
+                style = MaterialTheme.typography.titleLarge
+            )
+
+            Spacer(Modifier.height(6.dp))
+
+            Text("📘 Asignatura: ${asignaturaNombre ?: "Sin asignar"}")
+            Text("📝 Categoría: ${examen.categoria}")
+
+            Spacer(Modifier.height(8.dp))
+
+            Row {
+                Text("📅 Fecha: ${fechaFormato.format(Date(examen.fechaExamen))}")
+            }
+            Row {
+                Text("⏰ Hora: ${horaFormato.format(Date(examen.fechaExamen))}")
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            Text(
+                text = "⏳ Faltan $diasRestantes días",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    color = if (diasRestantes < 3) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                )
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            examen.nota?.let {
+                Text("⭐ Nota: $it")
+            }
+
             if (examen.archivos.isNotEmpty()) {
+                Spacer(Modifier.height(8.dp))
                 Text("📂 Archivos:")
-                examen.archivos.forEach { archivo ->
-                    Text("   - ${archivo.substringAfterLast("/")} ")
+
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    examen.archivos.forEach { archivo ->
+                        AssistChip(
+                            onClick = {
+                                try {
+                                    val uri = Uri.parse(archivo)
+                                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                                        data = uri
+                                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                    }
+                                    context.startActivity(intent)
+                                } catch (e: Exception) {
+                                    Log.e("ExamenCard", "Error abriendo archivo: $archivo", e)
+                                }
+                            },
+                            label = { Text(archivo.substringAfterLast("/")) }
+                        )
+                    }
                 }
             }
+
             Spacer(Modifier.height(8.dp))
+
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 IconButton(onClick = onEdit) {
                     Icon(Icons.Default.Edit, contentDescription = "Editar")

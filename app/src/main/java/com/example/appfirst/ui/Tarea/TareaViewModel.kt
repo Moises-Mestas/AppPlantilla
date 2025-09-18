@@ -244,5 +244,13 @@ class TareaViewModel(app: Application) : AndroidViewModel(app) {
     fun resetNavigation() {
         _navigateToSuccess.value = null
     }
+
+    fun onFormError(field: String, message: String) {
+        val newErrors = _form.value.errors.toMutableMap()
+        newErrors[field] = message
+        _form.value = _form.value.copy(errors = newErrors)
+    }
+
+
 }
 
