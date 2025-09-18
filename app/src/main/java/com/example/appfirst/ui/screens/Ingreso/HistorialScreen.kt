@@ -457,7 +457,6 @@ fun IngresoItemSimple(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(115.dp) // Reducir la altura del card
             .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
@@ -509,7 +508,7 @@ fun IngresoItemSimple(
                 // Alineamos la columna del monto a la izquierda
                 Column(
                     modifier = Modifier
-                        .weight(0.65f)
+                        .weight(0.6f)
                         .fillMaxHeight()
                         .padding(top = 32.dp)
                         .wrapContentWidth(Alignment.Start) // Alinea el contenido de la columna a la izquierda
