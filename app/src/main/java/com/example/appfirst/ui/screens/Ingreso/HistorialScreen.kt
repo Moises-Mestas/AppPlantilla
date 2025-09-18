@@ -189,11 +189,11 @@ fun HistorialScreen(
 
             Text(
                 text = "S/ ${"%.2f".format(totalMonto)}",
-                fontSize = 24.sp,
+                fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
-                    .padding(8.dp)
+                    .padding(4.dp)
                     .align(Alignment.CenterHorizontally)
             )
 
@@ -465,13 +465,13 @@ fun IngresoItemSimple(
 
             Row(
                 modifier = Modifier
-                    .padding(14.dp) // Reducir el padding general
+                    .padding(16.dp) // Reducir el padding general
             ) {
 
                 Column(modifier = Modifier.weight(0.8f)) {
                     Text(
                         text = "Fecha: ${formatFecha(ingreso.fecha)}",
-                        fontSize = 14.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = androidx.compose.ui.graphics.Color.Black,
                         modifier = Modifier.padding(bottom = 4.dp)
@@ -586,15 +586,15 @@ fun FechaSeleccionadaSection1(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         modifier = modifier // Usar el modifier que recibe la función
     ) {
-        Text("Fecha: $formattedFecha", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+        Text("Fecha: $formattedFecha", fontSize = 15.sp, fontWeight = FontWeight.Medium)
         OutlinedButton(
             onClick = { showDatePicker = true },
             modifier = Modifier
                 .padding(start = 4.dp)
-                .widthIn(min = 80.dp)
+                .widthIn(min = 100.dp)
                 .height(40.dp),
             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
-        ) { Text("Cambiar") }
+        ) { Text("CAMBIAR") }
     }
 
     if (showDatePicker) {
