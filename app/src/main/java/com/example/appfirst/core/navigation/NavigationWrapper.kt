@@ -147,6 +147,8 @@ fun NavigationWrapper() {
                 navigateBack = { navController.popBackStack() },
                 navigateToGastos = { navController.navigate("gastos") },
                 navigateToHistorial = { navController.navigate("historial") },
+                navigateToIngreso2 = { navController.navigate("ingreso2") },
+
                 navigateToCuentas = { navController.navigate("cuentas") }
             )
         }
@@ -158,6 +160,8 @@ fun NavigationWrapper() {
                 navigateToCuentas = { navController.navigate("cuentas") },
                 navigateToIngreso2 = { navController.navigate("ingreso2") },
                 navigateToHistorial = { navController.navigate("historial") },
+                navigateToGastos = { navController.navigate("gastos") },
+
                 navigateBack = { navController.popBackStack() }
             )
         }
@@ -199,6 +203,8 @@ fun NavigationWrapper() {
                 navigateBack = { navController.popBackStack() },
                 navigateToGastos = { navController.navigate("gastos") },
                 navigateToHistorial = { navController.navigate("historial") },
+                navigateToIngreso2 = { navController.navigate("ingreso2") },
+
                 navigateToCuentas = { navController.navigate("cuentas") }
             )
         }
@@ -214,6 +220,8 @@ fun NavigationWrapper() {
                 navigateToCuentas = { navController.navigate("cuentas") },
                 navigateToIngreso2 = { navController.navigate("ingreso2") },
                 navigateToHistorial = { navController.navigate("historial") },
+                navigateToGastos = { navController.navigate("gastos") },
+
                 navigateBack = { navController.popBackStack() }
             )
         }

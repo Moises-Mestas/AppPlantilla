@@ -417,21 +417,21 @@ fun HistorialScreen(
 
 
 
-        MovableArrowButtons(
-            onArrowUpClick = {
-                isFilteredByAmount = true
-                isAscending = false
-            },
-            onArrowDownClick = {
-                isFilteredByAmount = true
-                isAscending = true
-            },
-            onMoneyIconClick = {
+    MovableArrowButtons(
+        onArrowUpClick = {
+            isFilteredByAmount = true
+            isAscending = false
+        },
+        onArrowDownClick = {
+            isFilteredByAmount = true
+            isAscending = true
+        },
+        onMoneyIconClick = {
 
-            }
-        )
+        }
+    )
 
-    }
+}
 
 
 

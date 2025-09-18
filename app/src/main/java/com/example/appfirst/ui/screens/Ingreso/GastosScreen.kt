@@ -1,13 +1,18 @@
 package com.example.appfirst.ui.ingresos
 
 
+
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import com.example.appfirst.ui.screens.home.NavDestination
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
@@ -45,16 +50,13 @@ import com.example.appfirst.data.local.entity.TipoNota
 fun GastoScreen(
     navController: NavController,
     gastoId: Int? = null,
-
     navigateToCuentas: () -> Unit,
     navigateToHistorial: () -> Unit,
-
+    navigateToGastos: () -> Unit,
     navigateToIngreso2: () -> Unit,
     navigateBack: () -> Unit
 ) {
     val viewModel = rememberIngresoVM()
-
-
     val context = LocalContext.current
     var open by remember { mutableStateOf(false) }
 
@@ -67,6 +69,7 @@ fun GastoScreen(
         TipoNota.EDUCACION,
         TipoNota.OTROS
     )
+
     LaunchedEffect(Unit) {
         try {
             val userDao = AppDatabase.get(context).userDao()
@@ -82,19 +85,6 @@ fun GastoScreen(
         } catch (_: Exception) {}
     }
 
-
-    LaunchedEffect(Unit) {
-        try {
-            val userDao = AppDatabase.get(context).userDao()
-            val userId = withContext(Dispatchers.IO) {
-                val email = UserPrefs.getLoggedUserEmail(context)
-                val users = userDao.getAllUsers().first()
-                users.firstOrNull { it.email == email }?.id
-            }
-            if (userId != null) viewModel.setUserId(userId)
-        } catch (_: Exception) { }
-    }
-
     var selectedItem by rememberSaveable { mutableIntStateOf(0) }
 
     Scaffold(
@@ -105,7 +95,7 @@ fun GastoScreen(
                     titleContentColor = Color.Black, // Título negro
                 ),
                 title = {
-                    Text("--- Gasto ---", fontWeight = FontWeight.Bold,fontSize = 25.sp)
+                    Text("--- Gasto ---", fontWeight = FontWeight.Bold, fontSize = 25.sp)
                 },
                 navigationIcon = {
                     IconButton(onClick = navigateToCuentas) {
@@ -135,33 +125,32 @@ fun GastoScreen(
         }
     ) { innerPadding ->
         Box(
-            Modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            GastoFormScreen(
-                viewModel = viewModel,
-                onSuccess = { navigateToCuentas() },
+            // Contenido desplazable
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(30.dp)
-            )
+                    .verticalScroll(rememberScrollState())  // Hace que el contenido sea desplazable
+            ) {
+                GastoFormScreen(
+                    viewModel = viewModel,
+                    onSuccess = { navigateToCuentas() },
+                    modifier = Modifier
+                        .fillMaxSize()
+                )
+            }
 
-            AddFabWithSheet2(
-                sheetOffsetY = 90.dp,
-                bottomPadding = innerPadding.calculateBottomPadding(),
-                open = open,
-                onOpenChange = { open = it },
-                navigateToGastos = navigateToCuentas,
-                navigateToHistorial = navigateToHistorial,
-                navigateToIngreso = navigateToIngreso2
-            )
-            if (!open) {  // Mostrar HistorialButton solo si el popup está cerrado
+            // Botones superpuestos (Historial y Agregar)
+            if (!open) {  // Mostrar botones solo si el popup está cerrado
                 Box(Modifier.fillMaxSize()) {
                     FloatingActionButton(
                         onClick = { navigateToHistorial() },
                         modifier = Modifier
-                            .align(Alignment.BottomStart)
+                            .align(Alignment.BottomStart) // Alinea a la izquierda
                             .padding(start = 16.dp, bottom = 30.dp), // Ajustamos la altura
                         containerColor = MaterialTheme.colorScheme.primary
                     ) {
@@ -175,7 +164,7 @@ fun GastoScreen(
                     FloatingActionButton(
                         onClick = { open = true },
                         modifier = Modifier
-                            .align(Alignment.BottomEnd)
+                            .align(Alignment.BottomEnd) // Alinea a la derecha
                             .padding(end = 16.dp, bottom = 30.dp), // Ajustamos la altura
                         containerColor = MaterialTheme.colorScheme.primary
                     ) {
@@ -184,6 +173,39 @@ fun GastoScreen(
                             contentDescription = "Agregar",
                             tint = MaterialTheme.colorScheme.onPrimary
                         )
+                    }
+                }
+            }
+
+            // Agregar el menú emergente para seleccionar "Gasto" o "Ingreso"
+            if (open) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f))
+                        .clickable { open = false }  // Cerrar el sheet al hacer clic fuera
+                )
+
+                // Colocamos la Column dentro de un Box para usar align y ajustarlo
+                Box(modifier = Modifier.align(Alignment.BottomCenter)) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp + innerPadding.calculateBottomPadding())
+                            .offset(y = 90.dp), // Desplazamos hacia arriba
+                        verticalArrangement = Arrangement.spacedBy(20.dp)
+                    ) {
+                        // Botón de "Gasto"
+                        SheetButton("Gasto", "Registra una compra o pago", Icons.Outlined.ShoppingCart) {
+                            navigateToGastos()
+                            open = false  // Cerrar el sheet luego de navegar
+                        }
+
+                        // Botón de "Ingreso"
+                        SheetButton("Ingreso", "Registra un salario o ingreso", Icons.Filled.AttachMoney) {
+                            navigateToIngreso2()
+                            open = false  // Cerrar el sheet luego de navegar
+                        }
                     }
                 }
             }
@@ -386,7 +408,7 @@ fun GastoFormScreen(
                 .fillMaxWidth(0.6f)
         ) {
             Text(
-                "Guardar Gasto",
+                "Guardar",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -462,10 +484,6 @@ fun AddFabWithSheet2(
         }
     }
 }
-
-
-
-
 @Composable
 fun SheetButton(title: String, subtitle: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
     ElevatedButton(
@@ -501,4 +519,3 @@ fun SheetButton(title: String, subtitle: String, icon: androidx.compose.ui.graph
         }
     }
 }
-
