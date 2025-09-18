@@ -244,14 +244,14 @@ fun HistorialScreen(
                     FechaSeleccionadaSection1(
                         fecha = fechaSeleccionada ?: System.currentTimeMillis(),
                         onFechaChange = { nueva -> fechaSeleccionada = nueva },
-                        modifier = Modifier.padding(start = 8.dp) // Mover un poco la fecha hacia la derecha
+                        modifier = Modifier.padding(start = 12.dp) // Mover un poco la fecha hacia la derecha
                     )
 
                     // Filtro de fecha hasta
                     FechaSeleccionadaSection1(
                         fecha = fechaSeleccionada2 ?: System.currentTimeMillis(),
                         onFechaChange = { nueva -> fechaSeleccionada2 = nueva },
-                        modifier = Modifier.padding(start = 8.dp) // Mover un poco la fecha hacia la derecha
+                        modifier = Modifier.padding(start = 12.dp) // Mover un poco la fecha hacia la derecha
                     )
                 }
 
@@ -259,8 +259,7 @@ fun HistorialScreen(
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(end = 20.dp) // Añadir padding a la derecha para separarlos
-
+                    modifier = Modifier.padding(end = 5.dp) // Ajusta el padding aquí para mover las flechas a la derecha o izquierda
                 ) {
                     SmallFloatingActionButton(
                         onClick = {
@@ -291,10 +290,9 @@ fun HistorialScreen(
                             modifier = Modifier.size(40.dp)
                         )
                     }
-
-
                 }
             }
+
 
 
             RestablecerButton {
@@ -389,9 +387,34 @@ fun HistorialScreen(
             navigateToHistorial = navigateToHistorial,
             navigateToIngreso = navigateToFormIngreso2
         )
+
         if (!open) {
-            HistorialButton(navigateToHistorial = navigateToHistorial)
+            // Aquí es donde se coloca el botón de Historial y el botón Add en la misma altura
+            Box(Modifier.fillMaxSize()) {
+                FloatingActionButton(
+                    onClick = navigateToHistorial,
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(start = 16.dp, bottom = 155.dp),
+                    containerColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Icon(Icons.Filled.History, contentDescription = "Historial", tint = MaterialTheme.colorScheme.onPrimary)
+                }
+
+                FloatingActionButton(
+                    onClick = { open = true },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 16.dp, bottom = 155.dp),
+                    containerColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = "Agregar", tint = MaterialTheme.colorScheme.onPrimary)
+                }
+            }
         }
+    }
+
+
 
 
         MovableArrowButtons(
@@ -409,7 +432,7 @@ fun HistorialScreen(
         )
 
     }
-}
+
 
 
 
@@ -573,7 +596,7 @@ fun FechaSeleccionadaSection1(
                 .widthIn(min = 80.dp)
                 .height(40.dp),
             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
-        ) { Text("Cambiar fecha") }
+        ) { Text("Cambiar") }
     }
 
     if (showDatePicker) {
@@ -601,20 +624,7 @@ fun formatFecha(timestamp: Long): String = try {
     "Fecha inválida"
 }
 
-@Composable
-fun HistorialButton(navigateToHistorial: () -> Unit) {
-    Box(Modifier.fillMaxSize()) {
-        FloatingActionButton(
-            onClick = { navigateToHistorial() },
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 16.dp, bottom = 155.dp),
-            containerColor = MaterialTheme.colorScheme.primary
-        ) {
-            Icon(Icons.Filled.History, contentDescription = "Historial", tint = MaterialTheme.colorScheme.onPrimary)
-        }
-    }
-}
+
 
 @Composable
 fun AddFabWithSheet3(
@@ -627,84 +637,40 @@ fun AddFabWithSheet3(
     navigateToIngreso: () -> Unit
 ) {
     Box(Modifier.fillMaxSize()) {
-        FloatingActionButton(
-            onClick = { onOpenChange(true) },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 50.dp + bottomPadding),
-            containerColor = MaterialTheme.colorScheme.primary
-        ) {
-            Icon(Icons.Filled.Add, contentDescription = "Agregar", tint = MaterialTheme.colorScheme.onPrimary)
-        }
-
+        // Eliminamos el botón "Agregar" visualmente
         if (open) {
             Box(
                 Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f))
-                    .clickable { onOpenChange(false) }
+                    .clickable { onOpenChange(false) }  // Esto cierra el sheet al hacer clic afuera
             )
 
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .padding(bottom = 8.dp + bottomPadding)
+                    .padding(horizontal = 16.dp, vertical = 8.dp + bottomPadding)
                     .offset(y = sheetOffsetY),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 // Botón de "Gasto"
-                ElevatedButton(
-                    onClick = { navigateToGastos(); onOpenChange(false) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(90.dp)
-                        .shadow(8.dp, shape = RoundedCornerShape(16.dp)) // Sombra añadida aquí
-                        .clip(RoundedCornerShape(16.dp)),
-                    shape = RectangleShape,
-                    contentPadding = PaddingValues(12.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Icono de Gasto
-                        Icon(Icons.Outlined.ShoppingCart, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
-                        Spacer(Modifier.width(16.dp))
-                        // Texto
-                        Column {
-                            Text("Gasto", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                            Spacer(Modifier.height(4.dp))
-                            Text("Registra una compra o pago.", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
+                SheetButton("Gasto", "Registra una compra o pago", Icons.Outlined.ShoppingCart) {
+                    navigateToGastos()
+                    onOpenChange(false)  // Cierra el sheet luego de navegar
                 }
 
                 // Botón de "Ingreso"
-                ElevatedButton(
-                    onClick = { navigateToIngreso(); onOpenChange(false) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(90.dp)
-                        .shadow(8.dp, shape = RoundedCornerShape(16.dp)) // Sombra añadida aquí
-                        .clip(RoundedCornerShape(16.dp)),
-                    shape = RectangleShape,
-                    contentPadding = PaddingValues(12.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Icono de Ingreso
-                        Icon(Icons.Filled.AttachMoney, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
-                        Spacer(Modifier.width(16.dp))
-                        // Texto
-                        Column {
-                            Text("Ingreso", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                            Spacer(Modifier.height(4.dp))
-                            Text("Registra un salario o ingreso", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
+                SheetButton("Ingreso", "Registra un salario o ingreso", Icons.Filled.AttachMoney) {
+                    navigateToIngreso()
+                    onOpenChange(false)  // Cierra el sheet luego de navegar
                 }
             }
         }
     }
 }
+
+
 
 @Composable
 fun MovableArrowButtons(
@@ -712,43 +678,5 @@ fun MovableArrowButtons(
     onArrowDownClick: () -> Unit,
     onMoneyIconClick: () -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth() // Aseguramos que ocupe el ancho completo
-            .padding(8.dp), // Espaciado alrededor de los botones
-        horizontalArrangement = Arrangement.End, // Coloca los elementos al final de la fila
-        verticalAlignment = Alignment.CenterVertically // Centra verticalmente los elementos
-    ) {
-        // Flecha hacia arriba
-        SmallFloatingActionButton(
-            onClick = onArrowUpClick,
-            containerColor = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(45.dp)
-        ) {
-            Icon(
-                Icons.Filled.ArrowUpward,
-                contentDescription = "Subir",
-                modifier = Modifier.size(40.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.width(8.dp)) // Espaciado entre las flechas
-
-        // Flecha hacia abajo
-        SmallFloatingActionButton(
-            onClick = onArrowDownClick,
-            containerColor = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier.size(45.dp)
-        ) {
-            Icon(
-                Icons.Filled.ArrowDownward,
-                contentDescription = "Bajar",
-                modifier = Modifier.size(40.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.width(8.dp)) // Espaciado entre las flechas y el ícono de dinero
-
-
-    }
+    // Ya no es necesario el contenido de esta función
 }

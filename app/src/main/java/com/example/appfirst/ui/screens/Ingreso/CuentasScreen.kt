@@ -203,11 +203,33 @@ fun CuentasScreen(
             )
 
             if (!open) {
-                HistorialButton(navigateToHistorial = navigateToHistorial)
+                // Aquí es donde se coloca el botón de Historial y el botón Add en la misma altura
+                Box(Modifier.fillMaxSize()) {
+                    FloatingActionButton(
+                        onClick = navigateToHistorial,
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(start = 16.dp, bottom = 155.dp),
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ) {
+                        Icon(Icons.Filled.History, contentDescription = "Historial", tint = MaterialTheme.colorScheme.onPrimary)
+                    }
+
+                    FloatingActionButton(
+                        onClick = { open = true },
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 16.dp, bottom = 155.dp),
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ) {
+                        Icon(Icons.Filled.Add, contentDescription = "Agregar", tint = MaterialTheme.colorScheme.onPrimary)
+                    }
+                }
             }
         }
     }
 }
+
 
 @Composable
 fun CuentaCard(
@@ -278,22 +300,13 @@ fun AddFabWithSheet(
     navigateToIngreso: () -> Unit
 ) {
     Box(Modifier.fillMaxSize()) {
-        FloatingActionButton(
-            onClick = { onOpenChange(true) },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 50.dp + bottomPadding),
-            containerColor = MaterialTheme.colorScheme.primary
-        ) {
-            Icon(Icons.Filled.Add, contentDescription = "Agregar", tint = MaterialTheme.colorScheme.onPrimary)
-        }
-
+        // Eliminamos el botón "Agregar" visualmente
         if (open) {
             Box(
                 Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f))
-                    .clickable{ onOpenChange(false) }
+                    .clickable { onOpenChange(false) }  // Esto cierra el sheet al hacer clic afuera
             )
 
             Column(
@@ -304,21 +317,24 @@ fun AddFabWithSheet(
                     .offset(y = sheetOffsetY),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                // Botón de "Gasto" con nuevo diseño
+                // Botón de "Gasto"
                 SheetButton("Gasto", "Registra una compra o pago", Icons.Outlined.ShoppingCart) {
                     navigateToGastos()
-                    onOpenChange(false)
+                    onOpenChange(false)  // Cierra el sheet luego de navegar
                 }
 
-                // Botón de "Ingreso" con nuevo diseño
+                // Botón de "Ingreso"
                 SheetButton("Ingreso", "Registra un salario o ingreso", Icons.Filled.AttachMoney) {
                     navigateToIngreso2()
-                    onOpenChange(false)
+                    onOpenChange(false)  // Cierra el sheet luego de navegar
                 }
             }
         }
     }
 }
+
+
+
 
 @Composable
 fun SheetButton(title: String, subtitle: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
@@ -359,18 +375,3 @@ fun SheetButton(title: String, subtitle: String, icon: androidx.compose.ui.graph
 
 
 
-
-@Composable
-fun HistorialButton(navigateToHistorial: () -> Unit) {
-    Box(Modifier.fillMaxSize()) {
-        FloatingActionButton(
-            onClick = navigateToHistorial,
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 16.dp, bottom = 155.dp),
-            containerColor = MaterialTheme.colorScheme.primary
-        ) {
-            Icon(Icons.Filled.History, contentDescription = "Historial", tint = MaterialTheme.colorScheme.onPrimary)
-        }
-    }
-}

@@ -108,7 +108,7 @@ fun GastoScreen(
                     Text("--- Gasto ---", fontWeight = FontWeight.Bold,fontSize = 25.sp)
                 },
                 navigationIcon = {
-                    IconButton(onClick = navigateBack) {
+                    IconButton(onClick = navigateToCuentas) {
                         Icon(
                             Icons.Default.ArrowBack,
                             contentDescription = "Volver",
@@ -157,7 +157,35 @@ fun GastoScreen(
                 navigateToIngreso = navigateToIngreso2
             )
             if (!open) {  // Mostrar HistorialButton solo si el popup está cerrado
-                HistorialButton2(navigateToHistorial = { navController.navigate("historial") })
+                Box(Modifier.fillMaxSize()) {
+                    FloatingActionButton(
+                        onClick = { navigateToHistorial() },
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(start = 16.dp, bottom = 30.dp), // Ajustamos la altura
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.History,
+                            contentDescription = "Historial",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+
+                    FloatingActionButton(
+                        onClick = { open = true },
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 16.dp, bottom = 30.dp), // Ajustamos la altura
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ) {
+                        Icon(
+                            Icons.Filled.Add,
+                            contentDescription = "Agregar",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
             }
         }
     }
@@ -210,7 +238,12 @@ fun GastoFormScreen(
         )
         Spacer(Modifier.height(12.dp))
 
-        Text("Monto", fontSize = 22.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+        Text(
+            "Monto",
+            fontSize = 22.sp,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
         Spacer(Modifier.height(8.dp))
 
         OutlinedTextField(
@@ -227,7 +260,12 @@ fun GastoFormScreen(
 
         Spacer(Modifier.height(20.dp))
 
-        Text("Descripción:", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
+        Text(
+            "Descripción:",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
             value = form.descripcion,
@@ -239,7 +277,12 @@ fun GastoFormScreen(
 
         Spacer(Modifier.height(20.dp))
 
-        Text("Depositado en:", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
+        Text(
+            "Depositado en:",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(Modifier.height(8.dp))
 
         var expanded by remember { mutableStateOf(false) }
@@ -282,7 +325,12 @@ fun GastoFormScreen(
 
         Spacer(Modifier.height(20.dp))
 
-        Text("Fecha Realizada:", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
+        Text(
+            "Fecha Realizada:",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Fecha: ${formatFecha(dateMillis)}", modifier = Modifier.weight(1f))
@@ -292,11 +340,18 @@ fun GastoFormScreen(
         Spacer(Modifier.height(20.dp))
 
         // Notas (TipoNota) DropdownMenu
-        Text("Categoria:", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
+        Text(
+            "Categoria:",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(Modifier.height(8.dp))
 
         var expanded2 by remember { mutableStateOf(false) }
-        ExposedDropdownMenuBox(expanded = expanded2, onExpandedChange = { expanded2 = !expanded2 }) {
+        ExposedDropdownMenuBox(
+            expanded = expanded2,
+            onExpandedChange = { expanded2 = !expanded2 }) {
             val labelActual = form.notas.display()
             OutlinedTextField(
                 modifier = Modifier
@@ -324,14 +379,17 @@ fun GastoFormScreen(
 
         Spacer(Modifier.height(24.dp))
 
-        Button(onClick = {
-            viewModel.save(isGasto = true)
-        }, modifier = Modifier
-            .fillMaxWidth(0.6f)
+        Button(
+            onClick = {
+                viewModel.save(isGasto = true)
+            }, modifier = Modifier
+                .fillMaxWidth(0.6f)
         ) {
-            Text(        "Guardar Gasto",
+            Text(
+                "Guardar Gasto",
                 fontSize = 20.sp,
-                fontWeight = FontWeight.Bold)
+                fontWeight = FontWeight.Bold
+            )
         }
 
         message?.let {
@@ -359,6 +417,7 @@ fun GastoFormScreen(
         )
     }
 }
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddFabWithSheet2(
     sheetOffsetY: Dp = 80.dp,
@@ -366,29 +425,18 @@ fun AddFabWithSheet2(
     open: Boolean,
     onOpenChange: (Boolean) -> Unit,
     navigateToGastos: () -> Unit,
-
     navigateToHistorial: () -> Unit,
-
     navigateToIngreso: () -> Unit
-
 ) {
-    Box(Modifier.fillMaxSize()) {
-        FloatingActionButton(
-            onClick = { onOpenChange(true) },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = -75.dp + bottomPadding),
-            containerColor = MaterialTheme.colorScheme.primary
-        ) {
-            Icon(Icons.Filled.Add, contentDescription = "Agregar", tint = MaterialTheme.colorScheme.onPrimary)
-        }
 
+    Box(Modifier.fillMaxSize()) {
+        // Eliminamos el botón "Agregar" visualmente
         if (open) {
             Box(
                 Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f))
-                    .clickable{ onOpenChange(false) }
+                    .clickable { onOpenChange(false) }  // Esto cierra el sheet al hacer clic afuera
             )
 
             Column(
@@ -399,21 +447,24 @@ fun AddFabWithSheet2(
                     .offset(y = sheetOffsetY),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                // Botón de "Gasto" con nuevo diseño
+                // Botón de "Gasto"
                 SheetButton("Gasto", "Registra una compra o pago", Icons.Outlined.ShoppingCart) {
                     navigateToGastos()
-                    onOpenChange(false)
+                    onOpenChange(false)  // Cierra el sheet luego de navegar
                 }
 
-                // Botón de "Ingreso" con nuevo diseño
+                // Botón de "Ingreso"
                 SheetButton("Ingreso", "Registra un salario o ingreso", Icons.Filled.AttachMoney) {
                     navigateToIngreso()
-                    onOpenChange(false)
+                    onOpenChange(false)  // Cierra el sheet luego de navegar
                 }
             }
         }
     }
 }
+
+
+
 
 @Composable
 fun SheetButton(title: String, subtitle: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
@@ -451,24 +502,3 @@ fun SheetButton(title: String, subtitle: String, icon: androidx.compose.ui.graph
     }
 }
 
-
-@Composable
-fun HistorialButton2(
-    navigateToHistorial: () -> Unit
-) {
-    Box(Modifier.fillMaxSize()) {
-        FloatingActionButton(
-            onClick = { navigateToHistorial() },
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 16.dp, bottom = 30.dp),
-            containerColor = MaterialTheme.colorScheme.primary
-        ) {
-            Icon(
-                imageVector = Icons.Filled.History,
-                contentDescription = "Historial",
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
-        }
-    }
-}

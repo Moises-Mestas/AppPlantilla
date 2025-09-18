@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -114,7 +115,7 @@ fun IngresoScreen2(
                     Text("+++ Ingreso +++", fontWeight = FontWeight.Bold,fontSize = 25.sp)
                 },
                 navigationIcon = {
-                    IconButton(onClick = navigateBack) {
+                    IconButton(onClick = navigateToCuentas) {
                         Icon(
                             Icons.Default.ArrowBack,
                             contentDescription = "Volver",
@@ -170,10 +171,36 @@ fun IngresoScreen2(
                 navigateToGastos = navigateToGastos
             )
             if (!open) {  // Mostrar HistorialButton solo si el popup está cerrado
-                HistorialButton2(navigateToHistorial = { navController.navigate("historial") })
+                Box(Modifier.fillMaxSize()) {
+                    FloatingActionButton(
+                        onClick = { navigateToHistorial() },
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(start = 16.dp, bottom = 30.dp), // Ajustamos la altura
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.History,
+                            contentDescription = "Historial",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+
+                    FloatingActionButton(
+                        onClick = { open = true },
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 16.dp, bottom = 30.dp), // Ajustamos la altura
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ) {
+                        Icon(
+                            Icons.Filled.Add,
+                            contentDescription = "Agregar",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
             }
-
-
         }
     }
 }
