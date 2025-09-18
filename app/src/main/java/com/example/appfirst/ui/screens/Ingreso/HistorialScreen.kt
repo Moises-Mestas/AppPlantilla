@@ -193,7 +193,7 @@ fun HistorialScreen(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
-                    .padding(4.dp)
+                    .padding(8.dp)
                     .align(Alignment.CenterHorizontally)
             )
 
@@ -465,7 +465,7 @@ fun IngresoItemSimple(
 
             Row(
                 modifier = Modifier
-                    .padding(16.dp) // Reducir el padding general
+                    .padding(14.dp) // Reducir el padding general
             ) {
 
                 Column(modifier = Modifier.weight(0.8f)) {
@@ -586,12 +586,12 @@ fun FechaSeleccionadaSection1(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         modifier = modifier // Usar el modifier que recibe la función
     ) {
-        Text("Fecha: $formattedFecha", fontSize = 15.sp, fontWeight = FontWeight.Medium)
+        Text("Fecha: $formattedFecha", fontSize = 14.sp, fontWeight = FontWeight.Medium)
         OutlinedButton(
             onClick = { showDatePicker = true },
             modifier = Modifier
                 .padding(start = 4.dp)
-                .widthIn(min = 100.dp)
+                .widthIn(min = 90.dp)
                 .height(40.dp),
             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
         ) { Text("CAMBIAR") }
