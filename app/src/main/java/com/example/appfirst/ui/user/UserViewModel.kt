@@ -8,15 +8,11 @@ import com.example.appfirst.data.local.entity.User
 import com.example.appfirst.data.repo.UserRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import com.example.appfirst.data.local.dao.UserDao
 
-// Estado del formulario de usuario
+// Estado del formulario de usuario (simplificado)
 data class UserFormState(
     val name: String = "",
-    val lastname: String = "",
     val email: String = "",
-    val age: String = "", // String para manejar fácilmente en UI
-    val phone: String = "",
     val password: String = "",
     val confirmPassword: String = "",
     val errors: Map<String, String> = emptyMap()
@@ -62,11 +58,8 @@ class UserViewModel(app: Application) : AndroidViewModel(app) {
         editingId = id
         _form.value = UserFormState(
             name = user.name,
-            lastname = user.lastname,
             email = user.email,
-            age = user.age.toString(),
-            phone = user.phone,
-            password = user.password, // En realidad no deberíamos cargar la password
+            password = user.password,
             confirmPassword = user.password
         )
     }
@@ -74,43 +67,29 @@ class UserViewModel(app: Application) : AndroidViewModel(app) {
     // Actualizar campos del formulario
     fun onFormChange(
         name: String? = null,
-        lastname: String? = null,
         email: String? = null,
-        age: String? = null,
-        phone: String? = null,
         password: String? = null,
         confirmPassword: String? = null
     ) {
         _form.value = _form.value.copy(
             name = name ?: _form.value.name,
-            lastname = lastname ?: _form.value.lastname,
             email = email ?: _form.value.email,
-            age = age ?: _form.value.age,
-            phone = phone ?: _form.value.phone,
             password = password ?: _form.value.password,
             confirmPassword = confirmPassword ?: _form.value.confirmPassword
         )
     }
 
-    // Validar formulario
+    // Validar formulario (simplificado)
     private fun validate(): Boolean {
         val f = _form.value
         val errs = mutableMapOf<String, String>()
 
         // Validaciones básicas
         if (f.name.isBlank()) errs["name"] = "Nombre obligatorio"
-        if (f.lastname.isBlank()) errs["lastname"] = "Apellido obligatorio"
 
         if (f.email.isBlank() || !f.email.contains("@")) {
             errs["email"] = "Email inválido"
         }
-
-        val age = f.age.toIntOrNull()
-        if (age == null || age < 0) {
-            errs["age"] = "Edad inválida"
-        }
-
-        if (f.phone.isBlank()) errs["phone"] = "Teléfono obligatorio"
 
         if (f.password.length < 4) {
             errs["password"] = "Mínimo 4 caracteres"
@@ -128,28 +107,23 @@ class UserViewModel(app: Application) : AndroidViewModel(app) {
         if (!validate()) return@launch
 
         val f = _form.value
-        val age = f.age.toInt()
 
         try {
             val id = editingId
             if (id == null) {
+                // Crear nuevo usuario
                 val newId = repo.registerUser(
                     name = f.name,
-                    lastname = f.lastname,
                     email = f.email,
-                    age = age,
-                    phone = f.phone,
                     password = f.password
                 )
                 _navigateToSuccess.value = newId
             } else {
+                // Actualizar usuario existente
                 repo.updateUser(
                     id = id,
                     name = f.name,
-                    lastname = f.lastname,
-                    email = f.email,
-                    age = age,
-                    phone = f.phone
+                    email = f.email
                 )
                 _navigateToSuccess.value = id
             }
@@ -157,7 +131,7 @@ class UserViewModel(app: Application) : AndroidViewModel(app) {
             startCreate()
 
         } catch (e: Exception) {
-            _form.value = f.copy(errors = mapOf("email" to (e.message ?: "Error desconocido")))
+            _form.value = f.copy(errors = mapOf("general" to (e.message ?: "Error desconocido")))
         }
     }
 
@@ -168,6 +142,16 @@ class UserViewModel(app: Application) : AndroidViewModel(app) {
     fun login(email: String, password: String, onSuccess: (User) -> Unit, onError: (String) -> Unit) = viewModelScope.launch {
         try {
             val user = repo.login(email, password)
+            onSuccess(user)
+        } catch (e: Exception) {
+            onError(e.message ?: "Error en login")
+        }
+    }
+
+    // Nuevo método para login con nombre y contraseña
+    fun loginWithName(name: String, password: String, onSuccess: (User) -> Unit, onError: (String) -> Unit) = viewModelScope.launch {
+        try {
+            val user = repo.loginWithName(name, password)
             onSuccess(user)
         } catch (e: Exception) {
             onError(e.message ?: "Error en login")

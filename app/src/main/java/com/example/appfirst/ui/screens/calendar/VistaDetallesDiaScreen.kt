@@ -66,7 +66,6 @@ fun VistaDetallesDiaScreen(
     )
     val notasState by viewModel.notasState.collectAsState()
 
-    // ViewModels para tareas, exámenes y recordatorios
     val tareaVM = rememberTareaVM()
     val tareas by tareaVM.tareas.collectAsState()
     val examenVM = rememberExamenVM()
@@ -74,11 +73,9 @@ fun VistaDetallesDiaScreen(
     val recordatorioVM = rememberRecordatorioVM()
     val recordatorios by recordatorioVM.recordatorios.collectAsState()
 
-    // Estado para las asignaturas
     val asignaturas = remember { mutableStateListOf<Asignatura>() }
     var isLoading by remember { mutableStateOf(true) }
 
-    // Cargar datos al iniciar
     LaunchedEffect(Unit) {
         val userId = withContext(Dispatchers.IO) {
             val userEmail = UserPrefs.getLoggedUserEmail(context)
@@ -93,7 +90,6 @@ fun VistaDetallesDiaScreen(
             examenVM.setUserId(userId)
             recordatorioVM.setUserId(userId)
 
-            // Cargar asignaturas
             AppDatabase.get(context).asignaturaDao().getAsignaturasByUser(userId).collect { listaEntity ->
                 asignaturas.clear()
                 asignaturas.addAll(listaEntity)
@@ -126,7 +122,6 @@ fun VistaDetallesDiaScreen(
         viewModel.eliminarNota(id)
     }
 
-    // Filtrar tareas, exámenes y recordatorios por fecha seleccionada
     val dateFormatCompare = remember { SimpleDateFormat("yyyyMMdd", Locale.getDefault()) }
     val fechaCompare = dateFormatCompare.format(SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(fecha) ?: Date())
 
@@ -144,7 +139,6 @@ fun VistaDetallesDiaScreen(
 
     val asignaturaMap = asignaturas.associateBy { it.id }
 
-    // Verificar si hay eventos de agenda
     val hayEventosAgenda = tareasDelDia.isNotEmpty() || examenesDelDia.isNotEmpty() || recordatoriosDelDia.isNotEmpty()
 
     Scaffold(
@@ -179,7 +173,6 @@ fun VistaDetallesDiaScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // Encabezado con fecha
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -210,7 +203,6 @@ fun VistaDetallesDiaScreen(
                 }
             }
 
-            // Selector de sección
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -252,7 +244,6 @@ fun VistaDetallesDiaScreen(
                 )
             }
 
-            // Contenido de la sección seleccionada
             when (seccionActiva) {
                 "Eventos" -> {
                     if (notasState.isEmpty() && !hayEventosAgenda) {
@@ -308,7 +299,6 @@ fun VistaDetallesDiaScreen(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            // Mostrar notas del calendario
                             items(notasState) { nota ->
                                 TarjetaNota(
                                     nota = nota,
@@ -318,7 +308,6 @@ fun VistaDetallesDiaScreen(
                                 )
                             }
 
-                            // Mostrar tareas de la agenda
                             items(tareasDelDia) { tarea ->
                                 TareaItemCalendario(
                                     tarea = tarea,
@@ -326,7 +315,6 @@ fun VistaDetallesDiaScreen(
                                 )
                             }
 
-                            // Mostrar exámenes de la agenda
                             items(examenesDelDia) { examen ->
                                 ExamenItemCalendario(
                                     examen = examen,
@@ -334,7 +322,6 @@ fun VistaDetallesDiaScreen(
                                 )
                             }
 
-                            // Mostrar recordatorios de la agenda
                             items(recordatoriosDelDia) { recordatorio ->
                                 RecordatorioItemCalendario(
                                     recordatorio = recordatorio
@@ -351,7 +338,6 @@ fun VistaDetallesDiaScreen(
     }
 }
 
-// Componentes para mostrar los elementos de la agenda en el calendario
 @Composable
 fun TareaItemCalendario(
     tarea: Tarea,

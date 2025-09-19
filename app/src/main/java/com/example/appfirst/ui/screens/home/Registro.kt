@@ -20,14 +20,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.appfirst.ui.user.rememberUserVM // Importar el ViewModel
+import com.example.appfirst.ui.user.rememberUserVM
 
 @Composable
 fun RegistroScreen(navigateToHome: () -> Unit) {
     val viewModel = rememberUserVM()
-
     val formState by viewModel.form.collectAsState()
-
     val navigateId by viewModel.navigateToSuccess.collectAsState()
 
     if (navigateId != null) {
@@ -52,31 +50,15 @@ fun RegistroScreen(navigateToHome: () -> Unit) {
         )
 
         OutlinedTextField(
-            value = formState.name, // ← Valor del ViewModel
-            onValueChange = { viewModel.onFormChange(name = it) }, // ← Actualizar ViewModel
+            value = formState.name,
+            onValueChange = { viewModel.onFormChange(name = it) },
             label = { Text("Nombre") },
             modifier = Modifier.fillMaxWidth(),
-            isError = formState.errors.containsKey("name") // ← Mostrar error
+            isError = formState.errors.containsKey("name")
         )
         if (formState.errors.containsKey("name")) {
             Text(
                 text = formState.errors["name"] ?: "",
-                color = MaterialTheme.colorScheme.error
-            )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        OutlinedTextField(
-            value = formState.lastname,
-            onValueChange = { viewModel.onFormChange(lastname = it) },
-            label = { Text("Apellido") },
-            modifier = Modifier.fillMaxWidth(),
-            isError = formState.errors.containsKey("lastname")
-        )
-        if (formState.errors.containsKey("lastname")) {
-            Text(
-                text = formState.errors["lastname"] ?: "",
                 color = MaterialTheme.colorScheme.error
             )
         }
@@ -129,45 +111,10 @@ fun RegistroScreen(navigateToHome: () -> Unit) {
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        OutlinedTextField(
-            value = formState.age,
-            onValueChange = { viewModel.onFormChange(age = it) },
-            label = { Text("Edad") },
-            modifier = Modifier.fillMaxWidth(),
-            isError = formState.errors.containsKey("age")
-        )
-        if (formState.errors.containsKey("age")) {
-            Text(
-                text = formState.errors["age"] ?: "",
-                color = MaterialTheme.colorScheme.error
-            )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        OutlinedTextField(
-            value = formState.phone,
-            onValueChange = { viewModel.onFormChange(phone = it) },
-            label = { Text("Teléfono") },
-            modifier = Modifier.fillMaxWidth(),
-            isError = formState.errors.containsKey("phone")
-        )
-        if (formState.errors.containsKey("phone")) {
-            Text(
-                text = formState.errors["phone"] ?: "",
-                color = MaterialTheme.colorScheme.error
-            )
-        }
-
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
-            onClick = {
-                navigateToHome()
-                viewModel.save()
-            },
+            onClick = { viewModel.save() },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 24.dp)

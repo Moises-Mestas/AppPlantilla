@@ -20,15 +20,15 @@ import com.example.appfirst.data.local.converters.*
         Recordatorio::class,
         Examen::class,
         Tarea::class,
-        Ingreso::class   // ✅ lo traemos de HEAD
+        Ingreso::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 @TypeConverters(
     FileListConverter::class,
     DateConverter::class,
-    MedioPagoConverter::class   // ✅ también de HEAD
+    MedioPagoConverter::class
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
@@ -38,7 +38,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun examenDao(): ExamenDao
     abstract fun tareaDao(): TareaDao
     abstract fun asignaturaDao(): AsignaturaDao
-    abstract fun ingresoDao(): IngresoDao   // ✅ traído de HEAD
+    abstract fun ingresoDao(): IngresoDao
 
     companion object {
         @Volatile
@@ -51,6 +51,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "app.db"
                 )
+                    .addMigrations(MIGRATION_4_5)
                     .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
@@ -60,10 +61,36 @@ abstract class AppDatabase : RoomDatabase() {
     }
 }
 
-// Migración de la versión 3 a la 4
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL(
+            """
+            CREATE TABLE users_new (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                name TEXT NOT NULL,
+                email TEXT NOT NULL,
+                password TEXT NOT NULL,
+                createdAt INTEGER NOT NULL
+            )
+            """.trimIndent()
+        )
+
+        database.execSQL(
+            """
+            INSERT INTO users_new (id, name, email, password, createdAt)
+            SELECT id, name, email, password, createdAt FROM users
+            """.trimIndent()
+        )
+
+        database.execSQL("DROP TABLE users")
+
+        database.execSQL("ALTER TABLE users_new RENAME TO users")
+    }
+}
+
 val MIGRATION_3_4 = object : Migration(3, 4) {
     override fun migrate(database: SupportSQLiteDatabase) {
-        // Crear tabla acciones_diarias
+
         database.execSQL(
             """
             CREATE TABLE acciones_diarias (
@@ -78,7 +105,7 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
                 prioridad INTEGER NOT NULL,
                 esPermanente INTEGER NOT NULL DEFAULT 1
             )
-        """.trimIndent()
+            """.trimIndent()
         )
     }
 }

@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.rememberCoroutineScope
-
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -82,12 +81,11 @@ fun InicioScreen(navigateToPrincipal: () -> Unit) {
                         password = passwordState.value,
                         onSuccess = { user ->
                             scope.launch {
-                                // 👇 Guardamos también el id
                                 UserPrefs.setLoggedIn(
                                     context = context,
                                     isLoggedIn = true,
                                     email = user.email,
-                                    userId = user.id   // <-- IMPORTANTE
+                                    userId = user.id
                                 )
                                 println("✅ Login exitoso: ${user.email}, id=${user.id}")
                             }
