@@ -30,6 +30,23 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Locale
+import java.util.Date
+import com.example.appfirst.data.local.AppDatabase
+import com.example.appfirst.data.datastore.UserPrefs
+import com.example.appfirst.data.local.entity.Tarea
+import com.example.appfirst.data.local.entity.Examen
+import com.example.appfirst.data.local.entity.Recordatorio
+import com.example.appfirst.data.local.entity.Asignatura
+import com.example.appfirst.ui.tarea.rememberTareaVM
+import com.example.appfirst.ui.examen.rememberExamenVM
+import com.example.appfirst.ui.recordatorio.rememberRecordatorioVM
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.sp
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,7 +55,6 @@ fun VistaDetallesDiaScreen(
     navController: NavController,
     onBackToCalendario: () -> Unit,
 ) {
-    //val calendarViewModel: CalendarViewModel = hiltViewModel()
     val calendarViewModel: CalendarViewModel = viewModel(
         factory = CalendarViewModelFactory(
             LocalContext.current.applicationContext as Application
@@ -50,17 +66,40 @@ fun VistaDetallesDiaScreen(
     )
     val notasState by viewModel.notasState.collectAsState()
 
-    // Cargar movimientos al iniciar
+    // ViewModels para tareas, exámenes y recordatorios
+    val tareaVM = rememberTareaVM()
+    val tareas by tareaVM.tareas.collectAsState()
+    val examenVM = rememberExamenVM()
+    val examenes by examenVM.examenes.collectAsState()
+    val recordatorioVM = rememberRecordatorioVM()
+    val recordatorios by recordatorioVM.recordatorios.collectAsState()
+
+    // Estado para las asignaturas
+    val asignaturas = remember { mutableStateListOf<Asignatura>() }
+    var isLoading by remember { mutableStateOf(true) }
+
+    // Cargar datos al iniciar
     LaunchedEffect(Unit) {
         val userId = withContext(Dispatchers.IO) {
-            val userEmail = com.example.appfirst.data.datastore.UserPrefs.getLoggedUserEmail(context)
-            val userDao = com.example.appfirst.data.local.AppDatabase.get(context).userDao()
+            val userEmail = UserPrefs.getLoggedUserEmail(context)
+            val userDao = AppDatabase.get(context).userDao()
             val users = userDao.getAllUsers().first()
             users.firstOrNull { it.email == userEmail }?.id ?: 0L
         }
+
         if (userId != 0L) {
             calendarViewModel.cargarMovimientos(userId)
+            tareaVM.setUserId(userId)
+            examenVM.setUserId(userId)
+            recordatorioVM.setUserId(userId)
+
+            // Cargar asignaturas
+            AppDatabase.get(context).asignaturaDao().getAsignaturasByUser(userId).collect { listaEntity ->
+                asignaturas.clear()
+                asignaturas.addAll(listaEntity)
+            }
         }
+        isLoading = false
     }
 
     LaunchedEffect(fecha) {
@@ -69,7 +108,7 @@ fun VistaDetallesDiaScreen(
         }
     }
 
-    var seccionActiva by remember { mutableStateOf("Notas") }
+    var seccionActiva by remember { mutableStateOf("Eventos") }
 
     fun navigateToDetails(fecha: String) {
         navController.navigate("detalles-dia/$fecha")
@@ -86,6 +125,27 @@ fun VistaDetallesDiaScreen(
     fun eliminarNota(id: Int) {
         viewModel.eliminarNota(id)
     }
+
+    // Filtrar tareas, exámenes y recordatorios por fecha seleccionada
+    val dateFormatCompare = remember { SimpleDateFormat("yyyyMMdd", Locale.getDefault()) }
+    val fechaCompare = dateFormatCompare.format(SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(fecha) ?: Date())
+
+    val tareasDelDia = tareas.filter {
+        dateFormatCompare.format(Date(it.fechaEntrega)) == fechaCompare
+    }
+
+    val examenesDelDia = examenes.filter {
+        dateFormatCompare.format(Date(it.fechaExamen)) == fechaCompare
+    }
+
+    val recordatoriosDelDia = recordatorios.filter {
+        dateFormatCompare.format(Date(it.fechaRecordatorio)) == fechaCompare
+    }
+
+    val asignaturaMap = asignaturas.associateBy { it.id }
+
+    // Verificar si hay eventos de agenda
+    val hayEventosAgenda = tareasDelDia.isNotEmpty() || examenesDelDia.isNotEmpty() || recordatoriosDelDia.isNotEmpty()
 
     Scaffold(
         topBar = {
@@ -143,7 +203,7 @@ fun VistaDetallesDiaScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "${notasState.size} evento(s) programado(s)",
+                        text = "${notasState.size + tareasDelDia.size + examenesDelDia.size + recordatoriosDelDia.size} evento(s) programado(s)",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                     )
@@ -158,11 +218,11 @@ fun VistaDetallesDiaScreen(
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 FilterChip(
-                    selected = seccionActiva == "Notas",
-                    onClick = { seccionActiva = "Notas" },
+                    selected = seccionActiva == "Eventos",
+                    onClick = { seccionActiva = "Eventos" },
                     label = { Text("Eventos") },
                     leadingIcon = {
-                        if (seccionActiva == "Notas") {
+                        if (seccionActiva == "Eventos") {
                             Icon(
                                 Icons.Default.Check,
                                 contentDescription = "Seleccionado",
@@ -194,8 +254,8 @@ fun VistaDetallesDiaScreen(
 
             // Contenido de la sección seleccionada
             when (seccionActiva) {
-                "Notas" -> {
-                    if (notasState.isEmpty()) {
+                "Eventos" -> {
+                    if (notasState.isEmpty() && !hayEventosAgenda) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -248,6 +308,7 @@ fun VistaDetallesDiaScreen(
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
+                            // Mostrar notas del calendario
                             items(notasState) { nota ->
                                 TarjetaNota(
                                     nota = nota,
@@ -256,12 +317,217 @@ fun VistaDetallesDiaScreen(
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
+
+                            // Mostrar tareas de la agenda
+                            items(tareasDelDia) { tarea ->
+                                TareaItemCalendario(
+                                    tarea = tarea,
+                                    asignaturaMap = asignaturaMap
+                                )
+                            }
+
+                            // Mostrar exámenes de la agenda
+                            items(examenesDelDia) { examen ->
+                                ExamenItemCalendario(
+                                    examen = examen,
+                                    asignaturaMap = asignaturaMap
+                                )
+                            }
+
+                            // Mostrar recordatorios de la agenda
+                            items(recordatoriosDelDia) { recordatorio ->
+                                RecordatorioItemCalendario(
+                                    recordatorio = recordatorio
+                                )
+                            }
                         }
                     }
                 }
                 "Movimientos" -> {
                     SeccionMovimientos(fecha = fecha, viewModel = calendarViewModel)
                 }
+            }
+        }
+    }
+}
+
+// Componentes para mostrar los elementos de la agenda en el calendario
+@Composable
+fun TareaItemCalendario(
+    tarea: Tarea,
+    asignaturaMap: Map<Long, Asignatura>
+) {
+    val timeFormatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    val fecha = Date(tarea.fechaEntrega)
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Edit,
+                contentDescription = "Tarea",
+                modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    tarea.titulo,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+
+                tarea.asignaturaId?.let { id ->
+                    asignaturaMap[id]?.let { asignatura ->
+                        Text(
+                            "📘 ${asignatura.nombre}",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
+
+                Text(
+                    "⏰ ${timeFormatter.format(fecha)}",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            if (tarea.completada) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Completada",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ExamenItemCalendario(
+    examen: Examen,
+    asignaturaMap: Map<Long, Asignatura>
+) {
+    val timeFormatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    val fecha = Date(examen.fechaExamen)
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.School,
+                contentDescription = "Examen",
+                modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.error
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    examen.titulo,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+
+                examen.asignaturaId?.let { id ->
+                    asignaturaMap[id]?.let { asignatura ->
+                        Text(
+                            "📘 ${asignatura.nombre}",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
+
+                Text(
+                    "⏰ ${timeFormatter.format(fecha)}",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            examen.nota?.takeIf { it.isNotBlank() }?.let {
+                Text(
+                    "Nota: $it",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun RecordatorioItemCalendario(recordatorio: Recordatorio) {
+    val timeFormatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    val fecha = Date(recordatorio.fechaRecordatorio)
+    val backgroundColor = try {
+        Color(android.graphics.Color.parseColor(recordatorio.color))
+    } catch (e: Exception) {
+        MaterialTheme.colorScheme.surfaceVariant
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Notifications,
+                contentDescription = "Recordatorio",
+                modifier = Modifier.size(24.dp),
+                tint = Color.White
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    recordatorio.titulo,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.White
+                )
+
+                Text(
+                    "⏰ ${timeFormatter.format(fecha)}",
+                    fontSize = 12.sp,
+                    color = Color.White.copy(alpha = 0.8f)
+                )
             }
         }
     }
