@@ -38,10 +38,12 @@ fun RegistroScreen(navigateToHome: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 32.dp), // Padding en la columna
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
+        Spacer(modifier = Modifier.height(40.dp)) // Ajusta el espacio arriba del título
+
         Text(
             text = "Crear Cuenta",
             fontWeight = FontWeight.Black,
@@ -113,11 +115,15 @@ fun RegistroScreen(navigateToHome: () -> Unit) {
 
         Spacer(modifier = Modifier.weight(1f))
 
+        // Botón con padding hacia abajo
         Button(
-            onClick = { viewModel.save() },
+            onClick = {
+                viewModel.save()
+                navigateToHome()  // Llamada a la navegación correcta
+            },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 24.dp)
+                .padding(top = 24.dp, bottom = 32.dp)
         ) {
             Text(
                 text = "Registrarse",
@@ -125,5 +131,7 @@ fun RegistroScreen(navigateToHome: () -> Unit) {
                 fontWeight = FontWeight.Bold
             )
         }
+
     }
 }
+

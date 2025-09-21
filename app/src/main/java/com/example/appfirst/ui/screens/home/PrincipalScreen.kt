@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
@@ -186,7 +187,13 @@ fun PrincipalScreen(
                                     contentDescription = destination.contentDescription
                                 )
                             },
-                            label = { Text(destination.label) }
+                            label = {
+                                Text(
+                                    text = destination.label,
+                                    fontSize = 12.sp, // Ajusta el tamaño de la fuente
+                                    maxLines = 1, // Asegura que el texto solo ocupe una línea
+                                    overflow = TextOverflow.Ellipsis // Recorta el texto con "..." si es demasiado largo
+                                ) }
                         )
                     }
                 }
