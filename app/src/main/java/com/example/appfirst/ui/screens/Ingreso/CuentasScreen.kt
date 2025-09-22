@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -139,7 +140,14 @@ fun CuentasScreen(
                                 }
                             },
                             icon = { Icon(destination.icon, contentDescription = destination.contentDescription) },
-                            label = { Text(destination.label) }
+                            label = {
+                                Text(
+                                    text = destination.label,
+                                    fontSize = 10.6.sp, // Ajusta el tamaño de la fuente
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1, // Asegura que el texto solo ocupe una línea
+                                    overflow = TextOverflow.Ellipsis // Recorta el texto con "..." si es demasiado largo
+                                ) }
                         )
                     }
                 }
@@ -163,7 +171,7 @@ fun CuentasScreen(
                 )
 
                 Text(
-                    text = "Monto Total:  S/ ${"%.2f".format(montoTotal)}",
+                    text = "Monto Total:  S/ ${"%.1f".format(montoTotal)}",
                     fontSize = 25.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
@@ -278,7 +286,7 @@ fun CuentaCard(
 
             // Derecha: monto
             Text(
-                text = "S/ ${"%.2f".format(monto)}",
+                text = "S/ ${"%.1f".format(monto)}",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,

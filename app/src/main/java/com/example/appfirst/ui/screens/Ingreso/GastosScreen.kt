@@ -36,8 +36,10 @@ import com.example.appfirst.ui.ingreso.IngresoViewModel
 import kotlinx.coroutines.delay
 import java.util.Calendar
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.first
@@ -48,13 +50,19 @@ import com.example.appfirst.data.local.entity.TipoNota
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GastoScreen(
-    navController: NavController,
     gastoId: Int? = null,
-    navigateToCuentas: () -> Unit,
-    navigateToHistorial: () -> Unit,
-    navigateToGastos: () -> Unit,
-    navigateToIngreso2: () -> Unit,
-    navigateBack: () -> Unit
+    modifier: Modifier = Modifier,
+    navController: NavHostController,
+    navigateToCalendario: () -> Unit = {},
+    navigateToHorarioDiario: () -> Unit = {},
+    navigateToCuentas: () -> Unit = {},
+    navigateTotarea: () -> Unit = {},
+    navigateToHistorial: () -> Unit = {},
+    navigateToGastos: () -> Unit = {},
+    navigateToIngreso2: () -> Unit = {},
+    navigateToInicio: () -> Unit = { navController.navigate("principal") },
+    navigateBack: () -> Unit = {}
+
 ) {
     val viewModel = rememberIngresoVM()
     val context = LocalContext.current
@@ -115,10 +123,23 @@ fun GastoScreen(
                         selected = selectedItem == index,
                         onClick = {
                             selectedItem = index
-                            if (index == 3) navigateToCuentas()
+                            when (destination) {
+                                NavDestination.HOME -> navigateToInicio()
+                                NavDestination.CALENDAR -> navigateToCalendario()
+                                NavDestination.SCHEDULE -> navigateToHorarioDiario()
+                                NavDestination.SAVINGS -> navigateToCuentas()
+                                NavDestination.TASKS -> navigateTotarea()
+                            }
                         },
                         icon = { Icon(destination.icon, contentDescription = destination.contentDescription) },
-                        label = { Text(destination.label) }
+                        label = {
+                            Text(
+                                text = destination.label,
+                                fontSize = 10.6.sp, // Ajusta el tamaño de la fuente
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1, // Asegura que el texto solo ocupe una línea
+                                overflow = TextOverflow.Ellipsis // Recorta el texto con "..." si es demasiado largo
+                            ) }
                     )
                 }
             }

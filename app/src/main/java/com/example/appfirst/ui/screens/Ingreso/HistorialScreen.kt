@@ -32,10 +32,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.appfirst.data.datastore.UserPrefs
 import com.example.appfirst.data.local.AppDatabase
 import com.example.appfirst.data.local.entity.Ingreso
@@ -51,11 +53,16 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistorialScreen(
-    navigateToCuentas: () -> Unit,
-    navigateToFormIngreso2: () -> Unit,
-    navigateToFormGasto: () -> Unit,
-    navigateBack: () -> Unit,
-    navigateToHistorial: () -> Unit,
+    navController: NavHostController,
+    navigateToCalendario: () -> Unit = {},
+    navigateToHorarioDiario: () -> Unit = {},
+    navigateToCuentas: () -> Unit = {},
+    navigateTotarea: () -> Unit = {},
+    navigateToHistorial: () -> Unit = {},
+    navigateToFormGasto: () -> Unit = {},
+    navigateToFormIngreso2: () -> Unit = {},
+    navigateToInicio: () -> Unit = { navController.navigate("principal") },
+    navigateBack: () -> Unit = {},
     navigateToEditIngreso: (Int) -> Unit,
     navigateToEditGasto: (Int) -> Unit
 ) {
@@ -161,10 +168,23 @@ fun HistorialScreen(
                         selected = selectedItem == index,
                         onClick = {
                             selectedItem = index
-                            if (index == 3) navigateToCuentas()
+                            when (destination) {
+                                NavDestination.HOME -> navigateToInicio()
+                                NavDestination.CALENDAR -> navigateToCalendario()
+                                NavDestination.SCHEDULE -> navigateToHorarioDiario()
+                                NavDestination.SAVINGS -> navigateToCuentas()
+                                NavDestination.TASKS -> navigateTotarea()
+                            }
                         },
                         icon = { Icon(destination.icon, contentDescription = destination.contentDescription) },
-                        label = { Text(destination.label) }
+                        label = {
+                            Text(
+                                text = destination.label,
+                                fontSize = 10.6.sp, // Ajusta el tamaño de la fuente
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1, // Asegura que el texto solo ocupe una línea
+                                overflow = TextOverflow.Ellipsis // Recorta el texto con "..." si es demasiado largo
+                            ) }
                     )
                 }
             }
@@ -267,12 +287,12 @@ fun HistorialScreen(
                             isAscending = false
                         },
                         containerColor = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(45.dp)
+                        modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
                             Icons.Filled.ArrowUpward,
                             contentDescription = "Subir",
-                            modifier = Modifier.size(40.dp)
+                            modifier = Modifier.size(35.dp)
                         )
                     }
 
@@ -282,12 +302,12 @@ fun HistorialScreen(
                             isAscending = true
                         },
                         containerColor = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.size(45.dp)
+                        modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
                             Icons.Filled.ArrowDownward,
                             contentDescription = "Bajar",
-                            modifier = Modifier.size(40.dp)
+                            modifier = Modifier.size(35.dp)
                         )
                     }
                 }
@@ -514,8 +534,8 @@ fun IngresoItemSimple(
                         .wrapContentWidth(Alignment.Start) // Alinea el contenido de la columna a la izquierda
                 ) {
                     Text(
-                        text = "S/ ${"%.2f".format(ingreso.monto)}",
-                        fontSize = 20.sp,
+                        text = "S/ ${"%.1f".format(ingreso.monto)}",
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.Black,
                         color = androidx.compose.ui.graphics.Color.Black,
                         modifier = Modifier.fillMaxWidth()

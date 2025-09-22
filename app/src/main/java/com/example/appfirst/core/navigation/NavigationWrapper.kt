@@ -145,12 +145,15 @@ fun NavigationWrapper() {
             IngresoScreen2(
                 navController = navController,
                 ingresoId = null,
-                navigateBack = { navController.popBackStack() },
-                navigateToGastos = { navController.navigate("gastos") },
-                navigateToHistorial = { navController.navigate("historial") },
-                navigateToIngreso2 = { navController.navigate("ingreso2") },
 
-                navigateToCuentas = { navController.navigate("cuentas") }
+                navigateToCalendario = { navController.navigate("CalendarioScreen") },
+                navigateToHorarioDiario = { navController.navigate("HorarioDiario") },
+                navigateToCuentas = { navController.navigate("cuentas") },
+                navigateTotarea = { navController.navigate("tarea") },
+                navigateToHistorial = { navController.navigate("historial") },
+                navigateToGastos = { navController.navigate("gastos") },
+                navigateToIngreso2 = { navController.navigate("ingreso2") },
+                navigateBack = { navController.popBackStack() }
             )
         }
 
@@ -158,11 +161,13 @@ fun NavigationWrapper() {
             GastoScreen(
                 navController = navController,
                 gastoId = null,
+                navigateToCalendario = { navController.navigate("CalendarioScreen") },
+                navigateToHorarioDiario = { navController.navigate("HorarioDiario") },
                 navigateToCuentas = { navController.navigate("cuentas") },
-                navigateToIngreso2 = { navController.navigate("ingreso2") },
+                navigateTotarea = { navController.navigate("tarea") },
                 navigateToHistorial = { navController.navigate("historial") },
                 navigateToGastos = { navController.navigate("gastos") },
-
+                navigateToIngreso2 = { navController.navigate("ingreso2") },
                 navigateBack = { navController.popBackStack() }
             )
         }
@@ -183,11 +188,15 @@ fun NavigationWrapper() {
 
         composable("historial") {
             HistorialScreen(
+                navController = navController,
+                navigateToCalendario = { navController.navigate("CalendarioScreen") },
+                navigateToHorarioDiario = { navController.navigate("HorarioDiario") },
                 navigateToCuentas = { navController.navigate("cuentas") },
-                navigateToFormIngreso2 = { navController.navigate("ingreso2") },
-                navigateToFormGasto = { navController.navigate("gastos") },
-                navigateBack = { navController.popBackStack() },
+                navigateTotarea = { navController.navigate("tarea") },
                 navigateToHistorial = { navController.navigate("historial") },
+                navigateToFormGasto = { navController.navigate("gastos") },
+                navigateToFormIngreso2 = { navController.navigate("ingreso2") },
+                navigateBack = { navController.popBackStack() },
                 navigateToEditIngreso = { id -> navController.navigate("ingreso2/$id") },
                 navigateToEditGasto = { id -> navController.navigate("gastos/$id") }
             )

@@ -190,10 +190,11 @@ fun PrincipalScreen(
                             label = {
                                 Text(
                                     text = destination.label,
-                                    fontSize = 12.sp, // Ajusta el tamaño de la fuente
+                                    fontSize = 10.6.sp, // Ajusta el tamaño de la fuente
+                                    fontWeight = FontWeight.Bold,
                                     maxLines = 1, // Asegura que el texto solo ocupe una línea
                                     overflow = TextOverflow.Ellipsis // Recorta el texto con "..." si es demasiado largo
-                                ) }
+                                )  }
                         )
                     }
                 }
@@ -328,36 +329,144 @@ fun PrincipalScreen(
                         Divider(Modifier.padding(vertical = 8.dp))
 
                         // Estructura de las columnas
+// Estructura de las columnas
+// Estructura de las columnas
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 8.dp),
+                                .padding(bottom = 6.dp), // Reducir el padding para acercar las columnas
                             horizontalArrangement = Arrangement.Start // Alineamos todo a la izquierda
                         ) {
+                            // Texto "Cuentas"
                             Text(
                                 "Cuentas",
                                 fontWeight = FontWeight.Bold,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f) // Asignamos peso para que ocupe el espacio proporcionalmente
                             )
+
+                            // Sin espacio inicial entre "Ingreso", "Gasto", y "Total"
+                            // Esto hará que estas columnas estén más cerca de la columna "Cuentas"
                             Text(
                                 "Ingreso",
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Start,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f) // Asignamos peso para que ocupe el espacio proporcionalmente
                             )
                             Text(
                                 "Gasto",
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Start,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f) // Asignamos peso para que ocupe el espacio proporcionalmente
                             )
                             Text(
                                 "Total",
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Start,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f) // Asignamos peso para que ocupe el espacio proporcionalmente
                             )
                         }
+
+                        Divider(Modifier.padding(vertical = 8.dp))
+
+// Filas para "Tarjeta", "Efectivo", "Yape"
+
+// Tarjeta
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp), // Reducir el padding para acercar más los elementos
+                            horizontalArrangement = Arrangement.Start // Alineamos a la izquierda
+                        ) {
+                            Text("Tarjeta", modifier = Modifier.weight(1f)) // Nombre de la cuenta
+                            Text(
+                                "S/ ${"%.1f".format(ingresosTarjeta - gastosTarjeta)}", // Ingreso - Egreso
+                                textAlign = TextAlign.Start,
+                                modifier = Modifier.weight(1f),
+                                fontSize = 13.5.sp,
+                                color = Color(0xFF4CAF50) // Verde
+                            )
+                            Text(
+                                "S/ ${"%.1f".format(gastosTarjeta)}", // Solo egresos
+                                textAlign = TextAlign.Start,
+                                modifier = Modifier.weight(1f),
+                                fontSize = 13.5.sp,
+                                color = Color(0xFFFF0000) // Rojo
+                            )
+                            Text(
+                                "S/ ${"%.1f".format(ingresosTarjeta)}", // Total Ingresos
+                                textAlign = TextAlign.Start,
+                                modifier = Modifier.weight(1f),
+                                color = MaterialTheme.colorScheme.primary,
+                                fontSize = 13.5.sp,
+                                fontWeight = FontWeight(900) // Negrita para el total
+                            )
+                        }
+
+// Efectivo
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp), // Reducir el padding para acercar más los elementos
+                            horizontalArrangement = Arrangement.Start // Alineamos a la izquierda
+                        ) {
+                            Text("Efectivo", modifier = Modifier.weight(1f)) // Nombre de la cuenta
+                            Text(
+                                "S/ ${"%.1f".format(ingresosEfectivo - gastosEfectivo)}", // Ingreso - Egreso
+                                textAlign = TextAlign.Start,
+                                modifier = Modifier.weight(1f),
+                                fontSize = 13.5.sp,
+                                color = Color(0xFF4CAF50) // Verde
+                            )
+                            Text(
+                                "S/ ${"%.1f".format(gastosEfectivo)}", // Solo egresos
+                                textAlign = TextAlign.Start,
+                                modifier = Modifier.weight(1f),
+                                fontSize = 13.5.sp,
+                                color = Color(0xFFFF0000) // Rojo
+                            )
+                            Text(
+                                "S/ ${"%.1f".format(ingresosEfectivo)}", // Total Ingresos
+                                textAlign = TextAlign.Start,
+                                modifier = Modifier.weight(1f),
+                                color = MaterialTheme.colorScheme.primary,
+                                fontSize = 13.5.sp,
+                                fontWeight = FontWeight(900) // Negrita para el total
+                            )
+                        }
+
+// Yape
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp), // Reducir el padding para acercar más los elementos
+                            horizontalArrangement = Arrangement.Start // Alineamos a la izquierda
+                        ) {
+                            Text("Yape", modifier = Modifier.weight(1f)) // Nombre de la cuenta
+                            Text(
+                                "S/ ${"%.1f".format(ingresosYape - gastosYape)}", // Ingreso - Egreso
+                                textAlign = TextAlign.Start,
+                                fontSize = 13.5.sp,
+                                modifier = Modifier.weight(1f),
+                                color = Color(0xFF4CAF50) // Verde
+                            )
+                            Text(
+                                "S/ ${"%.1f".format(gastosYape)}", // Solo egresos
+                                textAlign = TextAlign.Start,
+                                fontSize = 13.5.sp,
+                                modifier = Modifier.weight(1f),
+                                color = Color(0xFFFF0000) // Rojo
+                            )
+                            Text(
+                                "S/ ${"%.1f".format(ingresosYape)}", // Total Ingresos
+                                textAlign = TextAlign.Start,
+                                fontSize = 13.5.sp,
+                                modifier = Modifier.weight(1f),
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight(900) // Negrita para el total
+                            )
+                        }
+
+
 
                         Divider(Modifier.padding(vertical = 8.dp))
 
@@ -365,148 +474,68 @@ fun PrincipalScreen(
 
 
 
-                        // Filas para "Tarjeta", "Efectivo", "Yape"
-
-                        // Tarjeta
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.Start
-                        ) {
-                            Text("Tarjeta", modifier = Modifier.weight(1f))
-                            Text(
-                                "S/ ${"%.2f".format(ingresosTarjeta - gastosTarjeta)}",
-                                textAlign = TextAlign.Start,
-                                modifier = Modifier.weight(1f),
-                                color = Color(0xFF4CAF50) // Verde (Color verde con código hexadecimal)
-
-                            ) // Ingreso - Egreso
-                            Text(
-                                "S/ ${"%.2f".format(gastosTarjeta)}",
-                                textAlign = TextAlign.Start,
-                                modifier = Modifier.weight(1f),
-                                color = Color(0xFFFF0000) // Rojo (Color rojo con código hexadecimal)
-
-                            ) // Solo egresos
-                            Text(
-                                "S/ ${"%.2f".format(ingresosTarjeta)}",
-                                textAlign = TextAlign.Start,
-                                modifier = Modifier.weight(1f),
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight(900)
-                            )
-                        }
-
-                        // Efectivo
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.Start
-                        ) {
-                            Text("Efectivo", modifier = Modifier.weight(1f))
-                            Text(
-                                "S/ ${"%.2f".format(ingresosEfectivo - gastosEfectivo)}",
-                                textAlign = TextAlign.Start,
-                                modifier = Modifier.weight(1f),
-                                color = Color(0xFF4CAF50)
-                            ) // Ingreso - Egreso
-                            Text(
-                                "S/ ${"%.2f".format(gastosEfectivo)}",
-                                textAlign = TextAlign.Start,
-                                modifier = Modifier.weight(1f),
-                                color = Color(0xFFFF0000)
-                            ) // Solo egresos
-                            Text(
-                                "S/ ${"%.2f".format(ingresosEfectivo)}",
-                                textAlign = TextAlign.Start,
-                                modifier = Modifier.weight(1f),
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight(900)
-                            )
-                        }
-
-                        // Yape
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.Start
-                        ) {
-                            Text("Yape", modifier = Modifier.weight(1f))
-                            Text(
-                                "S/ ${"%.2f".format(ingresosYape - gastosYape)}",
-                                textAlign = TextAlign.Start,
-                                modifier = Modifier.weight(1f),
-                                color = Color(0xFF4CAF50)
-                            )
-                            Text(
-                                "S/ ${"%.2f".format(gastosYape)}",
-                                textAlign = TextAlign.Start,
-                                modifier = Modifier.weight(1f),
-                                color = Color(0xFFFF0000)
-                            )
-
-                            Text(
-                                "S/ ${"%.2f".format(ingresosYape)}",
-                                textAlign = TextAlign.Start,
-                                modifier = Modifier.weight(1f),
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight(900)
-
-                            )
-                        }
-
-                        Divider(Modifier.padding(vertical = 8.dp))
 
 
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 8.dp),
+                                .padding(top = 1.dp),
                             horizontalArrangement = Arrangement.Start // Alineamos a la izquierda
                         ) {
                             // Texto "TOTAL:"
-                            Text(
-                                text = "TOTAL:",
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.align(Alignment.CenterVertically) // Esto asegura que el texto "TOTAL" esté alineado verticalmente con los montos
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(
+                                        start = 8.dp,
+                                        top = 8.dp
+                                    ), // Reducir el padding al inicio para mover todo más cerca de "TOTAL"
+                                horizontalArrangement = Arrangement.Start // Alineamos a la izquierda
+                            ) {
+                                // Texto "TOTAL:"
+                                Text(
+                                    text = "TOTAL:",
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.align(Alignment.CenterVertically) // Esto asegura que el texto "TOTAL" esté alineado verticalmente con los montos
+                                )
 
-                            Spacer(modifier = Modifier.width(40.dp)) // Espacio reducido entre el texto "TOTAL" y el primer monto
+                                // Total Final: ingresos - egresos
+                                Text(
+                                    text = "S/ ${
+                                        "%.1f".format(
+                                            (ingresosTarjeta + ingresosEfectivo + ingresosYape) - (gastosTarjeta + gastosEfectivo + gastosYape)
+                                        )
+                                    }",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF4CAF50),
+                                    fontSize = 13.5.sp,
+                                    modifier = Modifier
+                                        .align(Alignment.CenterVertically) // Alineamos verticalmente con "TOTAL:"
+                                        .padding(start = 8.dp) // Añadir un poco de espacio entre "TOTAL" y el primer monto
+                                )
 
-                            // Total Final: ingresos - egresos
-                            Text(
-                                text = "S/ ${
-                                    "%.2f".format(
-                                        (ingresosTarjeta + ingresosEfectivo + ingresosYape) - (gastosTarjeta + gastosEfectivo + gastosYape)
-                                    )
-                                }",
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF4CAF50),
-                                modifier = Modifier.align(Alignment.CenterVertically) // Alineamos verticalmente con "TOTAL:"
-                            )
+                                // Total de Egresos
+                                Text(
+                                    text = "S/ ${"%.1f".format(gastosTarjeta + gastosEfectivo + gastosYape)}", // Total de Egresos
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFFF0000),
+                                    fontSize = 13.5.sp,
+                                    modifier = Modifier
+                                        .align(Alignment.CenterVertically) // Alineamos verticalmente con "TOTAL:"
+                                        .padding(start = 8.dp) // Añadir un poco de espacio entre los montos
+                                )
 
-                            Spacer(modifier = Modifier.width(16.dp)) // Espacio entre el monto final y los demás montos
-
-                            // Total de Egresos
-                            Text(
-                                text = "S/ ${"%.2f".format(gastosTarjeta + gastosEfectivo + gastosYape)}", // Total de Egresos
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFFF0000),
-                                modifier = Modifier.align(Alignment.CenterVertically) // Alineamos verticalmente con "TOTAL:"
-                            )
-
-                            Spacer(modifier = Modifier.width(16.dp)) // Espacio entre los montos
-
-                            // Total de Ingresos
-                            Text(
-                                text = "S/ ${"%.2f".format(ingresosTarjeta + ingresosEfectivo + ingresosYape)}", // Total de Ingresos
-                                fontWeight = FontWeight(900),
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.align(Alignment.CenterVertically) // Alineamos verticalmente con "TOTAL:"
-                            )
+                                // Total de Ingresos
+                                Text(
+                                    text = "S/ ${"%.1f".format(ingresosTarjeta + ingresosEfectivo + ingresosYape)}", // Total de Ingresos
+                                    fontWeight = FontWeight(900),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontSize = 13.5.sp,
+                                    modifier = Modifier
+                                        .align(Alignment.CenterVertically) // Alineamos verticalmente con "TOTAL:"
+                                        .padding(start = 8.dp) // Añadir un poco de espacio entre los montos
+                                )
+                            }
                         }
                         Divider(Modifier.padding(vertical = 8.dp))
 
