@@ -26,16 +26,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import java.text.SimpleDateFormat
 import androidx.navigation.NavController
+import com.example.appfirst.ui.screens.calendar.elementos.LocalNavDestination
 
 @Composable
 fun CalendarioScreen(
     navController: NavController,
     onNavigateToInicio: () -> Unit,
+    navigateToInicio: () -> Unit = {},
+    navigateToCalendario: () -> Unit = {},
+    navigateToHorarioDiario: () -> Unit = {},
+    navigateToCuentas: () -> Unit = {},
+    navigateTotarea: () -> Unit = {}
 ) {
     var selectedDate by rememberSaveable { mutableStateOf("") }
     val calendar = remember { Calendar.getInstance() }
     var currentMonth by remember { mutableStateOf(calendar.get(Calendar.MONTH)) }
     var currentYear by remember { mutableStateOf(calendar.get(Calendar.YEAR)) }
+
+    var selectedItem by remember { mutableStateOf(1) }
 
     // Obtener fecha actual formateada
     val fechaActual = remember {
@@ -59,42 +67,73 @@ fun CalendarioScreen(
         navController.navigate("nueva-nota/$fecha")
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        // Header mejorado
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 48.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = onNavigateToInicio,
-                modifier = Modifier.size(48.dp)
+    Scaffold(
+        topBar = {
+            // Tu header original exactamente igual
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, top = 48.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Volver al inicio",
-                    modifier = Modifier.size(24.dp)
+                IconButton(
+                    onClick = onNavigateToInicio,
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Volver al inicio",
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                Text(
+                    text = "Calendario",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
                 )
+
+                Spacer(modifier = Modifier.size(48.dp))
             }
-
-            Text(
-                text = "Calendario",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-
-            // Espacio para mantener la simetría
-            Spacer(modifier = Modifier.size(48.dp))
+        },
+        bottomBar = {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            ) {
+                LocalNavDestination.entries.forEachIndexed { index, destination ->
+                    NavigationBarItem(
+                        selected = selectedItem == index,
+                        onClick = {
+                            selectedItem = index
+                            when (destination) {
+                                LocalNavDestination.HOME -> navigateToInicio()
+                                LocalNavDestination.CALENDAR -> navigateToCalendario()
+                                LocalNavDestination.SCHEDULE -> navigateToHorarioDiario()
+                                LocalNavDestination.SAVINGS -> navigateToCuentas()
+                                LocalNavDestination.TASKS -> navigateTotarea()
+                            }
+                        },
+                        icon = {
+                            Icon(
+                                destination.icon,
+                                contentDescription = destination.contentDescription
+                            )
+                        },
+                        label = {
+                            Text(destination.label)
+                        }
+                    )
+                }
+            }
         }
-
-        // Contenedor principal del calendario
+    ) { innerPadding ->
         Column(
             modifier = Modifier
-                .align(Alignment.Center)
+                .padding(innerPadding)
+                //.align(Alignment.Center)
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 80.dp)
+                .padding(horizontal = 16.dp, vertical = 16.dp) // Ajusté el vertical
         ) {
             // Selector de mes y año mejorado
             Row(
@@ -297,3 +336,15 @@ fun formatearFechaParaBD(dia: Int, mes: Int, año: Int): String {
     val diaFormateado = dia.toString().padStart(2, '0')
     return "$año-$mesFormateado-$diaFormateado"
 }
+
+//enum class LocalNavDestination(
+//    val icon: ImageVector,
+//    val label: String,
+//    val contentDescription: String
+//) {
+//    HOME(Icons.Default.Home, "Inicio", "Icono de inicio"),
+//    CALENDAR(Icons.Default.DateRange, "Calendario", "Icono de calendario"),
+//    SCHEDULE(Icons.Default.List, "Horario", "Icono de horario"),
+//    SAVINGS(Icons.Default.Face, "Ahorros", "Icono de ahorros"),
+//    TASKS(Icons.Default.AccountBox, "Agenda", "Icono de agenda")
+//}

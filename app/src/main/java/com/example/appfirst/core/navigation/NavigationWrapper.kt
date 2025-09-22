@@ -233,7 +233,12 @@ fun NavigationWrapper() {
         composable("CalendarioScreen") {
             CalendarioScreen(
                 navController = navController,
-                onNavigateToInicio = { navController.navigate("principal") }
+                onNavigateToInicio = { navController.navigate("principal") },
+                navigateToInicio = { navController.navigate("principal") },
+                navigateToCalendario = { /* ya estamos aquí */ },
+                navigateToHorarioDiario = { navController.navigate("HorarioDiario") },
+                navigateToCuentas = { navController.navigate("cuentas") },
+                navigateTotarea = { navController.navigate("tarea") }
             )
         }
 
@@ -313,7 +318,12 @@ fun NavigationWrapper() {
         composable("HorarioDiario") {
             HorarioDiarioScreen(
                 navController = navController,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                navigateToInicio = { navController.navigate("principal") },
+                navigateToCalendario = { navController.navigate("CalendarioScreen") },
+                navigateToHorarioDiario = {  /* ya estamos aquí */ },
+                navigateToCuentas = { navController.navigate("cuentas") },
+                navigateTotarea = { navController.navigate("tarea") }
             )
         }
 

@@ -1,6 +1,13 @@
 package com.example.appfirst.ui.screens.calendar.elementos
 
 import android.app.Application
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.appfirst.data.local.AppDatabase
@@ -40,4 +47,16 @@ class CalendarViewModelFactory(
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
+}
+
+enum class LocalNavDestination(
+    val icon: ImageVector,
+    val label: String,
+    val contentDescription: String
+) {
+    HOME(Icons.Default.Home, "Inicio", "Icono de inicio"),
+    CALENDAR(Icons.Default.DateRange, "Calendario", "Icono de calendario"),
+    SCHEDULE(Icons.Default.List, "Horario", "Icono de horario"),
+    SAVINGS(Icons.Default.Face, "Ahorros", "Icono de ahorros"),
+    TASKS(Icons.Default.AccountBox, "Agenda", "Icono de agenda")
 }

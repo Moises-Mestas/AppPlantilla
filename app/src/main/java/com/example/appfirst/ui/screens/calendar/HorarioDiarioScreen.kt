@@ -52,17 +52,25 @@ import com.example.appfirst.core.navigation.FormularioNota
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.example.appfirst.ui.screens.calendar.elementos.LocalNavDestination
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HorarioDiarioScreen(
     navController: NavController,
     onBack: () -> Unit,
+    navigateToInicio: () -> Unit = {},
+    navigateToCalendario: () -> Unit = {},
+    navigateToHorarioDiario: () -> Unit = {},
+    navigateToCuentas: () -> Unit = {},
+    navigateTotarea: () -> Unit = {}
 ) {
     val application = LocalContext.current.applicationContext as Application
     val viewModel: AccionDiariaViewModel = viewModel(
         factory = AccionDiariaViewModelFactory(application)
     )
+
+    var selectedItem by remember { mutableStateOf(2) }
 
     var textoBusqueda by remember { mutableStateOf("") }
     var filtroDia by remember { mutableStateOf("Todos") }
@@ -140,6 +148,36 @@ fun HorarioDiarioScreen(
                     }
                 }
             )
+        },
+        bottomBar = {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            ) {
+                LocalNavDestination.entries.forEachIndexed { index, destination ->
+                    NavigationBarItem(
+                        selected = selectedItem == index,
+                        onClick = {
+                            selectedItem = index
+                            when (destination) {
+                                LocalNavDestination.HOME -> navigateToInicio()
+                                LocalNavDestination.CALENDAR -> navigateToCalendario()
+                                LocalNavDestination.SCHEDULE -> navigateToHorarioDiario()
+                                LocalNavDestination.SAVINGS -> navigateToCuentas()
+                                LocalNavDestination.TASKS -> navigateTotarea()
+                            }
+                        },
+                        icon = {
+                            Icon(
+                                destination.icon,
+                                contentDescription = destination.contentDescription
+                            )
+                        },
+                        label = {
+                            Text(destination.label)
+                        }
+                    )
+                }
+            }
         }
     ) { paddingValues ->
         Column(
