@@ -99,8 +99,8 @@ fun GastoScreen(
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White, // Fondo blanco
-                    titleContentColor = Color.Black, // Título negro
+                    containerColor = Color.White,
+                    titleContentColor = Color.Black,
                 ),
                 title = {
                     Text("--- Gasto ---", fontWeight = FontWeight.Bold, fontSize = 25.sp)
@@ -110,7 +110,7 @@ fun GastoScreen(
                         Icon(
                             Icons.Default.ArrowBack,
                             contentDescription = "Volver",
-                            tint = Color.Black // Flecha negra
+                            tint = Color.Black
                         )
                     }
                 }
@@ -135,10 +135,10 @@ fun GastoScreen(
                         label = {
                             Text(
                                 text = destination.label,
-                                fontSize = 10.6.sp, // Ajusta el tamaño de la fuente
+                                fontSize = 10.6.sp,
                                 fontWeight = FontWeight.Bold,
-                                maxLines = 1, // Asegura que el texto solo ocupe una línea
-                                overflow = TextOverflow.Ellipsis // Recorta el texto con "..." si es demasiado largo
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             ) }
                     )
                 }
@@ -155,7 +155,7 @@ fun GastoScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(30.dp)
-                    .verticalScroll(rememberScrollState())  // Hace que el contenido sea desplazable
+                    .verticalScroll(rememberScrollState())
             ) {
                 GastoFormScreen(
                     viewModel = viewModel,
@@ -165,14 +165,14 @@ fun GastoScreen(
                 )
             }
 
-            // Botones superpuestos (Historial y Agregar)
-            if (!open) {  // Mostrar botones solo si el popup está cerrado
+
+            if (!open) {
                 Box(Modifier.fillMaxSize()) {
                     FloatingActionButton(
                         onClick = { navigateToHistorial() },
                         modifier = Modifier
-                            .align(Alignment.BottomStart) // Alinea a la izquierda
-                            .padding(start = 16.dp, bottom = 30.dp), // Ajustamos la altura
+                            .align(Alignment.BottomStart)
+                            .padding(start = 16.dp, bottom = 30.dp),
                         containerColor = MaterialTheme.colorScheme.primary
                     ) {
                         Icon(
@@ -185,8 +185,8 @@ fun GastoScreen(
                     FloatingActionButton(
                         onClick = { open = true },
                         modifier = Modifier
-                            .align(Alignment.BottomEnd) // Alinea a la derecha
-                            .padding(end = 16.dp, bottom = 30.dp), // Ajustamos la altura
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 16.dp, bottom = 30.dp),
                         containerColor = MaterialTheme.colorScheme.primary
                     ) {
                         Icon(
@@ -204,7 +204,7 @@ fun GastoScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f))
-                        .clickable { open = false }  // Cerrar el sheet al hacer clic fuera
+                        .clickable { open = false }
                 )
 
                 // Colocamos la Column dentro de un Box para usar align y ajustarlo
@@ -213,19 +213,19 @@ fun GastoScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 8.dp + innerPadding.calculateBottomPadding())
-                            .offset(y = 90.dp), // Desplazamos hacia arriba
+                            .offset(y = 90.dp),
                         verticalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
-                        // Botón de "Gasto"
+
                         SheetButton("Gasto", "Registra una compra o pago", Icons.Outlined.ShoppingCart) {
                             navigateToGastos()
-                            open = false  // Cerrar el sheet luego de navegar
+                            open = false
                         }
 
-                        // Botón de "Ingreso"
+
                         SheetButton("Ingreso", "Registra un salario o ingreso", Icons.Filled.AttachMoney) {
                             navigateToIngreso2()
-                            open = false  // Cerrar el sheet luego de navegar
+                            open = false
                         }
                     }
                 }
@@ -519,22 +519,22 @@ fun SheetButton(title: String, subtitle: String, icon: androidx.compose.ui.graph
         contentPadding = PaddingValues(12.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // Icono con un tamaño ajustado y color
+
             Icon(icon, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary) // Aumentado tamaño del ícono
             Spacer(Modifier.width(16.dp))
-            // Título en negrita y subtítulo con color adecuado
+
             Column {
                 Text(
                     title,
-                    fontSize = 20.sp, // Aumentado tamaño de texto
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface // Aseguramos que el color del texto sea legible
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
                     subtitle,
-                    fontSize = 16.sp, // Aumentado tamaño de texto
-                    color = MaterialTheme.colorScheme.onSurfaceVariant // Texto de subtítulo más suave
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

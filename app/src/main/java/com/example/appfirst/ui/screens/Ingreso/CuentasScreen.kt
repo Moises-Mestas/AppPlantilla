@@ -143,10 +143,10 @@ fun CuentasScreen(
                             label = {
                                 Text(
                                     text = destination.label,
-                                    fontSize = 10.6.sp, // Ajusta el tamaño de la fuente
+                                    fontSize = 10.6.sp,
                                     fontWeight = FontWeight.Bold,
-                                    maxLines = 1, // Asegura que el texto solo ocupe una línea
-                                    overflow = TextOverflow.Ellipsis // Recorta el texto con "..." si es demasiado largo
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 ) }
                         )
                     }
@@ -158,7 +158,7 @@ fun CuentasScreen(
                     .fillMaxSize()
                     .padding(innerPadding)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp) // 👈 separa los cuadros
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // CABECERA
                 Text(
@@ -198,7 +198,7 @@ fun CuentasScreen(
                 )
             }
 
-            // FAB y extras (asumiendo que ya los tienes definidos)
+
             AddFabWithSheet(
                 sheetOffsetY = (-30).dp,
                 bottomPadding = innerPadding.calculateBottomPadding(),
@@ -308,7 +308,7 @@ fun AddFabWithSheet(
     navigateToIngreso: () -> Unit
 ) {
     Box(Modifier.fillMaxSize()) {
-        // Eliminamos el botón "Agregar" visualmente
+
         if (open) {
             Box(
                 Modifier
@@ -328,13 +328,13 @@ fun AddFabWithSheet(
                 // Botón de "Gasto"
                 SheetButton("Gasto", "Registra una compra o pago", Icons.Outlined.ShoppingCart) {
                     navigateToGastos()
-                    onOpenChange(false)  // Cierra el sheet luego de navegar
+                    onOpenChange(false)
                 }
 
                 // Botón de "Ingreso"
                 SheetButton("Ingreso", "Registra un salario o ingreso", Icons.Filled.AttachMoney) {
                     navigateToIngreso2()
-                    onOpenChange(false)  // Cierra el sheet luego de navegar
+                    onOpenChange(false)
                 }
             }
         }
@@ -351,29 +351,29 @@ fun SheetButton(title: String, subtitle: String, icon: androidx.compose.ui.graph
         modifier = Modifier
             .fillMaxWidth()
             .height(90.dp)
-            .clip(RoundedCornerShape(16.dp)) // Bordes redondeados
-            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)) // Fondo semitransparente
-            .shadow(8.dp, shape = RoundedCornerShape(16.dp), ambientColor = MaterialTheme.colorScheme.primary), // Sombra añadida aquí
-        shape = RoundedCornerShape(16.dp), // Bordes redondeados
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+            .shadow(8.dp, shape = RoundedCornerShape(16.dp), ambientColor = MaterialTheme.colorScheme.primary),
+        shape = RoundedCornerShape(16.dp),
         contentPadding = PaddingValues(12.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // Icono con un tamaño ajustado y color
-            Icon(icon, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary) // Aumentado tamaño del ícono
+
+            Icon(icon, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
             Spacer(Modifier.width(16.dp))
-            // Título en negrita y subtítulo con color adecuado
+
             Column {
                 Text(
                     title,
-                    fontSize = 20.sp, // Aumentado tamaño de texto
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface // Aseguramos que el color del texto sea legible
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
                     subtitle,
-                    fontSize = 16.sp, // Aumentado tamaño de texto
-                    color = MaterialTheme.colorScheme.onSurfaceVariant // Texto de subtítulo más suave
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

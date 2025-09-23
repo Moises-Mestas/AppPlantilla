@@ -153,9 +153,9 @@ fun HistorialScreen(
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
                         Icon(
-                            Icons.Filled.ArrowBack, // Ícono de flecha
+                            Icons.Filled.ArrowBack,
                             contentDescription = "Volver",
-                            tint = Color.Black // Flecha negra
+                            tint = Color.Black
                         )
                     }
                 }
@@ -180,10 +180,10 @@ fun HistorialScreen(
                         label = {
                             Text(
                                 text = destination.label,
-                                fontSize = 10.6.sp, // Ajusta el tamaño de la fuente
+                                fontSize = 10.6.sp,
                                 fontWeight = FontWeight.Bold,
-                                maxLines = 1, // Asegura que el texto solo ocupe una línea
-                                overflow = TextOverflow.Ellipsis // Recorta el texto con "..." si es demasiado largo
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             ) }
                     )
                 }
@@ -247,39 +247,38 @@ fun HistorialScreen(
                 }
             }
 
-            // Filtros por fecha: desde / hasta
+
 // Filtros por fecha: desde / hasta
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween, // Alinea los elementos de los extremos
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Columna de filtros por fecha (izquierda)
+
                 Column(
-                    modifier = Modifier.weight(1f), // Hace que ocupe el espacio disponible
-                    verticalArrangement = Arrangement.spacedBy(8.dp), // Espacio entre los filtros
-                    horizontalAlignment = Alignment.Start // Alinea los filtros a la izquierda
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalAlignment = Alignment.Start
                 ) {
-                    // Filtro de fecha desde
+
                     FechaSeleccionadaSection1(
                         fecha = fechaSeleccionada ?: System.currentTimeMillis(),
                         onFechaChange = { nueva -> fechaSeleccionada = nueva },
-                        modifier = Modifier.padding(start = 12.dp) // Mover un poco la fecha hacia la derecha
+                        modifier = Modifier.padding(start = 12.dp)
                     )
 
-                    // Filtro de fecha hasta
                     FechaSeleccionadaSection1(
                         fecha = fechaSeleccionada2 ?: System.currentTimeMillis(),
                         onFechaChange = { nueva -> fechaSeleccionada2 = nueva },
-                        modifier = Modifier.padding(start = 12.dp) // Mover un poco la fecha hacia la derecha
+                        modifier = Modifier.padding(start = 12.dp)
                     )
                 }
 
-                // Columna de iconos (derecha)
+
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(end = 5.dp) // Ajusta el padding aquí para mover las flechas a la derecha o izquierda
+                    modifier = Modifier.padding(end = 5.dp)
                 ) {
                     SmallFloatingActionButton(
                         onClick = {
@@ -324,8 +323,8 @@ fun HistorialScreen(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start, // Alineación a la izquierda
-                verticalAlignment = Alignment.CenterVertically // Alineación vertical al centro
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = "Transacciones recientes: ",
@@ -334,7 +333,7 @@ fun HistorialScreen(
                     color = MaterialTheme.colorScheme.primary
                 )
 
-                Spacer(Modifier.width(8.dp)) // Espacio entre el texto y el número de transacciones
+                Spacer(Modifier.width(8.dp))
 
                 Text(
                     text = "$totalTransactions T",
@@ -344,7 +343,7 @@ fun HistorialScreen(
                 )
             }
             Divider(Modifier.padding(top = 4.dp))
-            // Lista
+
             when {
                 isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
@@ -372,7 +371,7 @@ fun HistorialScreen(
                 }
             }
 
-            // Diálogo de confirmación (queda fuera de la LazyColumn)
+
             pendingDelete?.let { p ->
                 AlertDialog(
                     onDismissRequest = { pendingDelete = null },
@@ -409,7 +408,6 @@ fun HistorialScreen(
         )
 
         if (!open) {
-            // Aquí es donde se coloca el botón de Historial y el botón Add en la misma altura
             Box(Modifier.fillMaxSize()) {
                 FloatingActionButton(
                     onClick = navigateToHistorial,
@@ -484,7 +482,7 @@ fun IngresoItemSimple(
 
             Row(
                 modifier = Modifier
-                    .padding(14.dp) // Reducir el padding general
+                    .padding(14.dp)
             ) {
 
                 Column(modifier = Modifier.weight(0.8f)) {
@@ -525,13 +523,13 @@ fun IngresoItemSimple(
 
                 Spacer(Modifier.width(20.dp))
 
-                // Alineamos la columna del monto a la izquierda
+
                 Column(
                     modifier = Modifier
                         .weight(0.6f)
                         .fillMaxHeight()
                         .padding(top = 32.dp)
-                        .wrapContentWidth(Alignment.Start) // Alinea el contenido de la columna a la izquierda
+                        .wrapContentWidth(Alignment.Start)
                 ) {
                     Text(
                         text = "S/ ${"%.1f".format(ingreso.monto)}",
@@ -543,7 +541,7 @@ fun IngresoItemSimple(
                 }
             }
 
-            // Botón de eliminación
+
             IconButton(
                 onClick = onDelete,
                 modifier = Modifier
@@ -603,7 +601,7 @@ fun FechaSeleccionadaSection1(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = modifier // Usar el modifier que recibe la función
+        modifier = modifier
     ) {
         Text("Fecha: $formattedFecha", fontSize = 14.sp, fontWeight = FontWeight.Medium)
         OutlinedButton(
@@ -654,13 +652,13 @@ fun AddFabWithSheet3(
     navigateToIngreso: () -> Unit
 ) {
     Box(Modifier.fillMaxSize()) {
-        // Eliminamos el botón "Agregar" visualmente
+
         if (open) {
             Box(
                 Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f))
-                    .clickable { onOpenChange(false) }  // Esto cierra el sheet al hacer clic afuera
+                    .clickable { onOpenChange(false) }
             )
 
             Column(
@@ -671,16 +669,16 @@ fun AddFabWithSheet3(
                     .offset(y = sheetOffsetY),
                 verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
-                // Botón de "Gasto"
+
                 SheetButton("Gasto", "Registra una compra o pago", Icons.Outlined.ShoppingCart) {
                     navigateToGastos()
-                    onOpenChange(false)  // Cierra el sheet luego de navegar
+                    onOpenChange(false)
                 }
 
-                // Botón de "Ingreso"
+
                 SheetButton("Ingreso", "Registra un salario o ingreso", Icons.Filled.AttachMoney) {
                     navigateToIngreso()
-                    onOpenChange(false)  // Cierra el sheet luego de navegar
+                    onOpenChange(false)
                 }
             }
         }
@@ -695,5 +693,5 @@ fun MovableArrowButtons(
     onArrowDownClick: () -> Unit,
     onMoneyIconClick: () -> Unit
 ) {
-    // Ya no es necesario el contenido de esta función
+
 }

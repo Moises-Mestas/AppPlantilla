@@ -329,8 +329,6 @@ fun PrincipalScreen(
                         Divider(Modifier.padding(vertical = 8.dp))
 
                         // Estructura de las columnas
-// Estructura de las columnas
-// Estructura de las columnas
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -487,8 +485,8 @@ fun PrincipalScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(
-                                        start = 8.dp,
-                                        top = 8.dp
+                                        start = 1.dp,
+                                        top = 4.dp,
                                     ), // Reducir el padding al inicio para mover todo más cerca de "TOTAL"
                                 horizontalArrangement = Arrangement.Start // Alineamos a la izquierda
                             ) {
@@ -511,7 +509,7 @@ fun PrincipalScreen(
                                     fontSize = 13.5.sp,
                                     modifier = Modifier
                                         .align(Alignment.CenterVertically) // Alineamos verticalmente con "TOTAL:"
-                                        .padding(start = 8.dp) // Añadir un poco de espacio entre "TOTAL" y el primer monto
+                                        .padding(start = 27.dp) // Añadir un poco de espacio entre "TOTAL" y el primer monto
                                 )
 
                                 // Total de Egresos
@@ -522,7 +520,7 @@ fun PrincipalScreen(
                                     fontSize = 13.5.sp,
                                     modifier = Modifier
                                         .align(Alignment.CenterVertically) // Alineamos verticalmente con "TOTAL:"
-                                        .padding(start = 8.dp) // Añadir un poco de espacio entre los montos
+                                        .padding(start = 15.dp) // Añadir un poco de espacio entre los montos
                                 )
 
                                 // Total de Ingresos
@@ -533,10 +531,13 @@ fun PrincipalScreen(
                                     fontSize = 13.5.sp,
                                     modifier = Modifier
                                         .align(Alignment.CenterVertically) // Alineamos verticalmente con "TOTAL:"
-                                        .padding(start = 8.dp) // Añadir un poco de espacio entre los montos
+                                        .padding(start = 15.dp) // Añadir un poco de espacio entre los montos
                                 )
                             }
                         }
+
+
+
                         Divider(Modifier.padding(vertical = 8.dp))
 
 
