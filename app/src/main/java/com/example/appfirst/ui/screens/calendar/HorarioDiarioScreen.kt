@@ -135,6 +135,7 @@ fun HorarioDiarioScreen(
                     IconButton(onClick = { navController.navigate("nueva-accion") }) {
                         Icon(Icons.Default.Add, contentDescription = "Añadir acción")
                     }
+                    
                     IconButton(onClick = {
                         viewModel.cargarHorarioDeHoy()
                         textoBusqueda = ""

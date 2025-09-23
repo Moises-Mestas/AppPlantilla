@@ -235,15 +235,6 @@ fun FormTareaScreen(
                     Text("Seleccionar archivo")
                 }
 
-                Spacer(Modifier.height(12.dp))
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(
-                        checked = form.completada,
-                        onCheckedChange = { tareaVM.onFormChange(completada = it) }
-                    )
-                    Text("¿Completada?")
-                }
 
                 Spacer(Modifier.height(20.dp))
 

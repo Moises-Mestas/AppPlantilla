@@ -39,7 +39,7 @@ enum class NavDestination(
 ) {
     HOME(Icons.Default.Home, "Inicio", "Icono de inicio"),
     CALENDAR(Icons.Default.DateRange, "Calendario", "Icono de calendario"),
-    SCHEDULE(Icons.Default.List, "Horario", "Icono de horario"),
+    SCHEDULE(Icons.Default.List,"Horario", "Icono de horario"),
     SAVINGS(Icons.Default.Face, "Ahorros", "Icono de ahorros"),
     TASKS(Icons.Default.AccountBox, "Agenda", "Icono de agenda")
 }
