@@ -1,5 +1,6 @@
 package com.example.appfirst.ui.screens.home
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -20,6 +21,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
+import com.example.appfirst.data.BackupManager
+import com.example.appfirst.data.ExportManager
 import com.example.appfirst.data.datastore.UserPrefs
 import com.example.appfirst.data.local.AppDatabase
 import com.example.appfirst.ui.ingreso.rememberIngresoVM
@@ -62,6 +65,7 @@ fun PrincipalScreen(
     val fechaFin by viewModel.fechaFin.collectAsState()
     val context = LocalContext.current
     val userId = viewModel.userId
+    val db = AppDatabase.get(context)
 
     val montoTotal by viewModel.montoTotal.collectAsState()
     val montoTotalTarjeta by viewModel.montoTotalTarjeta.collectAsState()
@@ -620,6 +624,59 @@ fun PrincipalScreen(
                                 }
                             }
 
+                        }
+
+
+                        Button(
+                            onClick = {
+                                scope.launch(Dispatchers.IO) {
+                                    try {
+                                        val uid = userId
+                                        if (uid != null) {
+                                            val backupFile = BackupManager.backupDatabase(context)
+                                            withContext(Dispatchers.Main) {
+                                                if (backupFile != null) {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Backup guardado en: ${backupFile.absolutePath}",
+                                                        Toast.LENGTH_LONG
+                                                    ).show()
+                                                }
+                                            }
+                                            val ingresos = db.ingresoDao().getIngresosByUserId(uid).first()
+                                            val csvFile = ExportManager.exportIngresosToCSV(context, ingresos)
+                                            withContext(Dispatchers.Main) {
+                                                if (csvFile != null) {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Exportado en: ${csvFile.absolutePath}",
+                                                        Toast.LENGTH_LONG
+                                                    ).show()
+                                                }
+                                            }
+                                        } else {
+                                            withContext(Dispatchers.Main) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Usuario no encontrado",
+                                                    Toast.LENGTH_LONG
+                                                ).show()
+                                            }
+                                        }
+                                    } catch (e: Exception) {
+                                        withContext(Dispatchers.Main) {
+                                            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                                        }
+                                    }
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Icon(Icons.Default.Download, contentDescription = "Exportar")
+                            Spacer(Modifier.width(8.dp))
+                            Text("Exportar Backup + CSV")
                         }
 
                     }
