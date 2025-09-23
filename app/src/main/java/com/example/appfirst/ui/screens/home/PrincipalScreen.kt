@@ -1,3 +1,4 @@
+
 package com.example.appfirst.ui.screens.home
 
 import android.widget.Toast
@@ -34,7 +35,6 @@ import kotlinx.coroutines.withContext
 
 data class NavItem(val label: String, val icon: ImageVector, val onClick: () -> Unit)
 
-
 enum class NavDestination(
     val icon: ImageVector,
     val label: String,
@@ -64,7 +64,6 @@ fun PrincipalScreen(
     val fechaInicio by viewModel.fechaInicio.collectAsState()
     val fechaFin by viewModel.fechaFin.collectAsState()
     val context = LocalContext.current
-    val userId = viewModel.userId
     val db = AppDatabase.get(context)
 
     val montoTotal by viewModel.montoTotal.collectAsState()
@@ -75,20 +74,19 @@ fun PrincipalScreen(
     val scope = rememberCoroutineScope()
     var selectedItem by rememberSaveable { mutableIntStateOf(0) }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-    var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    // Estados mejorados para manejar el usuario
+    var currentUserId by remember { mutableStateOf<Long?>(null) }
     var isLoading by remember { mutableStateOf(true) }
-
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isExporting by remember { mutableStateOf(false) }
 
     val ingresosTarjeta by viewModel.ingresosTarjeta.collectAsState()
     val gastosTarjeta by viewModel.gastosTarjeta.collectAsState()
-
     val ingresosEfectivo by viewModel.ingresosEfectivo.collectAsState()
     val gastosEfectivo by viewModel.gastosEfectivo.collectAsState()
-
     val ingresosYape by viewModel.ingresosYape.collectAsState()
     val gastosYape by viewModel.gastosYape.collectAsState()
-
 
     val navItems = listOf(
         NavItem("Inicio", Icons.Default.Home, navigateToInicio),
@@ -102,21 +100,139 @@ fun PrincipalScreen(
         NavItem("Ajustes", Icons.Default.Settings, navigateToAjustes),
         NavItem("Salir", Icons.Default.ExitToApp, navigateToSalir)
     )
+
+    // Función mejorada para obtener el userId
     LaunchedEffect(Unit) {
         try {
-            val userDao = AppDatabase.get(context ).userDao()
             val userId = withContext(Dispatchers.IO) {
+                // Primero intentar obtener de UserPrefs
+                val userIdFromPrefs = UserPrefs.getLoggedUserId(context)
+                if (userIdFromPrefs != null) {
+                    return@withContext userIdFromPrefs
+                }
+
+                // Si no está en prefs, buscar por email en la base de datos
                 val userEmail = UserPrefs.getLoggedUserEmail(context)
-                val users = userDao.getAllUsers().first()
-                users.firstOrNull { it.email == userEmail }?.id
+                if (userEmail.isNotEmpty()) {
+                    val userDao = db.userDao()
+                    val users = userDao.getAllUsers().first()
+                    val user = users.firstOrNull { it.email == userEmail }
+                    user?.id
+                } else {
+                    null
+                }
             }
-            if (userId != null) viewModel.setUserId(userId) else errorMessage = "Usuario no encontrado"
+
+            if (userId != null) {
+                currentUserId = userId
+                viewModel.setUserId(userId)
+                errorMessage = null
+                println("✅ UserId encontrado: $userId")
+            } else {
+                errorMessage = "Usuario no encontrado. Por favor, cierra sesión y vuelve a iniciar."
+                println("❌ UserId no encontrado")
+            }
         } catch (e: Exception) {
-            errorMessage = "Error: ${e.message}"
+            errorMessage = "Error al cargar usuario: ${e.message}"
+            println("❌ Error cargando usuario: ${e.message}")
         } finally {
             isLoading = false
         }
     }
+
+    // Función para exportar backup y CSV
+    val onExportClick: () -> Unit = {
+
+        scope.launch {
+            isExporting = true
+            try {
+                var uid = currentUserId
+                println("🔍 Intentando exportar con userId: $uid")
+
+                if (uid == null) {
+                    // Intentar obtener el userId nuevamente
+                    val refreshedUserId = withContext(Dispatchers.IO) {
+                        val userEmail = UserPrefs.getLoggedUserEmail(context)
+                        if (userEmail.isNotEmpty()) {
+                            val userDao = db.userDao()
+                            val users = userDao.getAllUsers().first()
+                            users.firstOrNull { it.email == userEmail }?.id
+                        } else {
+                            null
+                        }
+                    }
+
+                    if (refreshedUserId != null) {
+                        uid = refreshedUserId
+                        currentUserId = refreshedUserId
+                        viewModel.setUserId(refreshedUserId)
+                        println("✅ UserId refrescado: $refreshedUserId")
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Usuario no encontrado. Por favor, reinicia la aplicación.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        return@launch
+                    }
+                }
+
+                // Hacer backup de la base de datos
+                val backupFile = withContext(Dispatchers.IO) {
+                    BackupManager.backupDatabase(context)
+                }
+
+                if (backupFile != null) {
+                    Toast.makeText(
+                        context,
+                        "✅ Backup guardado en: ${backupFile.name}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        context,
+                        "❌ Error al crear backup",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                // Exportar ingresos a CSV
+                val finalUserId = uid ?: throw Exception("UserId aún es nulo")
+                val ingresos = withContext(Dispatchers.IO) {
+                    db.ingresoDao().getIngresosByUserId(finalUserId).first()
+                }
+
+                val csvFile = withContext(Dispatchers.IO) {
+                    ExportManager.exportIngresosToCSV(context, ingresos)
+                }
+
+                if (csvFile != null) {
+                    Toast.makeText(
+                        context,
+                        "✅ CSV exportado en: ${csvFile.name}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        context,
+                        "❌ Error al exportar CSV",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+            } catch (e: Exception) {
+                println("❌ Error en exportación: ${e.message}")
+                Toast.makeText(
+                    context,
+                    "❌ Error en exportación: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            } finally {
+                isExporting = false
+            }
+        }
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -159,7 +275,12 @@ fun PrincipalScreen(
             modifier = modifier,
             topBar = {
                 TopAppBar(
-                    title = { Text("Bienvenido Usuario", fontWeight = FontWeight.Bold) },
+                    title = {
+                        Text(
+                            if (currentUserId != null) "Bienvenido Usuario" else "Cargando...",
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = "Menú")
@@ -194,11 +315,12 @@ fun PrincipalScreen(
                             label = {
                                 Text(
                                     text = destination.label,
-                                    fontSize = 10.6.sp, // Ajusta el tamaño de la fuente
+                                    fontSize = 10.6.sp,
                                     fontWeight = FontWeight.Bold,
-                                    maxLines = 1, // Asegura que el texto solo ocupe una línea
-                                    overflow = TextOverflow.Ellipsis // Recorta el texto con "..." si es demasiado largo
-                                )  }
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         )
                     }
                 }
@@ -210,6 +332,35 @@ fun PrincipalScreen(
                     .padding(innerPadding)
                     .verticalScroll(rememberScrollState())
             ) {
+                // Mostrar mensaje de error si existe
+                errorMessage?.let { message ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                        )
+                    ) {
+                        Text(
+                            text = message,
+                            modifier = Modifier.padding(16.dp),
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
+
+                // Mostrar loading si está cargando
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
 
                 Card(
                     modifier = Modifier
@@ -261,7 +412,6 @@ fun PrincipalScreen(
                     }
                 }
 
-
                 // Tarjeta de gastos
                 Card(
                     modifier = Modifier
@@ -277,47 +427,39 @@ fun PrincipalScreen(
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.Start,
-                            verticalAlignment = Alignment.CenterVertically // Alineamos las caras con el texto
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Texto "Monedero:"
                             Text(
                                 text = "Monedero:",
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(end = 16.dp) // Espacio entre el texto y los íconos
+                                modifier = Modifier.padding(end = 16.dp)
                             )
 
-                            // Calculamos el total y porcentaje de gastos
                             val totalIngresos = ingresosTarjeta + ingresosEfectivo + ingresosYape
                             val totalGastos = gastosTarjeta + gastosEfectivo + gastosYape
                             val totalFinal = totalIngresos - totalGastos
-
-                            // El porcentaje de los gastos en relación con el total final
                             val percentage = if (totalFinal != 0.0) (totalGastos / totalFinal) * 100 else 0.0
 
-                            // Caras de los íconos
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(24.dp),
-                                modifier = Modifier.padding(start = 24.dp) // 👈 mueve las caritas un poco a la derecha
+                                modifier = Modifier.padding(start = 24.dp)
                             )  {
-                                // Cara Alegre (Verde) si el porcentaje es del -0% al -50%
                                 Icon(
-                                    imageVector = Icons.Default.SentimentVerySatisfied,  // Icono de cara alegre
+                                    imageVector = Icons.Default.SentimentVerySatisfied,
                                     contentDescription = "Cara Alegre",
-                                    tint = if (percentage in -50f..0f) Color(0xFF4CAF50) else Color(0xFF4CAF50), // Verde si está entre -0% y -50%
-                                    modifier = Modifier.size(if (percentage in -50f..0f) 48.dp else 32.dp) // Más grande si el porcentaje es bajo
+                                    tint = if (percentage in -50f..0f) Color(0xFF4CAF50) else Color(0xFF4CAF50),
+                                    modifier = Modifier.size(if (percentage in -50f..0f) 48.dp else 32.dp)
                                 )
 
-                                // Cara Seria (Amarilla) si el porcentaje es del -51% al -80%
                                 Icon(
-                                    imageVector = Icons.Default.SentimentNeutral,  // Icono de cara seria
-                                    contentDescription = "Cara Seria",  //Color(0xFFBDBDBD) esto es gris por si no quieres colorsito xd xdxdxdx
-                                    tint = if (percentage in -80f..-51f) Color(0xFFFFA000) else Color(0xFFFFA000), // Amarillo oscuro si está entre -51% y -80%
-                                    modifier = Modifier.size(if (percentage in -80f..-51f) 48.dp else 32.dp) // Más grande si el porcentaje es medio
+                                    imageVector = Icons.Default.SentimentNeutral,
+                                    contentDescription = "Cara Seria",
+                                    tint = if (percentage in -80f..-51f) Color(0xFFFFA000) else Color(0xFFFFA000),
+                                    modifier = Modifier.size(if (percentage in -80f..-51f) 48.dp else 32.dp)
                                 )
 
-                                // Cara Triste (Roja) si el porcentaje es del -81% a -100%
                                 Icon(
                                     imageVector = Icons.Default.SentimentVeryDissatisfied,
                                     contentDescription = "Cara Triste",
@@ -327,223 +469,172 @@ fun PrincipalScreen(
                             }
                         }
 
-
-
-
                         Divider(Modifier.padding(vertical = 8.dp))
 
                         // Estructura de las columnas
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 6.dp), // Reducir el padding para acercar las columnas
-                            horizontalArrangement = Arrangement.Start // Alineamos todo a la izquierda
+                                .padding(bottom = 6.dp),
+                            horizontalArrangement = Arrangement.Start
                         ) {
-                            // Texto "Cuentas"
-                            Text(
-                                "Cuentas",
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.weight(1f) // Asignamos peso para que ocupe el espacio proporcionalmente
-                            )
-
-                            // Sin espacio inicial entre "Ingreso", "Gasto", y "Total"
-                            // Esto hará que estas columnas estén más cerca de la columna "Cuentas"
-                            Text(
-                                "Ingreso",
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Start,
-                                modifier = Modifier.weight(1f) // Asignamos peso para que ocupe el espacio proporcionalmente
-                            )
-                            Text(
-                                "Gasto",
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Start,
-                                modifier = Modifier.weight(1f) // Asignamos peso para que ocupe el espacio proporcionalmente
-                            )
-                            Text(
-                                "Total",
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Start,
-                                modifier = Modifier.weight(1f) // Asignamos peso para que ocupe el espacio proporcionalmente
-                            )
+                            Text("Cuentas", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                            Text("Ingreso", fontWeight = FontWeight.Bold, textAlign = TextAlign.Start, modifier = Modifier.weight(1f))
+                            Text("Gasto", fontWeight = FontWeight.Bold, textAlign = TextAlign.Start, modifier = Modifier.weight(1f))
+                            Text("Total", fontWeight = FontWeight.Bold, textAlign = TextAlign.Start, modifier = Modifier.weight(1f))
                         }
 
                         Divider(Modifier.padding(vertical = 8.dp))
 
-// Filas para "Tarjeta", "Efectivo", "Yape"
-
-// Tarjeta
+                        // Tarjeta
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 8.dp), // Reducir el padding para acercar más los elementos
-                            horizontalArrangement = Arrangement.Start // Alineamos a la izquierda
+                                .padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.Start
                         ) {
-                            Text("Tarjeta", modifier = Modifier.weight(1f)) // Nombre de la cuenta
+                            Text("Tarjeta", modifier = Modifier.weight(1f))
                             Text(
-                                "S/ ${"%.1f".format(ingresosTarjeta - gastosTarjeta)}", // Ingreso - Egreso
+                                "S/ ${"%.1f".format(ingresosTarjeta - gastosTarjeta)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
                                 fontSize = 13.5.sp,
-                                color = Color(0xFF4CAF50) // Verde
+                                color = Color(0xFF4CAF50)
                             )
                             Text(
-                                "S/ ${"%.1f".format(gastosTarjeta)}", // Solo egresos
+                                "S/ ${"%.1f".format(gastosTarjeta)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
                                 fontSize = 13.5.sp,
-                                color = Color(0xFFFF0000) // Rojo
+                                color = Color(0xFFFF0000)
                             )
                             Text(
-                                "S/ ${"%.1f".format(ingresosTarjeta)}", // Total Ingresos
+                                "S/ ${"%.1f".format(ingresosTarjeta)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
                                 color = MaterialTheme.colorScheme.primary,
                                 fontSize = 13.5.sp,
-                                fontWeight = FontWeight(900) // Negrita para el total
+                                fontWeight = FontWeight(900)
                             )
                         }
 
-// Efectivo
+                        // Efectivo
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 8.dp), // Reducir el padding para acercar más los elementos
-                            horizontalArrangement = Arrangement.Start // Alineamos a la izquierda
+                                .padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.Start
                         ) {
-                            Text("Efectivo", modifier = Modifier.weight(1f)) // Nombre de la cuenta
+                            Text("Efectivo", modifier = Modifier.weight(1f))
                             Text(
-                                "S/ ${"%.1f".format(ingresosEfectivo - gastosEfectivo)}", // Ingreso - Egreso
+                                "S/ ${"%.1f".format(ingresosEfectivo - gastosEfectivo)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
                                 fontSize = 13.5.sp,
-                                color = Color(0xFF4CAF50) // Verde
+                                color = Color(0xFF4CAF50)
                             )
                             Text(
-                                "S/ ${"%.1f".format(gastosEfectivo)}", // Solo egresos
+                                "S/ ${"%.1f".format(gastosEfectivo)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
                                 fontSize = 13.5.sp,
-                                color = Color(0xFFFF0000) // Rojo
+                                color = Color(0xFFFF0000)
                             )
                             Text(
-                                "S/ ${"%.1f".format(ingresosEfectivo)}", // Total Ingresos
+                                "S/ ${"%.1f".format(ingresosEfectivo)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
                                 color = MaterialTheme.colorScheme.primary,
                                 fontSize = 13.5.sp,
-                                fontWeight = FontWeight(900) // Negrita para el total
+                                fontWeight = FontWeight(900)
                             )
                         }
 
-// Yape
+                        // Yape
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 8.dp), // Reducir el padding para acercar más los elementos
-                            horizontalArrangement = Arrangement.Start // Alineamos a la izquierda
+                                .padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.Start
                         ) {
-                            Text("Yape", modifier = Modifier.weight(1f)) // Nombre de la cuenta
+                            Text("Yape", modifier = Modifier.weight(1f))
                             Text(
-                                "S/ ${"%.1f".format(ingresosYape - gastosYape)}", // Ingreso - Egreso
+                                "S/ ${"%.1f".format(ingresosYape - gastosYape)}",
                                 textAlign = TextAlign.Start,
                                 fontSize = 13.5.sp,
                                 modifier = Modifier.weight(1f),
-                                color = Color(0xFF4CAF50) // Verde
+                                color = Color(0xFF4CAF50)
                             )
                             Text(
-                                "S/ ${"%.1f".format(gastosYape)}", // Solo egresos
+                                "S/ ${"%.1f".format(gastosYape)}",
                                 textAlign = TextAlign.Start,
                                 fontSize = 13.5.sp,
                                 modifier = Modifier.weight(1f),
-                                color = Color(0xFFFF0000) // Rojo
+                                color = Color(0xFFFF0000)
                             )
                             Text(
-                                "S/ ${"%.1f".format(ingresosYape)}", // Total Ingresos
+                                "S/ ${"%.1f".format(ingresosYape)}",
                                 textAlign = TextAlign.Start,
                                 fontSize = 13.5.sp,
                                 modifier = Modifier.weight(1f),
                                 color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight(900) // Negrita para el total
+                                fontWeight = FontWeight(900)
                             )
                         }
-
-
 
                         Divider(Modifier.padding(vertical = 8.dp))
-
-
-
-
-
-
 
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 1.dp),
-                            horizontalArrangement = Arrangement.Start // Alineamos a la izquierda
+                            horizontalArrangement = Arrangement.Start
                         ) {
-                            // Texto "TOTAL:"
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(
-                                        start = 1.dp,
-                                        top = 4.dp,
-                                    ), // Reducir el padding al inicio para mover todo más cerca de "TOTAL"
-                                horizontalArrangement = Arrangement.Start // Alineamos a la izquierda
+                                    .padding(start = 1.dp, top = 4.dp),
+                                horizontalArrangement = Arrangement.Start
                             ) {
-                                // Texto "TOTAL:"
                                 Text(
                                     text = "TOTAL:",
                                     fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.align(Alignment.CenterVertically) // Esto asegura que el texto "TOTAL" esté alineado verticalmente con los montos
+                                    modifier = Modifier.align(Alignment.CenterVertically)
                                 )
 
-                                // Total Final: ingresos - egresos
                                 Text(
-                                    text = "S/ ${
-                                        "%.1f".format(
-                                            (ingresosTarjeta + ingresosEfectivo + ingresosYape) - (gastosTarjeta + gastosEfectivo + gastosYape)
-                                        )
-                                    }",
+                                    text = "S/ ${"%.1f".format((ingresosTarjeta + ingresosEfectivo + ingresosYape) - (gastosTarjeta + gastosEfectivo + gastosYape))}",
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF4CAF50),
                                     fontSize = 13.5.sp,
                                     modifier = Modifier
-                                        .align(Alignment.CenterVertically) // Alineamos verticalmente con "TOTAL:"
-                                        .padding(start = 27.dp) // Añadir un poco de espacio entre "TOTAL" y el primer monto
+                                        .align(Alignment.CenterVertically)
+                                        .padding(start = 27.dp)
                                 )
 
-                                // Total de Egresos
                                 Text(
-                                    text = "S/ ${"%.1f".format(gastosTarjeta + gastosEfectivo + gastosYape)}", // Total de Egresos
+                                    text = "S/ ${"%.1f".format(gastosTarjeta + gastosEfectivo + gastosYape)}",
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFFFF0000),
                                     fontSize = 13.5.sp,
                                     modifier = Modifier
-                                        .align(Alignment.CenterVertically) // Alineamos verticalmente con "TOTAL:"
-                                        .padding(start = 15.dp) // Añadir un poco de espacio entre los montos
+                                        .align(Alignment.CenterVertically)
+                                        .padding(start = 15.dp)
                                 )
 
-                                // Total de Ingresos
                                 Text(
-                                    text = "S/ ${"%.1f".format(ingresosTarjeta + ingresosEfectivo + ingresosYape)}", // Total de Ingresos
+                                    text = "S/ ${"%.1f".format(ingresosTarjeta + ingresosEfectivo + ingresosYape)}",
                                     fontWeight = FontWeight(900),
                                     color = MaterialTheme.colorScheme.primary,
                                     fontSize = 13.5.sp,
                                     modifier = Modifier
-                                        .align(Alignment.CenterVertically) // Alineamos verticalmente con "TOTAL:"
-                                        .padding(start = 15.dp) // Añadir un poco de espacio entre los montos
+                                        .align(Alignment.CenterVertically)
+                                        .padding(start = 15.dp)
                                 )
                             }
                         }
 
-
-
                         Divider(Modifier.padding(vertical = 8.dp))
-
 
                         Column(
                             modifier = Modifier
@@ -556,35 +647,29 @@ fun PrincipalScreen(
                                 fontWeight = FontWeight.Bold
                             )
 
-                            // Fecha de inicio
                             FechaSeleccionadaSection1(
                                 fecha = fechaInicio ?: System.currentTimeMillis(),
                                 onFechaChange = { nuevaFecha ->
-                                    viewModel.updateFechaInicio(
-                                        nuevaFecha
-                                    )
-                                } // Usar un método del ViewModel
+                                    viewModel.updateFechaInicio(nuevaFecha)
+                                }
                             )
 
                             FechaSeleccionadaSection1(
                                 fecha = fechaFin ?: System.currentTimeMillis(),
-                                onFechaChange = { nuevaFecha -> viewModel.updateFechaFin(nuevaFecha) } // Usar un método del ViewModel
+                                onFechaChange = { nuevaFecha -> viewModel.updateFechaFin(nuevaFecha) }
                             )
 
                             Divider(Modifier.padding(vertical = 8.dp))
 
-                            // Fila con los dos botones (Aplicar filtro y Restablecer)
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(top = 8.dp), // Reducir el padding superior
-                                horizontalArrangement = Arrangement.spacedBy(8.dp) // Reducir espacio entre los botones
+                                    .padding(top = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                // Botón Aplicar filtro
                                 Button(
                                     onClick = {
-                                        val userId =
-                                            viewModel.userId // Accede al userId a través del getter
+                                        val userId = currentUserId
                                         if (userId != null) {
                                             viewModel.viewModelScope.launch {
                                                 viewModel.updateIngresosYGastosPorFechas(
@@ -593,95 +678,94 @@ fun PrincipalScreen(
                                                     fechaFin
                                                 )
                                             }
+                                        } else {
+                                            Toast.makeText(
+                                                context,
+                                                "Usuario no disponible para filtrar",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
                                         }
                                     },
                                     modifier = Modifier
-                                        .weight(1f) // Hace que ocupe el 50% del espacio
-                                        .height(40.dp), // Ajustar la altura del botón
+                                        .weight(1f)
+                                        .height(40.dp),
                                 ) {
-                                    Text(
-                                        "Aplicar filtro",
-                                        fontSize = 14.sp
-                                    ) // Reducir el tamaño de la fuente
+                                    Text("Aplicar filtro", fontSize = 14.sp)
                                 }
 
-                                // Botón Restablecer
                                 Button(
                                     onClick = {
-                                        // Restablecer los valores de las fechas y otros filtros
                                         viewModel.viewModelScope.launch {
-                                            viewModel.resetFilters() // Llamar a la función suspendida
+                                            viewModel.resetFilters()
                                         }
                                     },
                                     modifier = Modifier
-                                        .weight(1f) // Hace que ocupe el 50% del espacio
-                                        .height(40.dp), // Ajustar la altura del botón
+                                        .weight(1f)
+                                        .height(40.dp),
                                 ) {
-                                    Text(
-                                        "Restablecer",
-                                        fontSize = 14.sp
-                                    ) // Reducir el tamaño de la fuente
+                                    Text("Restablecer", fontSize = 14.sp)
                                 }
                             }
-
                         }
 
+                        // Botón de exportar mejorado
+                        Button(
+                            onClick = onExportClick,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            enabled = currentUserId != null && !isExporting
+                        ) {
+                            if (isExporting) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    strokeWidth = 2.dp
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text("Exportando...")
+                            } else {
+                                Icon(Icons.Default.Download, contentDescription = "Exportar")
+                                Spacer(Modifier.width(8.dp))
+                                Text("Exportar Backup + CSV")
+                            }
+                        }
 
+                        // Botón de debug para ver el estado del usuario
                         Button(
                             onClick = {
-                                scope.launch(Dispatchers.IO) {
-                                    try {
-                                        val uid = userId
-                                        if (uid != null) {
-                                            val backupFile = BackupManager.backupDatabase(context)
-                                            withContext(Dispatchers.Main) {
-                                                if (backupFile != null) {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Backup guardado en: ${backupFile.absolutePath}",
-                                                        Toast.LENGTH_LONG
-                                                    ).show()
-                                                }
-                                            }
-                                            val ingresos = db.ingresoDao().getIngresosByUserId(uid).first()
-                                            val csvFile = ExportManager.exportIngresosToCSV(context, ingresos)
-                                            withContext(Dispatchers.Main) {
-                                                if (csvFile != null) {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Exportado en: ${csvFile.absolutePath}",
-                                                        Toast.LENGTH_LONG
-                                                    ).show()
-                                                }
-                                            }
-                                        } else {
-                                            withContext(Dispatchers.Main) {
-                                                Toast.makeText(
-                                                    context,
-                                                    "Usuario no encontrado",
-                                                    Toast.LENGTH_LONG
-                                                ).show()
-                                            }
-                                        }
-                                    } catch (e: Exception) {
-                                        withContext(Dispatchers.Main) {
-                                            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-                                        }
+                                scope.launch {
+                                    val userEmail = UserPrefs.getLoggedUserEmail(context)
+                                    val userIdFromPrefs = UserPrefs.getLoggedUserId(context)
+                                    val userCount = withContext(Dispatchers.IO) {
+                                        db.userDao().getAllUsers().first().size
                                     }
+
+                                    val debugInfo = """
+                                        📊 DEBUG INFO:
+                                        Email en Prefs: $userEmail
+                                        UserId en Prefs: $userIdFromPrefs
+                                        UserId actual: $currentUserId
+                                        Usuarios en DB: $userCount
+                                    """.trimIndent()
+
+                                    Toast.makeText(context, debugInfo, Toast.LENGTH_LONG).show()
+                                    println(debugInfo)
                                 }
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp)
+                                .padding(horizontal = 16.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
                         ) {
-                            Icon(Icons.Default.Download, contentDescription = "Exportar")
+                            Icon(Icons.Default.BugReport, contentDescription = "Debug")
                             Spacer(Modifier.width(8.dp))
-                            Text("Exportar Backup + CSV")
+                            Text("Debug Info")
                         }
-
                     }
                 }
             }
         }
     }
 }
+
+

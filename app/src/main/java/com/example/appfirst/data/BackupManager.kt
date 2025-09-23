@@ -1,51 +1,42 @@
 package com.example.appfirst.data
 
 import android.content.Context
+import android.os.Environment
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 object BackupManager {
-
     fun backupDatabase(context: Context): File? {
         return try {
-            // archivo de la DB
-            val dbFile = context.getDatabasePath("app.db")
+            // Cambiar a Environment.DIRECTORY_DOWNLOADS
+            val downloadsDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+            val backupDir = File(downloadsDir, "AppFirst_Backups")
 
-            // carpeta de backups
-            val backupDir = File(context.getExternalFilesDir(null), "backup")
-            if (!backupDir.exists()) backupDir.mkdirs()
-
-            // archivo final
-            val backupFile = File(backupDir, "app_backup.db")
-
-            FileInputStream(dbFile).use { input ->
-                FileOutputStream(backupFile).use { output ->
-                    input.copyTo(output)
-                }
+            if (!backupDir.exists()) {
+                backupDir.mkdirs()
             }
 
-            backupFile
+            val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val backupFile = File(backupDir, "app_backup_$timestamp.db")
+
+            val currentDb = context.getDatabasePath("app.db")
+            if (currentDb.exists()) {
+                FileInputStream(currentDb).channel.use { input ->
+                    FileOutputStream(backupFile).channel.use { output ->
+                        input.transferTo(0, input.size(), output)
+                    }
+                }
+                backupFile
+            } else {
+                null
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             null
-        }
-    }
-
-    fun restoreDatabase(context: Context, backupFile: File): Boolean {
-        return try {
-            val dbFile = context.getDatabasePath("app.db")
-
-            FileInputStream(backupFile).use { input ->
-                FileOutputStream(dbFile).use { output ->
-                    input.copyTo(output)
-                }
-            }
-
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
         }
     }
 }
