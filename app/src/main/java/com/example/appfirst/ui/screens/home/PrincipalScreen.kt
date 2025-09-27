@@ -1,7 +1,5 @@
-
 package com.example.appfirst.ui.screens.home
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -18,12 +16,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
-import com.example.appfirst.data.BackupManager
-import com.example.appfirst.data.ExportManager
 import com.example.appfirst.data.datastore.UserPrefs
 import com.example.appfirst.data.local.AppDatabase
 import com.example.appfirst.ui.ingreso.rememberIngresoVM
@@ -32,6 +27,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.*
+
+// Agregar los imports necesarios para la funcionalidad de agenda
+import com.example.appfirst.ui.tarea.rememberTareaVM
+import com.example.appfirst.ui.examen.rememberExamenVM
+import com.example.appfirst.ui.recordatorio.rememberRecordatorioVM
+import com.example.appfirst.data.local.entity.Tarea
+import com.example.appfirst.data.local.entity.Examen
+import com.example.appfirst.data.local.entity.Recordatorio
 
 data class NavItem(val label: String, val icon: ImageVector, val onClick: () -> Unit)
 
@@ -42,9 +47,105 @@ enum class NavDestination(
 ) {
     HOME(Icons.Default.Home, "Inicio", "Icono de inicio"),
     CALENDAR(Icons.Default.DateRange, "Calendario", "Icono de calendario"),
-    SCHEDULE(Icons.Default.List,"Horario", "Icono de horario"),
+    SCHEDULE(Icons.Default.List, "Horario", "Icono de horario"),
     SAVINGS(Icons.Default.Face, "Ahorros", "Icono de ahorros"),
     TASKS(Icons.Default.AccountBox, "Agenda", "Icono de agenda")
+}
+
+// Composable para mostrar tareas simples (similar al de Agenda)
+@Composable
+fun TareaItemSimpleHome(tarea: Tarea, esPasada: Boolean) {
+    val timeFormatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    val fecha = Date(tarea.fechaEntrega)
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Column(modifier = Modifier.padding(8.dp)) {
+            Text(
+                tarea.titulo,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (esPasada) Color.Gray else MaterialTheme.colorScheme.primary
+            )
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("⏰ ${timeFormatter.format(fecha)}", fontSize = 12.sp)
+                if (tarea.completada) {
+                    Text("✓ Completada", fontSize = 12.sp, color = Color.Green)
+                }
+            }
+        }
+    }
+}
+
+// Composable para mostrar exámenes simples
+@Composable
+fun ExamenItemSimpleHome(examen: Examen, esPasado: Boolean) {
+    val timeFormatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    val fecha = Date(examen.fechaExamen)
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Column(modifier = Modifier.padding(8.dp)) {
+            Text(
+                examen.titulo,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (esPasado) Color.Gray else MaterialTheme.colorScheme.primary
+            )
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("⏰ ${timeFormatter.format(fecha)}", fontSize = 12.sp)
+                examen.nota?.takeIf { it.isNotBlank() }?.let {
+                    Text("Nota: $it", fontSize = 12.sp)
+                }
+            }
+        }
+    }
+}
+
+// Composable para mostrar recordatorios simples
+@Composable
+fun RecordatorioItemSimpleHome(recordatorio: Recordatorio, esPasado: Boolean) {
+    val timeFormatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    val fecha = Date(recordatorio.fechaRecordatorio)
+    val backgroundColor = try {
+        Color(android.graphics.Color.parseColor(recordatorio.color))
+    } catch (e: Exception) {
+        MaterialTheme.colorScheme.surfaceVariant
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Column(modifier = Modifier.padding(8.dp)) {
+            Text(
+                recordatorio.titulo,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+            Text("⏰ ${timeFormatter.format(fecha)}", fontSize = 12.sp, color = Color.White)
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,13 +159,16 @@ fun PrincipalScreen(
     navigateTotarea: () -> Unit = {},
     navigateToAjustes: () -> Unit = {},
     navigateToSalir: () -> Unit = {},
-    navigateToCuentas:()-> Unit = {}
+    navigateToCuentas: () -> Unit = {},
+    navigateToFormTarea: () -> Unit = {},
+    navigateToExamen: () -> Unit = {},
+    navigateToRecordatorio: () -> Unit = {}
 ) {
     val viewModel = rememberIngresoVM()
     val fechaInicio by viewModel.fechaInicio.collectAsState()
     val fechaFin by viewModel.fechaFin.collectAsState()
     val context = LocalContext.current
-    val db = AppDatabase.get(context)
+    val userId = viewModel.userId
 
     val montoTotal by viewModel.montoTotal.collectAsState()
     val montoTotalTarjeta by viewModel.montoTotalTarjeta.collectAsState()
@@ -74,12 +178,8 @@ fun PrincipalScreen(
     val scope = rememberCoroutineScope()
     var selectedItem by rememberSaveable { mutableIntStateOf(0) }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-
-    // Estados mejorados para manejar el usuario
-    var currentUserId by remember { mutableStateOf<Long?>(null) }
-    var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var isExporting by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(true) }
 
     val ingresosTarjeta by viewModel.ingresosTarjeta.collectAsState()
     val gastosTarjeta by viewModel.gastosTarjeta.collectAsState()
@@ -87,6 +187,14 @@ fun PrincipalScreen(
     val gastosEfectivo by viewModel.gastosEfectivo.collectAsState()
     val ingresosYape by viewModel.ingresosYape.collectAsState()
     val gastosYape by viewModel.gastosYape.collectAsState()
+
+    // ViewModels para agenda
+    val tareaVM = rememberTareaVM()
+    val tareas by tareaVM.tareas.collectAsState()
+    val examenVM = rememberExamenVM()
+    val examenes by examenVM.examenes.collectAsState()
+    val recordatorioVM = rememberRecordatorioVM()
+    val recordatorios by recordatorioVM.recordatorios.collectAsState()
 
     val navItems = listOf(
         NavItem("Inicio", Icons.Default.Home, navigateToInicio),
@@ -101,137 +209,48 @@ fun PrincipalScreen(
         NavItem("Salir", Icons.Default.ExitToApp, navigateToSalir)
     )
 
-    // Función mejorada para obtener el userId
+    // Cargar datos del usuario y eventos de agenda
     LaunchedEffect(Unit) {
         try {
+            val userDao = AppDatabase.get(context).userDao()
             val userId = withContext(Dispatchers.IO) {
-                // Primero intentar obtener de UserPrefs
-                val userIdFromPrefs = UserPrefs.getLoggedUserId(context)
-                if (userIdFromPrefs != null) {
-                    return@withContext userIdFromPrefs
-                }
-
-                // Si no está en prefs, buscar por email en la base de datos
                 val userEmail = UserPrefs.getLoggedUserEmail(context)
-                if (userEmail.isNotEmpty()) {
-                    val userDao = db.userDao()
-                    val users = userDao.getAllUsers().first()
-                    val user = users.firstOrNull { it.email == userEmail }
-                    user?.id
-                } else {
-                    null
-                }
+                val users = userDao.getAllUsers().first()
+                users.firstOrNull { it.email == userEmail }?.id
             }
-
             if (userId != null) {
-                currentUserId = userId
                 viewModel.setUserId(userId)
-                errorMessage = null
-                println("✅ UserId encontrado: $userId")
+                // Cargar datos de agenda
+                tareaVM.setUserId(userId)
+                examenVM.setUserId(userId)
+                recordatorioVM.setUserId(userId)
             } else {
-                errorMessage = "Usuario no encontrado. Por favor, cierra sesión y vuelve a iniciar."
-                println("❌ UserId no encontrado")
+                errorMessage = "Usuario no encontrado"
             }
         } catch (e: Exception) {
-            errorMessage = "Error al cargar usuario: ${e.message}"
-            println("❌ Error cargando usuario: ${e.message}")
+            errorMessage = "Error: ${e.message}"
         } finally {
             isLoading = false
         }
     }
 
-    // Función para exportar backup y CSV
-    val onExportClick: () -> Unit = {
-
-        scope.launch {
-            isExporting = true
-            try {
-                var uid = currentUserId
-                println("🔍 Intentando exportar con userId: $uid")
-
-                if (uid == null) {
-                    // Intentar obtener el userId nuevamente
-                    val refreshedUserId = withContext(Dispatchers.IO) {
-                        val userEmail = UserPrefs.getLoggedUserEmail(context)
-                        if (userEmail.isNotEmpty()) {
-                            val userDao = db.userDao()
-                            val users = userDao.getAllUsers().first()
-                            users.firstOrNull { it.email == userEmail }?.id
-                        } else {
-                            null
-                        }
-                    }
-
-                    if (refreshedUserId != null) {
-                        uid = refreshedUserId
-                        currentUserId = refreshedUserId
-                        viewModel.setUserId(refreshedUserId)
-                        println("✅ UserId refrescado: $refreshedUserId")
-                    } else {
-                        Toast.makeText(
-                            context,
-                            "Usuario no encontrado. Por favor, reinicia la aplicación.",
-                            Toast.LENGTH_LONG
-                        ).show()
-                        return@launch
-                    }
-                }
-
-                // Hacer backup de la base de datos
-                val backupFile = withContext(Dispatchers.IO) {
-                    BackupManager.backupDatabase(context)
-                }
-
-                if (backupFile != null) {
-                    Toast.makeText(
-                        context,
-                        "✅ Backup guardado en: ${backupFile.name}",
-                        Toast.LENGTH_LONG
-                    ).show()
-                } else {
-                    Toast.makeText(
-                        context,
-                        "❌ Error al crear backup",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-
-                // Exportar ingresos a CSV
-                val finalUserId = uid ?: throw Exception("UserId aún es nulo")
-                val ingresos = withContext(Dispatchers.IO) {
-                    db.ingresoDao().getIngresosByUserId(finalUserId).first()
-                }
-
-                val csvFile = withContext(Dispatchers.IO) {
-                    ExportManager.exportIngresosToCSV(context, ingresos)
-                }
-
-                if (csvFile != null) {
-                    Toast.makeText(
-                        context,
-                        "✅ CSV exportado en: ${csvFile.name}",
-                        Toast.LENGTH_LONG
-                    ).show()
-                } else {
-                    Toast.makeText(
-                        context,
-                        "❌ Error al exportar CSV",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-
-            } catch (e: Exception) {
-                println("❌ Error en exportación: ${e.message}")
-                Toast.makeText(
-                    context,
-                    "❌ Error en exportación: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
-            } finally {
-                isExporting = false
-            }
-        }
+    // Filtrar eventos para hoy
+    val dateFormatCompare = remember { SimpleDateFormat("yyyyMMdd", Locale.getDefault()) }
+    val now = remember {
+        Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
     }
+
+    val fechaHoy = dateFormatCompare.format(Date())
+    val tareasHoy = tareas.filter { dateFormatCompare.format(Date(it.fechaEntrega)) == fechaHoy }
+    val examenesHoy = examenes.filter { dateFormatCompare.format(Date(it.fechaExamen)) == fechaHoy }
+    val recordatoriosHoy = recordatorios.filter { dateFormatCompare.format(Date(it.fechaRecordatorio)) == fechaHoy }
+
+    val totalEventosHoy = tareasHoy.size + examenesHoy.size + recordatoriosHoy.size
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -275,12 +294,7 @@ fun PrincipalScreen(
             modifier = modifier,
             topBar = {
                 TopAppBar(
-                    title = {
-                        Text(
-                            if (currentUserId != null) "Bienvenido Usuario" else "Cargando...",
-                            fontWeight = FontWeight.Bold
-                        )
-                    },
+                    title = { Text("Bienvenido Usuario", fontWeight = FontWeight.Bold) },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = "Menú")
@@ -312,15 +326,7 @@ fun PrincipalScreen(
                                     contentDescription = destination.contentDescription
                                 )
                             },
-                            label = {
-                                Text(
-                                    text = destination.label,
-                                    fontSize = 10.6.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
+                            label = { Text(destination.label) }
                         )
                     }
                 }
@@ -332,36 +338,7 @@ fun PrincipalScreen(
                     .padding(innerPadding)
                     .verticalScroll(rememberScrollState())
             ) {
-                // Mostrar mensaje de error si existe
-                errorMessage?.let { message ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                        )
-                    ) {
-                        Text(
-                            text = message,
-                            modifier = Modifier.padding(16.dp),
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                    }
-                }
-
-                // Mostrar loading si está cargando
-                if (isLoading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
-
+                // Tarjeta de eventos para hoy con funcionalidad de agenda
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -379,24 +356,61 @@ fun PrincipalScreen(
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
-                        Text(
-                            text = "No tienes eventos hoy",
-                            fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
+
+                        if (totalEventosHoy == 0) {
+                            Text(
+                                text = "No tienes eventos hoy",
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+                        } else {
+                            Text(
+                                text = "Tienes $totalEventosHoy evento(s) para hoy",
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+
+                            // Mostrar tareas de hoy
+                            tareasHoy.forEach { tarea ->
+                                TareaItemSimpleHome(
+                                    tarea = tarea,
+                                    esPasada = tarea.fechaEntrega < now
+                                )
+                            }
+
+                            // Mostrar exámenes de hoy
+                            examenesHoy.forEach { examen ->
+                                ExamenItemSimpleHome(
+                                    examen = examen,
+                                    esPasado = examen.fechaExamen < now
+                                )
+                            }
+
+                            // Mostrar recordatorios de hoy
+                            recordatoriosHoy.forEach { recordatorio ->
+                                RecordatorioItemSimpleHome(
+                                    recordatorio = recordatorio,
+                                    esPasado = recordatorio.fechaRecordatorio < now
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Disfruta de tu día libre",
+                                text = if (totalEventosHoy == 0) "Disfruta de tu día libre" else "Gestiona tus eventos",
                                 color = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.weight(1f)
                             )
                             Button(
-                                onClick = { },
+                                onClick = { navigateTotarea() }, // Navegar a la agenda
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.primary
                                 )
@@ -406,13 +420,14 @@ fun PrincipalScreen(
                                     contentDescription = "Agregar evento",
                                     modifier = Modifier.padding(end = 4.dp)
                                 )
-                                Text("Agregar Evento")
+                                Text("Ver Agenda")
                             }
                         }
                     }
                 }
 
-                // Tarjeta de gastos
+                // El resto del código se mantiene igual...
+                // Tarjeta de gastos (código original)
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -423,6 +438,7 @@ fun PrincipalScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
+                        // ... (el resto del código de la tarjeta de gastos se mantiene igual)
                         // Título: Monedero con el monto
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -445,21 +461,19 @@ fun PrincipalScreen(
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(24.dp),
                                 modifier = Modifier.padding(start = 24.dp)
-                            )  {
+                            ) {
                                 Icon(
                                     imageVector = Icons.Default.SentimentVerySatisfied,
                                     contentDescription = "Cara Alegre",
                                     tint = if (percentage in -50f..0f) Color(0xFF4CAF50) else Color(0xFF4CAF50),
                                     modifier = Modifier.size(if (percentage in -50f..0f) 48.dp else 32.dp)
                                 )
-
                                 Icon(
                                     imageVector = Icons.Default.SentimentNeutral,
                                     contentDescription = "Cara Seria",
                                     tint = if (percentage in -80f..-51f) Color(0xFFFFA000) else Color(0xFFFFA000),
                                     modifier = Modifier.size(if (percentage in -80f..-51f) 48.dp else 32.dp)
                                 )
-
                                 Icon(
                                     imageVector = Icons.Default.SentimentVeryDissatisfied,
                                     contentDescription = "Cara Triste",
@@ -475,17 +489,37 @@ fun PrincipalScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 6.dp),
+                                .padding(bottom = 8.dp),
                             horizontalArrangement = Arrangement.Start
                         ) {
-                            Text("Cuentas", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                            Text("Ingreso", fontWeight = FontWeight.Bold, textAlign = TextAlign.Start, modifier = Modifier.weight(1f))
-                            Text("Gasto", fontWeight = FontWeight.Bold, textAlign = TextAlign.Start, modifier = Modifier.weight(1f))
-                            Text("Total", fontWeight = FontWeight.Bold, textAlign = TextAlign.Start, modifier = Modifier.weight(1f))
+                            Text(
+                                "Cuentas",
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                "Ingreso",
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Start,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                "Gasto",
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Start,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                "Total",
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Start,
+                                modifier = Modifier.weight(1f)
+                            )
                         }
 
                         Divider(Modifier.padding(vertical = 8.dp))
 
+                        // Filas para "Tarjeta", "Efectivo", "Yape"
                         // Tarjeta
                         Row(
                             modifier = Modifier
@@ -495,25 +529,22 @@ fun PrincipalScreen(
                         ) {
                             Text("Tarjeta", modifier = Modifier.weight(1f))
                             Text(
-                                "S/ ${"%.1f".format(ingresosTarjeta - gastosTarjeta)}",
+                                "S/ ${"%.2f".format(ingresosTarjeta - gastosTarjeta)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
-                                fontSize = 13.5.sp,
                                 color = Color(0xFF4CAF50)
                             )
                             Text(
-                                "S/ ${"%.1f".format(gastosTarjeta)}",
+                                "S/ ${"%.2f".format(gastosTarjeta)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
-                                fontSize = 13.5.sp,
                                 color = Color(0xFFFF0000)
                             )
                             Text(
-                                "S/ ${"%.1f".format(ingresosTarjeta)}",
+                                "S/ ${"%.2f".format(ingresosTarjeta)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
                                 color = MaterialTheme.colorScheme.primary,
-                                fontSize = 13.5.sp,
                                 fontWeight = FontWeight(900)
                             )
                         }
@@ -527,25 +558,22 @@ fun PrincipalScreen(
                         ) {
                             Text("Efectivo", modifier = Modifier.weight(1f))
                             Text(
-                                "S/ ${"%.1f".format(ingresosEfectivo - gastosEfectivo)}",
+                                "S/ ${"%.2f".format(ingresosEfectivo - gastosEfectivo)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
-                                fontSize = 13.5.sp,
                                 color = Color(0xFF4CAF50)
                             )
                             Text(
-                                "S/ ${"%.1f".format(gastosEfectivo)}",
+                                "S/ ${"%.2f".format(gastosEfectivo)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
-                                fontSize = 13.5.sp,
                                 color = Color(0xFFFF0000)
                             )
                             Text(
-                                "S/ ${"%.1f".format(ingresosEfectivo)}",
+                                "S/ ${"%.2f".format(ingresosEfectivo)}",
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.weight(1f),
                                 color = MaterialTheme.colorScheme.primary,
-                                fontSize = 13.5.sp,
                                 fontWeight = FontWeight(900)
                             )
                         }
@@ -559,23 +587,20 @@ fun PrincipalScreen(
                         ) {
                             Text("Yape", modifier = Modifier.weight(1f))
                             Text(
-                                "S/ ${"%.1f".format(ingresosYape - gastosYape)}",
+                                "S/ ${"%.2f".format(ingresosYape - gastosYape)}",
                                 textAlign = TextAlign.Start,
-                                fontSize = 13.5.sp,
                                 modifier = Modifier.weight(1f),
                                 color = Color(0xFF4CAF50)
                             )
                             Text(
-                                "S/ ${"%.1f".format(gastosYape)}",
+                                "S/ ${"%.2f".format(gastosYape)}",
                                 textAlign = TextAlign.Start,
-                                fontSize = 13.5.sp,
                                 modifier = Modifier.weight(1f),
                                 color = Color(0xFFFF0000)
                             )
                             Text(
-                                "S/ ${"%.1f".format(ingresosYape)}",
+                                "S/ ${"%.2f".format(ingresosYape)}",
                                 textAlign = TextAlign.Start,
-                                fontSize = 13.5.sp,
                                 modifier = Modifier.weight(1f),
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight(900)
@@ -587,53 +612,38 @@ fun PrincipalScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 1.dp),
+                                .padding(top = 8.dp),
                             horizontalArrangement = Arrangement.Start
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 1.dp, top = 4.dp),
-                                horizontalArrangement = Arrangement.Start
-                            ) {
-                                Text(
-                                    text = "TOTAL:",
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.align(Alignment.CenterVertically)
-                                )
-
-                                Text(
-                                    text = "S/ ${"%.1f".format((ingresosTarjeta + ingresosEfectivo + ingresosYape) - (gastosTarjeta + gastosEfectivo + gastosYape))}",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF4CAF50),
-                                    fontSize = 13.5.sp,
-                                    modifier = Modifier
-                                        .align(Alignment.CenterVertically)
-                                        .padding(start = 27.dp)
-                                )
-
-                                Text(
-                                    text = "S/ ${"%.1f".format(gastosTarjeta + gastosEfectivo + gastosYape)}",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFFF0000),
-                                    fontSize = 13.5.sp,
-                                    modifier = Modifier
-                                        .align(Alignment.CenterVertically)
-                                        .padding(start = 15.dp)
-                                )
-
-                                Text(
-                                    text = "S/ ${"%.1f".format(ingresosTarjeta + ingresosEfectivo + ingresosYape)}",
-                                    fontWeight = FontWeight(900),
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontSize = 13.5.sp,
-                                    modifier = Modifier
-                                        .align(Alignment.CenterVertically)
-                                        .padding(start = 15.dp)
-                                )
-                            }
+                            Text(
+                                text = "TOTAL:",
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.align(Alignment.CenterVertically)
+                            )
+                            Spacer(modifier = Modifier.width(40.dp))
+                            Text(
+                                text = "S/ ${"%.2f".format(
+                                    (ingresosTarjeta + ingresosEfectivo + ingresosYape) - (gastosTarjeta + gastosEfectivo + gastosYape)
+                                )}",
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF4CAF50),
+                                modifier = Modifier.align(Alignment.CenterVertically)
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = "S/ ${"%.2f".format(gastosTarjeta + gastosEfectivo + gastosYape)}",
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFFF0000),
+                                modifier = Modifier.align(Alignment.CenterVertically)
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = "S/ ${"%.2f".format(ingresosTarjeta + ingresosEfectivo + ingresosYape)}",
+                                fontWeight = FontWeight(900),
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.align(Alignment.CenterVertically)
+                            )
                         }
-
                         Divider(Modifier.padding(vertical = 8.dp))
 
                         Column(
@@ -656,7 +666,9 @@ fun PrincipalScreen(
 
                             FechaSeleccionadaSection1(
                                 fecha = fechaFin ?: System.currentTimeMillis(),
-                                onFechaChange = { nuevaFecha -> viewModel.updateFechaFin(nuevaFecha) }
+                                onFechaChange = { nuevaFecha ->
+                                    viewModel.updateFechaFin(nuevaFecha)
+                                }
                             )
 
                             Divider(Modifier.padding(vertical = 8.dp))
@@ -669,7 +681,7 @@ fun PrincipalScreen(
                             ) {
                                 Button(
                                     onClick = {
-                                        val userId = currentUserId
+                                        val userId = viewModel.userId
                                         if (userId != null) {
                                             viewModel.viewModelScope.launch {
                                                 viewModel.updateIngresosYGastosPorFechas(
@@ -678,12 +690,6 @@ fun PrincipalScreen(
                                                     fechaFin
                                                 )
                                             }
-                                        } else {
-                                            Toast.makeText(
-                                                context,
-                                                "Usuario no disponible para filtrar",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
                                         }
                                     },
                                     modifier = Modifier
@@ -707,65 +713,9 @@ fun PrincipalScreen(
                                 }
                             }
                         }
-
-                        // Botón de exportar mejorado
-                        Button(
-                            onClick = onExportClick,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            enabled = currentUserId != null && !isExporting
-                        ) {
-                            if (isExporting) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp),
-                                    strokeWidth = 2.dp
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Text("Exportando...")
-                            } else {
-                                Icon(Icons.Default.Download, contentDescription = "Exportar")
-                                Spacer(Modifier.width(8.dp))
-                                Text("Exportar Backup + CSV")
-                            }
-                        }
-
-                        // Botón de debug para ver el estado del usuario
-                        Button(
-                            onClick = {
-                                scope.launch {
-                                    val userEmail = UserPrefs.getLoggedUserEmail(context)
-                                    val userIdFromPrefs = UserPrefs.getLoggedUserId(context)
-                                    val userCount = withContext(Dispatchers.IO) {
-                                        db.userDao().getAllUsers().first().size
-                                    }
-
-                                    val debugInfo = """
-                                        📊 DEBUG INFO:
-                                        Email en Prefs: $userEmail
-                                        UserId en Prefs: $userIdFromPrefs
-                                        UserId actual: $currentUserId
-                                        Usuarios en DB: $userCount
-                                    """.trimIndent()
-
-                                    Toast.makeText(context, debugInfo, Toast.LENGTH_LONG).show()
-                                    println(debugInfo)
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
-                        ) {
-                            Icon(Icons.Default.BugReport, contentDescription = "Debug")
-                            Spacer(Modifier.width(8.dp))
-                            Text("Debug Info")
-                        }
                     }
                 }
             }
         }
     }
 }
-
-
