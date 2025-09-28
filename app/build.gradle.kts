@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinSerialization)
     alias(libs.plugins.ksp)
     id("com.google.dagger.hilt.android") version "2.48.1" apply false
+
+
 }
 
 android {
