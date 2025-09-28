@@ -302,7 +302,12 @@ fun IngresoFormScreen(
         )
         Spacer(Modifier.height(12.dp))
 
-        Text("Monto", fontSize = 22.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+        Text(
+            "Monto",
+            fontSize = 22.sp,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
         Spacer(Modifier.height(8.dp))
 
         OutlinedTextField(
@@ -319,7 +324,12 @@ fun IngresoFormScreen(
 
         Spacer(Modifier.height(20.dp))
 
-        Text("Descripción:", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
+        Text(
+            "Descripción:",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
             value = form.descripcion,
@@ -331,7 +341,12 @@ fun IngresoFormScreen(
 
         Spacer(Modifier.height(20.dp))
 
-        Text("Depositado en:", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
+        Text(
+            "Depositado en:",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(Modifier.height(8.dp))
 
         var expanded by remember { mutableStateOf(false) }
@@ -374,7 +389,12 @@ fun IngresoFormScreen(
 
         Spacer(Modifier.height(20.dp))
 
-        Text("Fecha Realizada:", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
+        Text(
+            "Fecha Realizada:",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Fecha: ${formatFecha(dateMillis)}", modifier = Modifier.weight(1f))
@@ -384,16 +404,19 @@ fun IngresoFormScreen(
         Spacer(Modifier.height(20.dp))
 
 
-
-
-
-
         // Para las Notas (TipoNota):
-        Text("Categoria:", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.fillMaxWidth())
+        Text(
+            "Categoria:",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.fillMaxWidth()
+        )
         Spacer(Modifier.height(8.dp))
 
         var expanded2 by remember { mutableStateOf(false) }
-        ExposedDropdownMenuBox(expanded = expanded2, onExpandedChange = { expanded2 = !expanded2 }) {
+        ExposedDropdownMenuBox(
+            expanded = expanded2,
+            onExpandedChange = { expanded2 = !expanded2 }) {
             val labelActual = form.notas.display() // Mostrar el nombre legible de TipoNota
             OutlinedTextField(
                 modifier = Modifier
@@ -421,16 +444,19 @@ fun IngresoFormScreen(
 
         Spacer(Modifier.height(24.dp))
 
-        Button(onClick = {
-            viewModel.save(isGasto = false)
+        Button(
+            onClick = {
+                viewModel.save(isGasto = false)
 
 
-        }, modifier = Modifier
-            .fillMaxWidth(0.6f)
+            }, modifier = Modifier
+                .fillMaxWidth(0.6f)
         ) {
-            Text(        "Guardar",
+            Text(
+                "Guardar",
                 fontSize = 25.sp,
-                fontWeight = FontWeight.Bold)
+                fontWeight = FontWeight.Bold
+            )
         }
 
         message?.let {
@@ -451,7 +477,7 @@ fun IngresoFormScreen(
                     timeInMillis = dateMillis
                     set(Calendar.YEAR, year)
                     set(Calendar.MONTH, month)
-                    set(Calendar.DAY_OF_MONTH, day)
+                    set(Calendar.DAY_OF_MONTH, day + 1) // Sumamos 1 al día seleccionado
                 }
                 viewModel.onFormChange(fecha = cal.timeInMillis.toString())
             },
@@ -459,31 +485,31 @@ fun IngresoFormScreen(
         )
     }
 }
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AppDatePickerDialog(
-    initialDate: Calendar,
-    onDateSelected: (year: Int, month: Int, day: Int) -> Unit,
-    onDismiss: () -> Unit
-) {
-    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialDate.timeInMillis)
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = {
-                val millis = datePickerState.selectedDateMillis
-                if (millis != null) {
-                    val cal = Calendar.getInstance().apply { timeInMillis = millis }
-                    onDateSelected(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH))
-                }
-                onDismiss()
-            }) { Text("OK") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } }
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun AppDatePickerDialog(
+        initialDate: Calendar,
+        onDateSelected: (year: Int, month: Int, day: Int) -> Unit,
+        onDismiss: () -> Unit
     ) {
-        DatePicker(state = datePickerState)
+        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialDate.timeInMillis)
+        DatePickerDialog(
+            onDismissRequest = onDismiss,
+            confirmButton = {
+                TextButton(onClick = {
+                    val millis = datePickerState.selectedDateMillis
+                    if (millis != null) {
+                        val cal = Calendar.getInstance().apply { timeInMillis = millis }
+                        onDateSelected(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH))
+                    }
+                    onDismiss()
+                }) { Text("OK") }
+            },
+            dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } }
+        ) {
+            DatePicker(state = datePickerState)
+        }
     }
-}
+
 
 

@@ -47,12 +47,15 @@ import com.example.appfirst.data.local.entity.AccionDiaria
 import com.example.appfirst.ui.screens.calendar.elementos.AccionDiariaViewModelFactory
 import com.example.appfirst.ui.screens.calendar.elementos.TarjetaNotaHorario
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.appfirst.core.navigation.FormularioNota
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.example.appfirst.ui.screens.calendar.elementos.LocalNavDestination
+import com.example.appfirst.ui.screens.home.NavDestination
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -148,36 +151,34 @@ fun HorarioDiarioScreen(
             )
         },
         bottomBar = {
-            NavigationBar(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            ) {
-                LocalNavDestination.entries.forEachIndexed { index, destination ->
+            NavigationBar(containerColor = MaterialTheme.colorScheme.primaryContainer) {
+                NavDestination.entries.forEachIndexed { index, destination ->
                     NavigationBarItem(
                         selected = selectedItem == index,
                         onClick = {
                             selectedItem = index
                             when (destination) {
-                                LocalNavDestination.HOME -> navigateToInicio()
-                                LocalNavDestination.CALENDAR -> navigateToCalendario()
-                                LocalNavDestination.SCHEDULE -> navigateToHorarioDiario()
-                                LocalNavDestination.SAVINGS -> navigateToCuentas()
-                                LocalNavDestination.TASKS -> navigateTotarea()
+                                NavDestination.HOME -> navigateToInicio()
+                                NavDestination.CALENDAR -> navigateToCalendario()
+                                NavDestination.SCHEDULE -> navigateToHorarioDiario()
+                                NavDestination.SAVINGS -> navigateToCuentas()
+                                NavDestination.TASKS -> navigateTotarea()
                             }
                         },
-                        icon = {
-                            Icon(
-                                destination.icon,
-                                contentDescription = destination.contentDescription
-                            )
-                        },
+                        icon = { Icon(destination.icon, contentDescription = destination.contentDescription) },
                         label = {
-                            Text(destination.label)
-                        }
+                            Text(
+                                text = destination.label,
+                                fontSize = 10.6.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            ) }
                     )
                 }
             }
         }
-    ) { paddingValues ->
+    )  { paddingValues ->
         Column(
             modifier = Modifier
                 .padding(paddingValues)

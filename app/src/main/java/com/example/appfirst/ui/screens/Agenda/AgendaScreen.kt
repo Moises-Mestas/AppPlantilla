@@ -39,6 +39,7 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.style.TextOverflow
 
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -391,7 +392,7 @@ fun AgendaScreen(
                 )
             },
             bottomBar = {
-                NavigationBar {
+                NavigationBar(containerColor = MaterialTheme.colorScheme.primaryContainer) {
                     NavDestination.entries.forEachIndexed { index, destination ->
                         NavigationBarItem(
                             selected = selectedItem == index,
@@ -405,13 +406,16 @@ fun AgendaScreen(
                                     NavDestination.TASKS -> navigateTotarea()
                                 }
                             },
-                            icon = {
-                                Icon(
-                                    destination.icon,
-                                    contentDescription = destination.contentDescription
+                            icon = { Icon(destination.icon, contentDescription = destination.contentDescription) },
+                            label = {
+                                Text(
+                                    text = destination.label,
+                                    fontSize = 10.6.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
-                            },
-                            label = { Text(destination.label) }
+                            }
                         )
                     }
                 }
@@ -425,6 +429,7 @@ fun AgendaScreen(
                     navigateToRecordatorio
                 )
             }
+
         ) { innerPadding ->
             if (isLoading) Box(
                 modifier = Modifier.fillMaxSize(),

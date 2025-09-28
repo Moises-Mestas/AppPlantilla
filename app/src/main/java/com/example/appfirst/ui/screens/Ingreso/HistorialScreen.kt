@@ -607,7 +607,7 @@ fun RestablecerButton(onReset: () -> Unit) {
 }
 
 @Composable
-fun FechaSeleccionadaSection1(
+fun  FechaSeleccionadaSection1(
     fecha: Long,
     onFechaChange: (Long) -> Unit,
     modifier: Modifier = Modifier
@@ -639,7 +639,7 @@ fun FechaSeleccionadaSection1(
                     timeInMillis = fecha
                     set(Calendar.YEAR, year)
                     set(Calendar.MONTH, month)
-                    set(Calendar.DAY_OF_MONTH, day)
+                    set(Calendar.DAY_OF_MONTH, day + 1)  // Sumamos 1 al día seleccionado
                 }
                 onFechaChange(cal.timeInMillis)
                 showDatePicker = false

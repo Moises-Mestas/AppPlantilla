@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
@@ -219,10 +220,10 @@ fun PrincipalScreen(
         NavItem("Agenda", Icons.Default.AccountBox, navigateTotarea)
     )
 
-    val drawerExtraItems = listOf(
-        NavItem("Ajustes", Icons.Default.Settings, navigateToAjustes),
-        NavItem("Salir", Icons.Default.ExitToApp, navigateToSalir)
-    )
+    //val drawerExtraItems = listOf(
+    //    NavItem("Ajustes", Icons.Default.Settings, navigateToAjustes),
+      //  NavItem("Salir", Icons.Default.ExitToApp, navigateToSalir)
+    //)
 
     // Cargar datos del usuario y eventos de agenda
     LaunchedEffect(Unit) {
@@ -290,7 +291,7 @@ fun PrincipalScreen(
                     )
                 }
                 Divider(Modifier.padding(vertical = 8.dp))
-                drawerExtraItems.forEach { item ->
+          /*      drawerExtraItems.forEach { item ->
                     NavigationDrawerItem(
                         label = { Text(item.label) },
                         selected = false,
@@ -301,7 +302,7 @@ fun PrincipalScreen(
                         icon = { Icon(item.icon, contentDescription = item.label) },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
-                }
+                }*/
             }
         }
     ) {
@@ -319,9 +320,7 @@ fun PrincipalScreen(
                 )
             },
             bottomBar = {
-                NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                ) {
+                NavigationBar(containerColor = MaterialTheme.colorScheme.primaryContainer) {
                     NavDestination.entries.forEachIndexed { index, destination ->
                         NavigationBarItem(
                             selected = selectedItem == index,
@@ -335,18 +334,20 @@ fun PrincipalScreen(
                                     NavDestination.TASKS -> navigateTotarea()
                                 }
                             },
-                            icon = {
-                                Icon(
-                                    destination.icon,
-                                    contentDescription = destination.contentDescription
-                                )
-                            },
-                            label = { Text(destination.label) }
+                            icon = { Icon(destination.icon, contentDescription = destination.contentDescription) },
+                            label = {
+                                Text(
+                                    text = destination.label,
+                                    fontSize = 10.6.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                ) }
                         )
                     }
                 }
             }
-        ) { innerPadding ->
+        )  { innerPadding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
