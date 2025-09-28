@@ -1,0 +1,385 @@
+package com.example.appfirst.ui.screens.cuentas
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.ShoppingCart
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import com.example.appfirst.ui.ingreso.rememberIngresoVM
+import com.example.appfirst.ui.screens.home.NavDestination
+import com.example.appfirst.ui.screens.home.NavItem
+import kotlinx.coroutines.launch
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CuentasScreen(
+    modifier: Modifier = Modifier,
+    navController: NavHostController,
+
+    navigateToCalendario: () -> Unit = {},
+    navigateToHorarioDiario: () -> Unit = {},
+    navigateToCuentas: () -> Unit = {},
+    navigateTotarea: () -> Unit = {},
+    navigateToAjustes: () -> Unit = {},
+    navigateToSalir: () -> Unit = {},
+    navigateToHistorial: () -> Unit = {},
+    navigateToIngreso: () -> Unit = {},
+    navigateToGastos: () -> Unit = {},
+    navigateToIngreso2: () -> Unit = {},
+    navigateBack: () -> Unit = {},
+    navigateToInicio: () -> Unit = { navController.navigate("principal") },
+) {
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    var selectedItem by rememberSaveable { mutableIntStateOf(0) }
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
+    val viewModel = rememberIngresoVM()
+    val montoTotal by viewModel.montoTotal.collectAsState()
+    val montoTotalTarjeta by viewModel.montoTotalTarjeta.collectAsState()
+    val montoTotalEfectivo by viewModel.montoTotalEfectivo.collectAsState()
+    val montoTotalYape by viewModel.montoTotalYape.collectAsState()
+    var open by remember { mutableStateOf(false) }
+
+    val navItems = listOf(
+        NavItem("Inicio", Icons.Default.Home, navigateToInicio),
+        NavItem("Calendario", Icons.Default.DateRange, navigateToCalendario),
+        NavItem("Horario Diario", Icons.Default.List, navigateToHorarioDiario),
+        NavItem("Cuentas", Icons.Default.Face, navigateToCuentas),
+        NavItem("Agenda", Icons.Default.AccountBox, navigateTotarea)
+    )
+
+    val drawerExtraItems = listOf(
+        NavItem("Ajustes", Icons.Default.Settings, navigateToAjustes),
+        NavItem("Salir", Icons.Default.ExitToApp, navigateToSalir)
+    )
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Text(
+                    "Menú",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(16.dp)
+                )
+                navItems.forEachIndexed { index, item ->
+                    NavigationDrawerItem(
+                        label = { Text(item.label) },
+                        selected = selectedItem == index,
+                        onClick = {
+                            selectedItem = index
+                            scope.launch { drawerState.close() }
+                            item.onClick()
+                        },
+                        icon = { Icon(item.icon, contentDescription = item.label) },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                    )
+                }
+                Divider(Modifier.padding(vertical = 8.dp))
+                drawerExtraItems.forEach { item ->
+                    NavigationDrawerItem(
+                        label = { Text(item.label) },
+                        selected = false,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            item.onClick()
+                        },
+                        icon = { Icon(item.icon, contentDescription = item.label) },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                    )
+                }
+            }
+        }
+    ) {
+        Scaffold(
+            modifier = modifier,
+            topBar = {
+                TopAppBar(
+                    title = { Text("Monedero", fontWeight = FontWeight.Bold) },
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menú")
+                        }
+                    },
+                    scrollBehavior = scrollBehavior
+                )
+            },
+            bottomBar = {
+                NavigationBar(containerColor = MaterialTheme.colorScheme.primaryContainer) {
+                    NavDestination.entries.forEachIndexed { index, destination ->
+                        NavigationBarItem(
+                            selected = selectedItem == index,
+                            onClick = {
+                                selectedItem = index
+                                when (destination) {
+                                    NavDestination.HOME -> navigateToInicio()
+                                    NavDestination.CALENDAR -> navigateToCalendario()
+                                    NavDestination.SCHEDULE -> navigateToHorarioDiario()
+                                    NavDestination.SAVINGS -> navigateToCuentas()
+                                    NavDestination.TASKS -> navigateTotarea()
+                                }
+                            },
+                            icon = { Icon(destination.icon, contentDescription = destination.contentDescription) },
+                            label = {
+                                Text(
+                                    text = destination.label,
+                                    fontSize = 10.6.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                ) }
+                        )
+                    }
+                }
+            }
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // CABECERA
+                Text(
+                    text = "Cuentas:",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 32.sp,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(16.dp)
+                )
+
+                Text(
+                    text = "Monto Total:  S/ ${"%.1f".format(montoTotal)}",
+                    fontSize = 25.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(bottom = 16.dp)
+                )
+
+                // Tarjetas de categorías (texto a la izquierda y monto a la derecha)
+                CuentaCard(
+                    leftTitle = "Tarjeta",
+                    leftSubtitle = "Compras y pagos con tarjeta.",
+                    monto = montoTotalTarjeta
+                )
+                CuentaCard(
+                    leftTitle = "Efectivo",
+                    leftSubtitle = "Billetes / Monedas.",
+                    monto = montoTotalEfectivo
+                )
+                CuentaCard(
+                    leftTitle = "Yape",
+                    leftSubtitle = "Saldo disponible en Yape.",
+                    monto = montoTotalYape
+                )
+            }
+
+
+            AddFabWithSheet(
+                sheetOffsetY = (-30).dp,
+                bottomPadding = innerPadding.calculateBottomPadding(),
+                open = open,
+                onOpenChange = { open = it },
+                navigateToGastos = navigateToGastos,
+                navigateToHistorial = navigateToHistorial,
+                navigateToIngreso2 = navigateToIngreso2,
+                navigateToIngreso = navigateToIngreso
+            )
+
+            if (!open) {
+                // Aquí es donde se coloca el botón de Historial y el botón Add en la misma altura
+                Box(Modifier.fillMaxSize()) {
+                    FloatingActionButton(
+                        onClick = navigateToHistorial,
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(start = 16.dp, bottom = 155.dp),
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ) {
+                        Icon(Icons.Filled.History, contentDescription = "Historial", tint = MaterialTheme.colorScheme.onPrimary)
+                    }
+
+                    FloatingActionButton(
+                        onClick = { open = true },
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 16.dp, bottom = 155.dp),
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ) {
+                        Icon(Icons.Filled.Add, contentDescription = "Agregar", tint = MaterialTheme.colorScheme.onPrimary)
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun CuentaCard(
+    leftTitle: String,
+    leftSubtitle: String,
+    monto: Double,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Izquierda: textos
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = leftTitle,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 22.sp,
+
+                    )
+                Text(
+                    text = leftSubtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 15.sp,
+
+                    )
+            }
+
+            // Derecha: monto
+            Text(
+                text = "S/ ${"%.1f".format(monto)}",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.End,
+                modifier = Modifier.widthIn(min = 140.dp) // asegura buen alineado a la derecha
+            )
+        }
+    }
+}
+@Composable
+fun AddFabWithSheet(
+    sheetOffsetY: Dp = 80.dp,
+    bottomPadding: Dp = 0.dp,
+    open: Boolean,
+    onOpenChange: (Boolean) -> Unit,
+    navigateToGastos: () -> Unit,
+    navigateToIngreso2: () -> Unit,
+    navigateToHistorial: () -> Unit,
+    navigateToIngreso: () -> Unit
+) {
+    Box(Modifier.fillMaxSize()) {
+
+        if (open) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.45f))
+                    .clickable { onOpenChange(false) }  // Esto cierra el sheet al hacer clic afuera
+            )
+
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp + bottomPadding)
+                    .offset(y = sheetOffsetY),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                // Botón de "Gasto"
+                SheetButton("Gasto", "Registra una compra o pago", Icons.Outlined.ShoppingCart) {
+                    navigateToGastos()
+                    onOpenChange(false)
+                }
+
+                // Botón de "Ingreso"
+                SheetButton("Ingreso", "Registra un salario o ingreso", Icons.Filled.AttachMoney) {
+                    navigateToIngreso2()
+                    onOpenChange(false)
+                }
+            }
+        }
+    }
+}
+
+
+
+
+@Composable
+fun SheetButton(title: String, subtitle: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
+    ElevatedButton(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(90.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+            .shadow(8.dp, shape = RoundedCornerShape(16.dp), ambientColor = MaterialTheme.colorScheme.primary),
+        shape = RoundedCornerShape(16.dp),
+        contentPadding = PaddingValues(12.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+
+            Icon(icon, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.width(16.dp))
+
+            Column {
+                Text(
+                    title,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    subtitle,
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+
+
+
