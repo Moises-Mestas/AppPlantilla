@@ -1,14 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android">
-    <android:initialLayout>@layout/widget_layout</android:initialLayout>
 
-    <!-- Intervalo de actualización en milisegundos (aquí se actualiza cada minuto) -->
-    <android:updatePeriodMillis>60000</android:updatePeriodMillis>
-
-    <!-- Categoría del widget -->
-    <android:widgetCategory>home_screen</android:widgetCategory>
-
-    <!-- Definir el tamaño mínimo del widget -->
-    <android:minWidth>200dp</android:minWidth>
-    <android:minHeight>200dp</android:minHeight>
 </appwidget-provider>

@@ -31,6 +31,7 @@ gson = "2.11.0"
 # Moises
 generativeai = "0.9.0"
 foundationLayout = "1.9.1"
+fragment = "1.8.9"
 
 
 [libraries]
@@ -72,6 +73,7 @@ gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 # Moises
 generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai" }
 androidx-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
+androidx-fragment = { group = "androidx.fragment", name = "fragment", version.ref = "fragment" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
