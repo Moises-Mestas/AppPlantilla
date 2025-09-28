@@ -656,7 +656,7 @@ fun PrincipalScreen(
                         }
 
 
-                        Divider(Modifier.padding(vertical = 4.dp))
+                        Divider(Modifier.padding(vertical = 8.dp))
 
 
                         Column(
