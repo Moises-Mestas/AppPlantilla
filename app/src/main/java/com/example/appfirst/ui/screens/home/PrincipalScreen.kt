@@ -654,51 +654,6 @@ fun PrincipalScreen(
                             )
                         }
 
-                        Divider(Modifier.padding(vertical = 4.dp))
-
-                        if (showDialog) {
-                            AlertDialog(
-                                onDismissRequest = { showDialog = false },
-                                title = { Text("¿Estás seguro de reiniciar tus datos?") },
-                                text = { Text("Solo se eliminarán de esta vista, no de tu Monedero.") },
-                                confirmButton = {
-                                    Button(
-                                        onClick = {
-                                            // Llamar a la función del ViewModel para reiniciar los datos
-                                            showDialog = false // Cerrar el diálogo
-                                        },
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)) // Verde
-                                    ) {
-                                        Text("Aceptar", color = Color.White)
-                                    }
-                                },
-                                dismissButton = {
-                                    Button(
-                                        onClick = { showDialog = false },
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF0000)) // Verde
-                                    ) {
-                                        Text("Cancelar", color = Color.White)
-                                    }
-                                }
-                            )
-                        }
-
-                        // Botón para mostrar el diálogo
-                        Button(
-                            onClick = { showDialog = true }, // Mostrar el diálogo
-                            modifier = Modifier
-                                .fillMaxWidth() // El botón ocupará todo el ancho disponible
-                                .padding(top = 16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary // Color de fondo del botón
-                            )
-                        ) {
-                            Text(
-                                text = "Reiniciar Datos", // Texto del botón
-                                color = Color.White, // Color blanco para el texto
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
 
                         Divider(Modifier.padding(vertical = 4.dp))
 

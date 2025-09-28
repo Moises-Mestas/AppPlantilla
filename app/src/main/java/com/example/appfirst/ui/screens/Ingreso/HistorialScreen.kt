@@ -58,11 +58,13 @@ fun formatAmountWithLimit(amount: Double): String {
 
     // Si la parte entera tiene más de 7 dígitos, recortamos a 7 y agregamos "..."
     return if (parts[0].length > 7) {
-        "${parts[0].take(7)}...${parts[1]}"
+        // En caso de que no haya parte decimal, usamos getOrElse para manejarlo de forma segura
+        "${parts[0].take(7)}..${parts.getOrElse(1) { "" }}"
     } else {
         formatted
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
