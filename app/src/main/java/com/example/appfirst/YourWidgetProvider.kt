@@ -22,7 +22,7 @@ class YourWidgetProvider : AppWidgetProvider() {
             val views = RemoteViews(context.packageName, R.layout.widget_layout)
 
             // Establecer la imagen en el widget
-            views.setImageViewResource(R.id.widgetImage, R.drawable.prueba1)
+            views.setImageViewResource(R.id.widgetImage, R.drawable.banner1)
 
             // Crea un PendingIntent para abrir la aplicación cuando el widget sea clickeado
             val intent = Intent(context, MainActivity::class.java)

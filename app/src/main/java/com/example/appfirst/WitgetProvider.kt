@@ -17,7 +17,7 @@ class MyWidgetProvider : AppWidgetProvider() {
             val views = RemoteViews(context.packageName, R.layout.widget_layout)
 
             // Establecer la imagen
-            views.setImageViewResource(R.id.widgetImage, R.drawable.prueba1)
+            views.setImageViewResource(R.id.widgetImage, R.drawable.banner1)
 
             // Acción cuando se haga clic en el widget
             val toastIntent = Intent(context, MyWidgetProvider::class.java)
