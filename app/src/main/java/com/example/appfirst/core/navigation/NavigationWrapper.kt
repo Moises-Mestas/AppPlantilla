@@ -43,6 +43,7 @@ import com.example.appfirst.ui.screens.calendar.elementos.FormularioAccionDiaria
 import com.example.appfirst.ui.screens.calendar.elementos.FormularioNotaScreen
 import com.example.appfirst.ui.screens.calendar.elementos.NotaViewModelFactory
 import com.example.appfirst.ui.screens.cuentas.CuentasScreen
+import com.example.appfirst.ui.screens.home.AjustesScreen
 
 @Composable
 fun NavigationWrapper() {
@@ -108,9 +109,18 @@ fun NavigationWrapper() {
             )
         }
 
+        composable("ajustes") {
+            AjustesScreen(
+                navigateBack = { navController.popBackStack() }, // Esto hará que al darle "volver" regrese a la pantalla anterior
+                context = LocalContext.current // Agrega el contexto para que se pueda usar en los métodos de exportación/importación
+            )
+        }
+
+
         // Principal
         composable("principal") {
             PrincipalScreen(
+                navigateToAjustes = { navController.navigate("ajustes") },
                 navigateTotarea = { navController.navigate("tarea") },
                 navigateToCuentas = { navController.navigate("cuentas") },
                 navigateToCalendario = { navController.navigate("CalendarioScreen") },
