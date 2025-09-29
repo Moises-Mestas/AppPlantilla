@@ -308,8 +308,9 @@ fun AgendaScreen(
     )
     val drawerExtraItems = listOf(
         NavItem("Ajustes", Icons.Default.Settings, navigateToAjustes),
-        NavItem("Salir", Icons.Default.ExitToApp, navigateToSalir)
+        //  NavItem("Salir", Icons.Default.ExitToApp, navigateToSalir)
     )
+
 
     val tareaVM = rememberTareaVM()
     val tareas by tareaVM.tareas.collectAsState()

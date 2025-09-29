@@ -138,6 +138,7 @@ fun NavigationWrapper() {
                 navigateToExamen = { navController.navigate("Examen") },
                 navigateToRecordatorio = { navController.navigate("recordatorio") } ,
                 navigateTotarea = { navController.navigate("tarea") },
+                navigateToAjustes = { navController.navigate("ajustes") },
                 navigateToCuentas = { navController.navigate("cuentas") },
                 navigateToCalendario = { navController.navigate("CalendarioScreen") },
                 navigateToHorarioDiario = { navController.navigate("HorarioDiario") }
@@ -185,6 +186,8 @@ fun NavigationWrapper() {
         composable("cuentas") {
             CuentasScreen(
                 navController = navController,
+                navigateToAjustes = { navController.navigate("ajustes") },
+
                 navigateToCalendario = { navController.navigate("CalendarioScreen") },
                 navigateToHorarioDiario = { navController.navigate("HorarioDiario") },
                 navigateToCuentas = { navController.navigate("cuentas") },

@@ -68,9 +68,10 @@ fun CuentasScreen(
         NavItem("Agenda", Icons.Default.AccountBox, navigateTotarea)
     )
 
+
     val drawerExtraItems = listOf(
         NavItem("Ajustes", Icons.Default.Settings, navigateToAjustes),
-        NavItem("Salir", Icons.Default.ExitToApp, navigateToSalir)
+        //  NavItem("Salir", Icons.Default.ExitToApp, navigateToSalir)
     )
 
     ModalNavigationDrawer(
