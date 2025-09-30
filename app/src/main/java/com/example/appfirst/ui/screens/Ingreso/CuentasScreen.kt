@@ -39,7 +39,7 @@ fun CuentasScreen(
     navigateToHorarioDiario: () -> Unit = {},
     navigateToCuentas: () -> Unit = {},
     navigateTotarea: () -> Unit = {},
-    navigateToAjustes: () -> Unit = {},
+    //navigateToAjustes: () -> Unit = {},
     navigateToSalir: () -> Unit = {},
     navigateToHistorial: () -> Unit = {},
     navigateToIngreso: () -> Unit = {},
@@ -68,11 +68,10 @@ fun CuentasScreen(
         NavItem("Agenda", Icons.Default.AccountBox, navigateTotarea)
     )
 
-
-    val drawerExtraItems = listOf(
+    /*val drawerExtraItems = listOf(
         NavItem("Ajustes", Icons.Default.Settings, navigateToAjustes),
         //  NavItem("Salir", Icons.Default.ExitToApp, navigateToSalir)
-    )
+    )*/
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -96,7 +95,7 @@ fun CuentasScreen(
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
                 }
-                Divider(Modifier.padding(vertical = 8.dp))
+                /*Divider(Modifier.padding(vertical = 8.dp))
                 drawerExtraItems.forEach { item ->
                     NavigationDrawerItem(
                         label = { Text(item.label) },
@@ -108,7 +107,7 @@ fun CuentasScreen(
                         icon = { Icon(item.icon, contentDescription = item.label) },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
-                }
+                }*/
             }
         }
     ) {

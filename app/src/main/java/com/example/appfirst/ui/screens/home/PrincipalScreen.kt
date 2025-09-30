@@ -220,10 +220,10 @@ fun PrincipalScreen(
         NavItem("Agenda", Icons.Default.AccountBox, navigateTotarea)
     )
 
-   val drawerExtraItems = listOf(
+  /* val drawerExtraItems = listOf(
       NavItem("Ajustes", Icons.Default.Settings, navigateToAjustes),
       //  NavItem("Salir", Icons.Default.ExitToApp, navigateToSalir)
-    )
+    )*/
 
     // Cargar datos del usuario y eventos de agenda
     LaunchedEffect(Unit) {
@@ -290,7 +290,7 @@ fun PrincipalScreen(
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
                 }
-                Divider(Modifier.padding(vertical = 8.dp))
+                /*Divider(Modifier.padding(vertical = 8.dp))
                 drawerExtraItems.forEach { item ->
                     NavigationDrawerItem(
                         label = { Text(item.label) },
@@ -302,7 +302,7 @@ fun PrincipalScreen(
                         icon = { Icon(item.icon, contentDescription = item.label) },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
-                }
+                }*/
             }
         }
     ) {
